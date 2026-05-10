@@ -1,0 +1,26 @@
+<section class="layout">
+  <aside class="sidebar">
+    <h2>SaludLink<br />ADMIN</h2>
+    <ul><li class="active">Dashboard</li><li>Médicos</li><li>Citas</li><li>Pacientes</li><li>Reportes</li><li>Facturación</li><li>Soporte</li><li>Config.</li></ul>
+  </aside>
+  <main class="main">
+    <header>
+      <nav>Inicio · Mi clínica · Reportes · Soporte</nav>
+      <div><span class="chip">Clínica San Pablo</span><button type="button" (click)="goFullPanel()">Cerrar sesión</button></div>
+    </header>
+    <section class="welcome">
+      <h1>¡Bienvenido, Carlos!</h1>
+      <p>Clínica San Pablo · Lima · Sede Jesús María</p>
+    </section>
+    <div class="stats">
+      <article><h3>Citas hoy</h3><p>142</p></article>
+      <article><h3>Médicos activos</h3><p>28</p></article>
+      <article><h3>No-shows</h3><p class="warn">6.2%</p></article>
+    </div>
+    <div class="next">
+      <button type="button" class="primary" (click)="goMedicos()">👨‍⚕️ Afiliar médicos (HU22)</button>
+      <button type="button" class="ghost" (click)="goReportes()">📊 Ver reportes (HU23)</button>
+    </div>
+    <button type="button" class="submit" (click)="goFullPanel()">Ir al panel completo →</button>
+  </main>
+</section>

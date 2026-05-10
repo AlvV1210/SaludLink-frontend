@@ -1,0 +1,545 @@
+<aside class="sidebar" aria-label="Navegación principal">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    </div>
+    <div class="sidebar-logo-text">SaludLink</div>
+  </div>
+  <button type="button" class="sidebar-item active" (click)="goTo('inicio', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M3 9l9-7 9 7v11" />
+    </svg>
+    <span>Dashboard</span>
+  </button>
+  <button type="button" class="sidebar-item" (click)="goTo('funcionalidades', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+    </svg>
+    <span>Citas Médicas</span>
+  </button>
+  <button type="button" class="sidebar-item" (click)="goTo('funcionalidades', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+    </svg>
+    <span>Recordatorios</span>
+  </button>
+  <button type="button" class="sidebar-item" (click)="goTo('funcionalidades', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+    <span>Historial Clínico</span>
+  </button>
+  <button type="button" class="sidebar-item" (click)="goTo('funcionalidades', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+    <span>Salud Mental</span>
+  </button>
+  <div class="sidebar-divider"></div>
+  <a class="sidebar-item" routerLink="/registro">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2" />
+    </svg>
+    <span>Mi perfil</span>
+  </a>
+  <button type="button" class="sidebar-item" (click)="goTo('planes', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+    </svg>
+    <span>Planes</span>
+  </button>
+  <div class="sidebar-divider"></div>
+  <button type="button" class="sidebar-item" (click)="goTo('contacto', $event)">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33" />
+    </svg>
+    <span>Configuración</span>
+  </button>
+  <button type="button" class="sidebar-item" (click)="logout()">
+    <svg class="sidebar-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+    <span>Log out</span>
+  </button>
+  <div class="sidebar-footer">SaludLink v2.0<br />© 2026</div>
+</aside>
+
+<div class="main">
+  <header class="topbar">
+    <div class="content-shell topbar-inner">
+      <div class="topbar-brand">
+        <div class="topbar-brand-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </div>
+        <div class="topbar-brand-text">SaludLink</div>
+      </div>
+      <nav class="topbar-nav" aria-label="Secciones">
+        <button type="button" class="topbar-link" (click)="goTo('inicio', $event)">Inicio</button>
+        <button type="button" class="topbar-link" (click)="goTo('funcionalidades', $event)">Funcionalidades</button>
+        <button type="button" class="topbar-link" (click)="goTo('planes', $event)">Planes</button>
+        <button type="button" class="topbar-link" (click)="goTo('contacto', $event)">Contacto</button>
+      </nav>
+      <div class="topbar-actions">
+        <a class="topbar-btn" routerLink="/registro">Iniciar sesión</a>
+        <div class="topbar-avatar" aria-hidden="true">L</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-scroll">
+    <div class="content-shell dashboard-flow">
+      <section class="hero" id="inicio">
+        <div class="hero-content">
+          <div class="hero-pill"><span>💚</span> Plataforma de salud digital</div>
+          <h1 class="hero-title">Tu salud,<br />siempre conectada</h1>
+          <p class="hero-text">
+            Agenda citas, sigue tu tratamiento, accede a tu historial clínico y cuida tu bienestar emocional desde un solo lugar. Conectamos pacientes, médicos y
+            clínicas en Perú.
+          </p>
+          <div class="hero-actions">
+            <button type="button" class="btn-primary" (click)="goTo('planes', $event)">
+              Empieza gratis
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </button>
+            <button type="button" class="btn-link-light" (click)="goTo('funcionalidades', $event)">Ver demo →</button>
+          </div>
+          <div class="hero-tags">
+            <div class="hero-tag"><span class="hero-tag-dot"></span> Sin filas</div>
+            <div class="hero-tag"><span class="hero-tag-dot"></span> 100% online</div>
+            <div class="hero-tag"><span class="hero-tag-dot"></span> Atención 24/7</div>
+          </div>
+        </div>
+        <div class="hero-status-card">
+          <span class="hero-status-pill">✓ Activo</span>
+          <div class="hero-status-grid">
+            <div class="hero-status-item">
+              <div class="hero-status-num">2</div>
+              <div class="hero-status-label">Citas esta semana</div>
+            </div>
+            <div class="hero-status-item">
+              <div class="hero-status-num">87%</div>
+              <div class="hero-status-label">Adherencia semanal</div>
+            </div>
+          </div>
+          <div class="hero-next-appt">
+            <div class="hero-next-label">Próxima cita</div>
+            <div class="hero-next-name">Dr. Fernando Olivares</div>
+            <div class="hero-next-meta">Medicina General · Virtual<br />Mié 24 Abr · 10:30 AM</div>
+          </div>
+          <div class="hero-quick-links">
+            <button type="button" class="hero-quick-link" (click)="goTo('funcionalidades', $event)">Mis Citas</button>
+            <button type="button" class="hero-quick-link" (click)="goTo('funcionalidades', $event)">Medicación</button>
+            <button type="button" class="hero-quick-link" (click)="goTo('funcionalidades', $event)">Historial</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="stats-bar">
+        <article class="stat-item">
+          <div class="stat-num">10K+</div>
+          <div class="stat-label">Pacientes activos</div>
+        </article>
+        <article class="stat-item">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Médicos certificados</div>
+        </article>
+        <article class="stat-item">
+          <div class="stat-num">25</div>
+          <div class="stat-label">Clínicas afiliadas</div>
+        </article>
+        <article class="stat-item">
+          <div class="stat-num">87%</div>
+          <div class="stat-label">Adherencia promedio</div>
+        </article>
+      </div>
+    </div>
+
+    <section class="section section-surface" id="funcionalidades">
+      <div class="content-shell">
+    <span class="section-eyebrow">Funcionalidades</span>
+    <h2 class="section-title">Todo lo que necesitas en un solo lugar</h2>
+    <p class="section-subtitle">Cuatro ejes principales para gestionar tu salud de forma integral, sin filas y sin llamadas.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrap">📅</div>
+        <h3 class="feature-title">Próximas citas</h3>
+        <p class="feature-text">Consulta rápida y fácil de tus citas programadas, con recordatorios automáticos.</p>
+        <button type="button" class="feature-link" (click)="goTo('funcionalidades', $event)">Ver todas →</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">💊</div>
+        <h3 class="feature-title">Medicamentos hoy</h3>
+        <p class="feature-text">Controla tus dosis y recibe recordatorios inteligentes para no olvidar tu tratamiento.</p>
+        <button type="button" class="feature-link" (click)="goTo('funcionalidades', $event)">Gestionar →</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">📂</div>
+        <h3 class="feature-title">Historial clínico</h3>
+        <p class="feature-text">Accede a tus documentos médicos y pruebas en cualquier momento, desde cualquier lugar.</p>
+        <button type="button" class="feature-link" (click)="goTo('funcionalidades', $event)">Ver historial →</button>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap">🧘</div>
+        <h3 class="feature-title">Salud mental</h3>
+        <p class="feature-text">Apoyo emocional cuando más lo necesitas, con tests validados y recursos guiados.</p>
+        <button type="button" class="feature-link" (click)="goTo('funcionalidades', $event)">Empezar →</button>
+      </div>
+    </div>
+      </div>
+  </section>
+
+    <section class="section segments-section">
+      <div class="content-shell">
+    <span class="section-eyebrow">Para todos</span>
+    <h2 class="section-title">Diseñado para cada perfil</h2>
+    <p class="section-subtitle">
+      Una plataforma que conecta tres mundos: pacientes que cuidan su salud, médicos que ofrecen atención y clínicas que coordinan ambos.
+    </p>
+    <div class="segments-grid">
+      <div class="segment-card featured">
+        <div class="segment-emoji">👤</div>
+        <div class="segment-name">Paciente</div>
+        <p class="segment-desc">Gestiona tu salud diaria desde una sola app</p>
+        <div class="segment-features">
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Agenda citas en minutos</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Recordatorios de medicación</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Telemedicina y chat con tu médico</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Historial digital exportable</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Tests de bienestar emocional</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Gestión de dependientes</div>
+        </div>
+        <a class="segment-btn" routerLink="/register">Empezar gratis</a>
+      </div>
+      <div class="segment-card">
+        <div class="segment-emoji">👨‍⚕️</div>
+        <div class="segment-name">Médico</div>
+        <p class="segment-desc">Optimiza tu agenda y cuida mejor a tus pacientes</p>
+        <div class="segment-features">
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Agenda inteligente y disponibilidad</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Validación de credenciales (CMP)</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Tablero de adherencia con semáforo</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Telemedicina integrada</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Recetas digitales</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Comunicación post-consulta</div>
+        </div>
+        <a class="segment-btn" routerLink="/registro">Soy médico</a>
+      </div>
+      <div class="segment-card">
+        <div class="segment-emoji">🏥</div>
+        <div class="segment-name">Clínica</div>
+        <p class="segment-desc">Gestiona tu institución de salud al 360°</p>
+        <div class="segment-features">
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Panel administrativo institucional</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Gestión de médicos afiliados</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Reportes de no-shows y asistencia</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Multi-sede y roles diferenciados</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Auditoría y cumplimiento legal</div>
+          <div class="segment-feature"><span class="segment-feature-check">✓</span> Facturación automática</div>
+        </div>
+        <a class="segment-btn" routerLink="/contact">Soy clínica</a>
+      </div>
+    </div>
+      </div>
+  </section>
+
+    <section class="section functions-section">
+      <div class="content-shell">
+    <span class="section-eyebrow">24 funciones</span>
+    <h2 class="section-title">Una plataforma completa</h2>
+    <p class="section-subtitle">
+      Cada función fue diseñada con metodología Lean UX para resolver una necesidad real de pacientes, médicos y clínicas.
+    </p>
+    <div class="func-grid">
+      @for (card of funcCards; track card.tag) {
+        <div class="func-card">
+          <div class="func-icon">{{ card.icon }}</div>
+          <div class="func-title">{{ card.title }}</div>
+          <div class="func-desc">{{ card.desc }}</div>
+          <span class="func-tag">{{ card.tag }}</span>
+        </div>
+      }
+    </div>
+      </div>
+  </section>
+
+    <section class="section how-section">
+      <div class="content-shell">
+    <span class="section-eyebrow">Cómo funciona</span>
+    <h2 class="section-title">Empieza en 4 pasos</h2>
+    <p class="section-subtitle">Configura tu cuenta en menos de 5 minutos y empieza a gestionar tu salud sin complicaciones.</p>
+    <div class="how-grid">
+      @for (step of howSteps; track step.n) {
+        <div class="how-step">
+          <div class="how-step-num">{{ step.n }}</div>
+          <div class="how-step-title">{{ step.title }}</div>
+          <div class="how-step-text">{{ step.text }}</div>
+        </div>
+      }
+    </div>
+      </div>
+  </section>
+
+    <section class="trust-section">
+      <div class="content-shell">
+    <div class="trust-grid">
+      <div class="trust-content">
+        <h2>Tu información,<br />protegida y segura</h2>
+        <p>
+          SaludLink cumple con los más altos estándares de seguridad y privacidad de datos en el Perú. Tu salud está en buenas manos.
+        </p>
+        <button type="button" class="btn-primary" (click)="goTo('contacto', $event)">Conoce más sobre seguridad →</button>
+      </div>
+      <div class="trust-list">
+        <div class="trust-item">
+          <span class="trust-item-icon">🔒</span>
+          <div class="trust-item-text">
+            <strong>Cifrado E2E</strong><br />
+            Tus datos clínicos viajan cifrados de extremo a extremo en cada consulta y videollamada.
+          </div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-item-icon">⚖️</span>
+          <div class="trust-item-text">
+            <strong>Ley 29733 cumplida</strong><br />
+            Protección de Datos Personales del Perú · Tu información solo la ves tú.
+          </div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-item-icon">🏛️</span>
+          <div class="trust-item-text">
+            <strong>Validado por SUSALUD</strong><br />
+            Cumplimos con los estándares de instituciones prestadoras de salud.
+          </div>
+        </div>
+        <div class="trust-item">
+          <span class="trust-item-icon">✅</span>
+          <div class="trust-item-text">
+            <strong>Médicos validados (CMP)</strong><br />
+            Cada profesional valida sus credenciales en el Colegio Médico del Perú.
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+  </section>
+
+    <section class="section plans-section" id="planes">
+      <div class="content-shell">
+    <span class="section-eyebrow">Planes</span>
+    <h2 class="section-title">Elige el plan ideal para ti</h2>
+    <p class="section-subtitle">Planes para pacientes, médicos y clínicas con herramientas de coordinación a tu medida.</p>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-name">Plan Personal</div>
+        <div class="plan-target">Para pacientes individuales</div>
+        <div class="plan-price">S/ 0 <span class="plan-price-mes">/mes</span></div>
+        <ul class="plan-features">
+          <li><span class="plan-check">✓</span> Acceso a citas médicas</li>
+          <li><span class="plan-check">✓</span> Historial médico personal</li>
+          <li><span class="plan-check">✓</span> Recordatorios de medicinas</li>
+          <li><span class="plan-check">✓</span> Tests de salud mental</li>
+          <li><span class="plan-check">✓</span> Soporte básico</li>
+        </ul>
+        <a class="plan-btn" routerLink="/register">Empezar gratis</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Plan Profesional</div>
+        <div class="plan-target">Para médicos independientes</div>
+        <div class="plan-price">S/ 49 <span class="plan-price-mes">/mes</span></div>
+        <ul class="plan-features">
+          <li><span class="plan-check">✓</span> Agenda y disponibilidad</li>
+          <li><span class="plan-check">✓</span> Tablero de adherencia</li>
+          <li><span class="plan-check">✓</span> Telemedicina ilimitada</li>
+          <li><span class="plan-check">✓</span> Recetas digitales</li>
+          <li><span class="plan-check">✓</span> Soporte estándar</li>
+        </ul>
+        <a class="plan-btn" routerLink="/registro">Soy médico</a>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-name">Plan Clínico</div>
+        <div class="plan-target">Para clínicas e instituciones</div>
+        <div class="plan-price">S/ 99 <span class="plan-price-mes">/mes</span></div>
+        <ul class="plan-features">
+          <li><span class="plan-check">✓</span> Todas las funciones del personal</li>
+          <li><span class="plan-check">✓</span> Citas de telemedicina</li>
+          <li><span class="plan-check">✓</span> Historial médico compartido</li>
+          <li><span class="plan-check">✓</span> Multi-sede y roles</li>
+          <li><span class="plan-check">✓</span> Reportes institucionales</li>
+          <li><span class="plan-check">✓</span> Soporte prioritario 24/7</li>
+        </ul>
+        <a class="plan-btn" routerLink="/contact">Contratar ahora</a>
+      </div>
+    </div>
+      </div>
+  </section>
+
+    <section class="section testimonials-section">
+      <div class="content-shell">
+    <span class="section-eyebrow">Testimonios</span>
+    <h2 class="section-title">Lo que dicen nuestros usuarios</h2>
+    <p class="section-subtitle">Miles de pacientes, médicos y clínicas ya confían en SaludLink para gestionar su salud.</p>
+    <div class="testimonials-grid">
+      @for (t of testimonials; track t.initials) {
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">{{ t.text }}</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">{{ t.initials }}</div>
+            <div>
+              <div class="testimonial-name">{{ t.name }}</div>
+              <div class="testimonial-role">{{ t.role }}</div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+      </div>
+  </section>
+
+    <section class="section contact-section" id="contacto">
+      <div class="content-shell">
+    <span class="section-eyebrow">Contacto</span>
+    <h2 class="section-title">¿Tienes alguna pregunta?</h2>
+    <p class="section-subtitle">Estamos listos para ayudarte con tu bienestar. Escríbenos y te respondemos en menos de 24 horas.</p>
+    <div class="contact-grid">
+      <form class="contact-form" (submit)="$event.preventDefault()">
+        <div class="contact-form-title">Envíanos un mensaje</div>
+        <div class="form-row">
+          <div class="form-field">
+            <span class="form-label">Nombre completo</span>
+            <input class="form-input" type="text" placeholder="Tu nombre" name="name" />
+          </div>
+          <div class="form-field">
+            <span class="form-label">Correo electrónico</span>
+            <input class="form-input" type="email" placeholder="tu@correo.com" name="email" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <span class="form-label">Teléfono</span>
+            <input class="form-input" type="tel" placeholder="+51 999 999 999" name="phone" />
+          </div>
+          <div class="form-field">
+            <span class="form-label">Soy</span>
+            <select class="form-input" name="role">
+              <option>Paciente</option>
+              <option>Médico</option>
+              <option>Clínica</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field form-field-message">
+          <span class="form-label">Mensaje</span>
+          <textarea class="form-textarea" placeholder="Cuéntanos cómo podemos ayudarte..." name="msg"></textarea>
+        </div>
+        <button type="submit" class="btn-primary btn-full">Enviar mensaje</button>
+      </form>
+      <div class="contact-info">
+        <div class="contact-info-title">Contacto directo</div>
+        <p class="contact-info-text">Estamos listos para ayudarte con tu bienestar.</p>
+        <div class="contact-detail">
+          <div class="contact-detail-icon" aria-hidden="true">📧</div>
+          <div>
+            <div class="contact-detail-label">Email</div>
+            <div class="contact-detail-value">contacto&#64;saludlink.es</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon" aria-hidden="true">📍</div>
+          <div>
+            <div class="contact-detail-label">Ubicación</div>
+            <div class="contact-detail-value">Lima, Perú</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon" aria-hidden="true">📞</div>
+          <div>
+            <div class="contact-detail-label">Teléfono</div>
+            <div class="contact-detail-value">+51 999 888 777</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-icon" aria-hidden="true">🚨</div>
+          <div>
+            <div class="contact-detail-label">Línea de salud mental</div>
+            <div class="contact-detail-value">113 SaludMental MINSA · 24/7</div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+  </section>
+
+    <footer class="footer">
+      <div class="content-shell">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="footer-brand-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </div>
+          <div class="footer-brand-text">SaludLink</div>
+        </div>
+        <p class="footer-tagline">
+          Plataforma de salud digital que conecta pacientes, médicos y clínicas en el Perú. Tu salud, siempre conectada.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Producto</h4>
+        <ul>
+          <li (click)="goTo('funcionalidades', $event)">Funcionalidades</li>
+          <li (click)="goTo('planes', $event)">Planes</li>
+          <li (click)="goTo('funcionalidades', $event)">Telemedicina</li>
+          <li (click)="goTo('funcionalidades', $event)">Para clínicas</li>
+          <li (click)="goTo('contacto', $event)">API para desarrolladores</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Empresa</h4>
+        <ul>
+          <li (click)="goTo('contacto', $event)">Sobre nosotros</li>
+          <li (click)="goTo('contacto', $event)">Blog</li>
+          <li (click)="goTo('contacto', $event)">Contacto</li>
+          <li (click)="goTo('contacto', $event)">Trabaja con nosotros</li>
+          <li (click)="goTo('contacto', $event)">Prensa</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li (click)="goTo('contacto', $event)">Términos y condiciones</li>
+          <li (click)="goTo('contacto', $event)">Política de privacidad</li>
+          <li (click)="goTo('contacto', $event)">Ley 29733</li>
+          <li (click)="goTo('contacto', $event)">Cookies</li>
+          <li (click)="goTo('contacto', $event)">Seguridad</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 SaludLink · Todos los derechos reservados</div>
+      <div class="footer-legal">
+        <span (click)="goTo('contacto', $event)">Privacidad</span>
+        <span (click)="goTo('contacto', $event)">Términos</span>
+        <span (click)="goTo('contacto', $event)">Cookies</span>
+      </div>
+    </div>
+      </div>
+  </footer>
+  </div>
+</div>

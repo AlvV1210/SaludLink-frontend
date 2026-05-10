@@ -1,0 +1,79 @@
+<section class="layout">
+  <aside class="sidebar">
+    <h2>SaludLink</h2>
+    <ul>
+      <li class="active"><button type="button" (click)="goLanding()">Dashboard</button></li>
+      <li><button type="button" (click)="goAppointments()">Citas</button></li>
+      <li><button type="button" (click)="goMedications()">Recordat.</button></li>
+      <li><button type="button" (click)="goProfile()">Historial</button></li>
+      <li><button type="button" (click)="goMentalHealth()">S. Mental</button></li>
+      <li><button type="button" (click)="goContact()">Planes</button></li>
+      <li><button type="button" (click)="goProfile()">Mi perfil</button></li>
+      <li><button type="button" (click)="goContact()">Config.</button></li>
+    </ul>
+  </aside>
+  <main class="main">
+    <header>
+      <nav>Inicio · Funcionalidades · Planes · Contacto</nav>
+      <div><span class="chip">Lupe</span><button type="button" (click)="logout()">Cerrar sesión</button></div>
+    </header>
+    <section class="hero">
+      <h1>¡Hola, Lupe! 👋</h1>
+      <button type="button" class="primary" (click)="goContact()">+ Agendar cita</button>
+    </section>
+    <div class="stats">
+      <article><h3>Próxima cita</h3><p>Mié 7 · 10:00</p></article>
+      <article><h3>Recordatorios hoy</h3><p>3</p></article>
+      <article><h3>Adherencia mes</h3><p>92%</p></article>
+    </div>
+    <div class="split">
+      <section class="card list-card">
+        <div class="card-head">
+          <h3>📅 Próximas citas</h3>
+          <button type="button" (click)="goAppointments()">Ver todas →</button>
+        </div>
+        <article class="item">
+          <div class="avatar">JP</div>
+          <div class="meta">
+            <strong>Dr. Juan Pérez</strong>
+            <span>Cardiología · Clínica San Pablo</span>
+          </div>
+          <span class="badge">Mié 10:00</span>
+        </article>
+        <article class="item">
+          <div class="avatar alt">MR</div>
+          <div class="meta">
+            <strong>Dra. María Ríos</strong>
+            <span>Pediatría · Para Sebastián</span>
+          </div>
+          <span class="badge warn">Vie 16:30</span>
+        </article>
+      </section>
+      <section class="card list-card">
+        <div class="card-head">
+          <h3>💊 Recordatorios hoy</h3>
+          <button type="button" (click)="goMedications()">Ver todos →</button>
+        </div>
+        <article class="item med-item">
+          <div class="pill">✓</div>
+          <div class="meta">
+            <strong>Losartán 50mg</strong>
+            <span>8:00 AM · Tomado</span>
+          </div>
+        </article>
+        <article class="item med-item">
+          <div class="pill warn">⏰</div>
+          <div class="meta">
+            <strong>Vitamina D</strong>
+            <span>2:00 PM · Pendiente</span>
+          </div>
+          <button type="button" class="mark" (click)="goMedications()">Marcar</button>
+        </article>
+      </section>
+    </div>
+    <div class="bottom">
+      <button type="button" class="soft" (click)="goMentalHealth()">🧘 ¿Cómo te sientes hoy? · Iniciar →</button>
+      <button type="button" class="danger" (click)="goEmergency()">🆘 SOS Emergencia · Acceso rápido</button>
+    </div>
+  </main>
+</section>

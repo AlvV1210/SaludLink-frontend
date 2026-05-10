@@ -1,0 +1,37 @@
+<section class="screen">
+  <aside class="sidebar">
+    <div class="logo">SaludLink</div>
+    <nav>
+      <a>Dashboard</a>
+      <a>Citas Médicas</a>
+      <a>Recordatorios</a>
+      <a>Historial</a>
+      <a>Salud Mental</a>
+      <a>Planes</a>
+      <a class="active">Mi perfil</a>
+      <a>Config.</a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <header>
+      <nav>Inicio · Funcionalidades · Planes · Contacto</nav>
+      <div class="actions">
+        <span class="chip">Paciente</span>
+        <button type="button" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <div class="card center">
+      <div class="mail-icon">✉</div>
+      <h1>Verifica tu correo</h1>
+      <p>Te enviamos un enlace de verificación a <strong>luperuben@gmail.com</strong></p>
+      <small>Revisa tu bandeja de entrada y carpeta spam</small>
+      <div class="row">
+        <button type="button" class="ghost" (click)="changeEmail()">Cambiar correo</button>
+        <button type="button" class="outline" (click)="resend()">Reenviar enlace</button>
+      </div>
+      <button type="button" class="link" (click)="continueFlow()">¿Ya verificaste? Continuar →</button>
+    </div>
+  </main>
+</section>

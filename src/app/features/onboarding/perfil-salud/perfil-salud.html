@@ -1,0 +1,25 @@
+<section class="layout">
+  <aside class="sidebar">
+    <h2>SaludLink</h2>
+    <ul>
+      <li>Dashboard</li><li>Citas Médicas</li><li>Recordatorios</li><li>Historial</li><li>Salud Mental</li><li>Planes</li>
+      <li class="active">Mi perfil</li><li>Config.</li>
+    </ul>
+  </aside>
+  <main class="main">
+    <header>Completa tu perfil de salud <span>Paso 1 de 2</span></header>
+    <div class="form-grid">
+      <label>Fecha de nacimiento<input placeholder="15 / 03 / 1995" /></label>
+      <label>Sexo<input placeholder="Femenino" /></label>
+      <label>DNI<input placeholder="12345678" /></label>
+      <label>Grupo sanguíneo<input placeholder="O+" /></label>
+      <label class="full">Antecedentes médicos<input placeholder="Hipertensión, alergia a penicilina..." /></label>
+      <label class="full">Contacto de emergencia<input placeholder="María Schermacha · +51 999 111 222" /></label>
+      <div class="alert full">Tu información está protegida. Solo médicos autorizados podrán acceder.</div>
+    </div>
+    <div class="actions">
+      <button type="button" class="ghost" (click)="skip()">Omitir</button>
+      <button type="button" class="primary" (click)="saveAndContinue()">Guardar y continuar →</button>
+    </div>
+  </main>
+</section>

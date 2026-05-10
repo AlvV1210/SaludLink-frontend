@@ -6,6 +6,7 @@
 @use '@angular/material' as mat;
 
 html {
+  scroll-behavior: smooth;
   height: 100%;
   @include mat.theme(
     (

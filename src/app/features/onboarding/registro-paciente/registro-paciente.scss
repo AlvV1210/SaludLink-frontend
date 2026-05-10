@@ -1,0 +1,156 @@
+:host {
+  display: block;
+  width: min(1080px, 100%);
+}
+
+.flow-shell {
+  min-height: min(84vh, 720px);
+  border: 1px solid #dfe3e8;
+  border-radius: 20px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(380px, 1.4fr);
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+}
+
+.left-pane {
+  background: linear-gradient(160deg, #10b981 0%, #0f766e 100%);
+  color: #fff;
+  padding: clamp(1.3rem, 1rem + 1.2vw, 2.25rem);
+  display: grid;
+  align-content: center;
+  gap: 0.9rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: 'Roboto Slab', serif;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.plus {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+}
+
+h1 {
+  font-size: clamp(1.55rem, 1.25rem + 0.9vw, 2.25rem);
+  line-height: 1.15;
+}
+
+p {
+  max-width: 30ch;
+  line-height: 1.5;
+}
+
+ul {
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+  padding: 0;
+  margin: 0.3rem 0 0;
+}
+
+li {
+  position: relative;
+  padding-left: 1rem;
+}
+
+li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d1fae5;
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+}
+
+.form-pane {
+  padding: clamp(1.3rem, 1rem + 1.1vw, 2.2rem);
+  display: grid;
+  align-content: start;
+  gap: 0.8rem;
+}
+
+h2 {
+  font-size: clamp(1.45rem, 1.2rem + 0.8vw, 2rem);
+}
+
+.grid {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.one {
+  grid-template-columns: 1fr;
+}
+
+.two {
+  grid-template-columns: 1fr 1fr;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: #374151;
+  font-weight: 600;
+}
+
+input {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.68rem 0.8rem;
+  font: inherit;
+}
+
+input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px #d1fae5;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.check input {
+  accent-color: #10b981;
+}
+
+.submit {
+  margin-top: 0.25rem;
+  border: 0;
+  border-radius: 12px;
+  background: #10b981;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.78rem 1rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .flow-shell {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .two {
+    grid-template-columns: 1fr;
+  }
+}

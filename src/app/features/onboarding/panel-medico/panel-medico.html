@@ -1,0 +1,26 @@
+<section class="layout">
+  <aside class="sidebar">
+    <h2>SaludLink</h2>
+    <ul><li class="active">Mi panel</li><li>Mi agenda</li><li>Pacientes</li><li>Adherencia</li><li>Telemedic.</li><li>Mi perfil</li><li>Config.</li></ul>
+  </aside>
+  <main class="main">
+    <header>
+      <nav>Inicio · Funcionalidades · Planes · Contacto</nav>
+      <div><span class="chip">Dr. Pérez</span><button type="button" (click)="goMainPanel()">Cerrar sesión</button></div>
+    </header>
+    <section class="welcome">
+      <h1>¡Bienvenido, Dr. Pérez!</h1>
+      <p>Tu cuenta ha sido validada. Ya puedes empezar a atender.</p>
+    </section>
+    <div class="stats">
+      <article><h3>Citas hoy</h3><p>12</p></article>
+      <article><h3>Pacientes activos</h3><p>87</p></article>
+      <article><h3>Adherencia prom.</h3><p>84%</p></article>
+    </div>
+    <div class="next">
+      <button type="button" class="primary" (click)="goAgenda()">📅 Configurar mi agenda</button>
+      <button type="button" class="ghost" (click)="goPacientes()">👥 Ver mis pacientes</button>
+    </div>
+    <button type="button" class="submit" (click)="goMainPanel()">Ir a mi panel completo →</button>
+  </main>
+</section>

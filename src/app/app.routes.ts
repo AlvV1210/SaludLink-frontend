@@ -1,44 +1,114 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
-import { AppointmentsListComponent } from './features/appointments/appointments-list/appointments-list';
-import { AppointmentFormComponent } from './features/appointments/appointment-form/appointment-form';
-import { AppointmentsShellComponent } from './features/appointments/appointments-shell/appointments-shell';
-import { LoginComponent } from './features/auth/login/login';
 import { RegisterComponent } from './features/auth/register/register';
-import { DashboardComponent } from './features/dashboard/dashboard';
-import { MedicationsComponent } from './features/medications/medications';
-import { ProfileComponent } from './features/profile/profile';
+import { LandingComponent } from './features/landing/landing';
+import { BienvenidaCuentaComponent } from './features/onboarding/bienvenida-cuenta/bienvenida-cuenta';
+import { PerfilesComponent } from './features/onboarding/perfiles/perfiles';
+import { RegistroInstitucionComponent } from './features/onboarding/registro-institucion/registro-institucion';
+import { RegistroMedicoComponent } from './features/onboarding/registro-medico/registro-medico';
+import { RegistroPacienteComponent } from './features/onboarding/registro-paciente/registro-paciente';
+import { PanelAdminInstitucionalComponent } from './features/onboarding/panel-admin-institucional/panel-admin-institucional';
+import { PanelMedicoComponent } from './features/onboarding/panel-medico/panel-medico';
+import { PanelPacienteComponent } from './features/onboarding/panel-paciente/panel-paciente';
+import { PerfilSaludComponent } from './features/onboarding/perfil-salud/perfil-salud';
+import { ValidacionCredencialesComponent } from './features/onboarding/validacion-credenciales/validacion-credenciales';
+import { VerificacionAdminComponent } from './features/onboarding/verificacion-admin/verificacion-admin';
+import { VerificacionCorreoComponent } from './features/onboarding/verificacion-correo/verificacion-correo';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
-import { MainLayoutComponent } from './layouts/main-layout/main-layout';
 
 export const routes: Routes = [
   {
-    path: 'login',
-    component: AuthLayoutComponent,
-    children: [{ path: '', component: LoginComponent }],
+    path: '',
+    pathMatch: 'full',
+    component: LandingComponent,
   },
   {
-    path: 'register',
+    path: 'contact',
+    component: LandingComponent,
+  },
+  {
+    path: 'bienvenidacuenta',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: BienvenidaCuentaComponent }],
+  },
+  {
+    path: 'perfiles',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: PerfilesComponent }],
+  },
+  {
+    path: 'registropaciente',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: RegistroPacienteComponent }],
+  },
+  {
+    path: 'registromedico',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: RegistroMedicoComponent }],
+  },
+  {
+    path: 'registro-medico',
+    pathMatch: 'full',
+    redirectTo: 'registromedico',
+  },
+  {
+    path: 'registroinstitucion',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: RegistroInstitucionComponent }],
+  },
+  {
+    path: 'verificacioncorreo',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: VerificacionCorreoComponent }],
+  },
+  {
+    path: 'perfilsalud',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: PerfilSaludComponent }],
+  },
+  {
+    path: 'panelpaciente',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: PanelPacienteComponent }],
+  },
+  {
+    path: 'validacioncredenciales',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: ValidacionCredencialesComponent }],
+  },
+  {
+    path: 'panelmedico',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: PanelMedicoComponent }],
+  },
+  {
+    path: 'verificacionadmin',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: VerificacionAdminComponent }],
+  },
+  {
+    path: 'paneladmininstitucional',
+    component: AuthLayoutComponent,
+    children: [{ path: '', component: PanelAdminInstitucionalComponent }],
+  },
+  {
+    path: 'registro',
     component: AuthLayoutComponent,
     children: [{ path: '', component: RegisterComponent }],
   },
   {
-    path: '',
-    component: MainLayoutComponent,
-    canActivate: [authGuard],
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', component: DashboardComponent },
-      {
-        path: 'appointments',
-        component: AppointmentsShellComponent,
-        children: [
-          { path: '', pathMatch: 'full', component: AppointmentsListComponent },
-          { path: 'nueva', component: AppointmentFormComponent },
-        ],
-      },
-      { path: 'medications', component: MedicationsComponent },
-      { path: 'profile', component: ProfileComponent },
-    ],
+    path: 'register',
+    pathMatch: 'full',
+    redirectTo: 'registro',
   },
+  {
+    path: 'auth/register',
+    pathMatch: 'full',
+    redirectTo: 'registro',
+  },
+  {
+    path: 'login',
+    pathMatch: 'full',
+    redirectTo: 'registro',
+  },
+  { path: '**', redirectTo: '' },
 ];

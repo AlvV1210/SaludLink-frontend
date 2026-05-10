@@ -1,0 +1,24 @@
+:host { display:block; width:min(1180px,100%); }
+.screen{display:grid;grid-template-columns:150px 1fr;min-height:min(84vh,760px);background:#fff;border:1px solid #dfe3e8;border-radius:18px;overflow:hidden}
+.sidebar{background:#0f6662;color:#d7f3ef;padding:1rem}
+.logo{font-weight:700;margin-bottom:1rem}
+nav{display:grid;gap:.4rem;font-size:.9rem}
+a{padding:.45rem .5rem;border-radius:8px}
+a.active{background:#1b7c77;color:#fff}
+.content{display:grid;grid-template-rows:auto 1fr}
+header{display:flex;justify-content:space-between;align-items:center;padding:.9rem 1.2rem;border-bottom:1px solid #e5e7eb;color:#6b7280}
+.actions{display:flex;gap:.6rem;align-items:center}
+.chip{background:#d1fae5;color:#0f766e;border-radius:999px;padding:.25rem .6rem;font-weight:700}
+header button{border:1px solid #e5e7eb;background:#fff;border-radius:8px;padding:.4rem .7rem;cursor:pointer}
+.card{align-self:center;justify-self:center;text-align:center;padding:1rem;max-width:760px;width:min(86%,760px)}
+.mail-icon{width:90px;height:90px;border-radius:999px;background:#d1fae5;display:grid;place-items:center;margin:0 auto 1rem;font-size:2rem}
+h1{font-size:2rem;margin-bottom:.4rem}
+p{color:#4b5563}
+small{display:block;color:#6b7280;margin:.7rem 0 1.2rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+button{font:inherit}
+.ghost,.outline{padding:.7rem;border-radius:10px;cursor:pointer}
+.ghost{border:1px solid #e5e7eb;background:#fff;color:#6b7280}
+.outline{border:2px solid #10b981;background:#fff;color:#0f766e;font-weight:700}
+.link{margin-top:.9rem;border:0;background:transparent;color:#0f766e;font-weight:700;cursor:pointer}
+@media (max-width:900px){.screen{grid-template-columns:1fr}.sidebar{display:none}.row{grid-template-columns:1fr}}

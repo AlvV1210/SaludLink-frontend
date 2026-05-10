@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '../constants/storage-keys';
-import { AuthResponse, LoginRequest, RegisterRequest } from '../models/auth.model';
+import { AuthResponse, RegisterRequest } from '../models/auth.model';
 import { AppointmentService } from './appointment.service';
 
 const API_BASE_URL = 'http://localhost:8080/api';
@@ -11,12 +11,6 @@ const API_BASE_URL = 'http://localhost:8080/api';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly appointments = inject(AppointmentService);
-
-  login(body: LoginRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${API_BASE_URL}/auth/login`, body)
-      .pipe(tap((res) => this.persistAuth(res)));
-  }
 
   register(body: RegisterRequest): Observable<AuthResponse> {
     return this.http
