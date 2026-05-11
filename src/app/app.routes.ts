@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { RegisterComponent } from './features/auth/register/register';
+import { RecoverPasswordComponent } from './features/auth/recover-password/recover-password';
 import { LandingComponent } from './features/landing/landing';
 import { BienvenidaCuentaComponent } from './features/onboarding/bienvenida-cuenta/bienvenida-cuenta';
 import { PerfilesComponent } from './features/onboarding/perfiles/perfiles';
@@ -13,7 +14,18 @@ import { PerfilSaludComponent } from './features/onboarding/perfil-salud/perfil-
 import { ValidacionCredencialesComponent } from './features/onboarding/validacion-credenciales/validacion-credenciales';
 import { VerificacionAdminComponent } from './features/onboarding/verificacion-admin/verificacion-admin';
 import { VerificacionCorreoComponent } from './features/onboarding/verificacion-correo/verificacion-correo';
+import { CitasPacienteComponent } from './features/onboarding/citas-paciente/citas-paciente';
+import { CitasBuscarEspecialistaComponent } from './features/onboarding/citas-buscar-especialista/citas-buscar-especialista';
+import { CitasSeleccionarFechaHoraComponent } from './features/onboarding/citas-seleccionar-fecha-hora/citas-seleccionar-fecha-hora';
+import { CitasResumenComponent } from './features/onboarding/citas-resumen/citas-resumen';
+import { CitasPagoComponent } from './features/onboarding/citas-pago/citas-pago';
+import { CitasConfirmadaComponent } from './features/onboarding/citas-confirmada/citas-confirmada';
+import { CitasReprogramarComponent } from './features/onboarding/citas-reprogramar/citas-reprogramar';
+import { CitasCalificarComponent } from './features/onboarding/citas-calificar/citas-calificar';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
+import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -28,21 +40,27 @@ export const routes: Routes = [
   {
     path: 'bienvenidacuenta',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
     children: [{ path: '', component: BienvenidaCuentaComponent }],
   },
   {
     path: 'perfiles',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
     children: [{ path: '', component: PerfilesComponent }],
   },
   {
     path: 'registropaciente',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: RegistroPacienteComponent }],
   },
   {
     path: 'registromedico',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: RegistroMedicoComponent }],
   },
   {
@@ -53,47 +71,84 @@ export const routes: Routes = [
   {
     path: 'registroinstitucion',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: RegistroInstitucionComponent }],
   },
   {
     path: 'verificacioncorreo',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: VerificacionCorreoComponent }],
   },
   {
     path: 'perfilsalud',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: PerfilSaludComponent }],
-  },
-  {
-    path: 'panelpaciente',
-    component: AuthLayoutComponent,
-    children: [{ path: '', component: PanelPacienteComponent }],
   },
   {
     path: 'validacioncredenciales',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: ValidacionCredencialesComponent }],
-  },
-  {
-    path: 'panelmedico',
-    component: AuthLayoutComponent,
-    children: [{ path: '', component: PanelMedicoComponent }],
   },
   {
     path: 'verificacionadmin',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    data: { allowAuthenticated: true },
     children: [{ path: '', component: VerificacionAdminComponent }],
-  },
-  {
-    path: 'paneladmininstitucional',
-    component: AuthLayoutComponent,
-    children: [{ path: '', component: PanelAdminInstitucionalComponent }],
   },
   {
     path: 'registro',
     component: AuthLayoutComponent,
+    canActivate: [guestGuard],
     children: [{ path: '', component: RegisterComponent }],
+  },
+  {
+    path: 'recuperar-contrasena',
+    component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    children: [{ path: '', component: RecoverPasswordComponent }],
+  },
+  {
+    path: 'paciente',
+    component: AuthLayoutComponent,
+    canActivate: [authGuard, roleGuard('PATIENT')],
+    children: [
+      { path: 'dashboard', component: PanelPacienteComponent },
+      { path: 'citas', component: CitasPacienteComponent },
+      { path: 'citas/buscar-especialista', component: CitasBuscarEspecialistaComponent },
+      { path: 'citas/seleccionar-fecha-hora', component: CitasSeleccionarFechaHoraComponent },
+      { path: 'citas/resumen', component: CitasResumenComponent },
+      { path: 'citas/pago', component: CitasPagoComponent },
+      { path: 'citas/confirmada', component: CitasConfirmadaComponent },
+      { path: 'citas/reprogramar', component: CitasReprogramarComponent },
+      { path: 'citas/calificar', component: CitasCalificarComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+    ],
+  },
+  {
+    path: 'medico',
+    component: AuthLayoutComponent,
+    canActivate: [authGuard, roleGuard('DOCTOR')],
+    children: [
+      { path: 'dashboard', component: PanelMedicoComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+    ],
+  },
+  {
+    path: 'admin',
+    component: AuthLayoutComponent,
+    canActivate: [authGuard, roleGuard('ADMIN')],
+    children: [
+      { path: 'dashboard', component: PanelAdminInstitucionalComponent },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+    ],
   },
   {
     path: 'register',
@@ -110,5 +165,16 @@ export const routes: Routes = [
     pathMatch: 'full',
     redirectTo: 'registro',
   },
+  { path: 'panelpaciente', pathMatch: 'full', redirectTo: 'paciente/dashboard' },
+  { path: 'citas', pathMatch: 'full', redirectTo: 'paciente/citas' },
+  { path: 'citas/buscar-especialista', pathMatch: 'full', redirectTo: 'paciente/citas/buscar-especialista' },
+  { path: 'citas/seleccionar-fecha-hora', pathMatch: 'full', redirectTo: 'paciente/citas/seleccionar-fecha-hora' },
+  { path: 'citas/resumen', pathMatch: 'full', redirectTo: 'paciente/citas/resumen' },
+  { path: 'citas/pago', pathMatch: 'full', redirectTo: 'paciente/citas/pago' },
+  { path: 'citas/confirmada', pathMatch: 'full', redirectTo: 'paciente/citas/confirmada' },
+  { path: 'citas/reprogramar', pathMatch: 'full', redirectTo: 'paciente/citas/reprogramar' },
+  { path: 'citas/calificar', pathMatch: 'full', redirectTo: 'paciente/citas/calificar' },
+  { path: 'panelmedico', pathMatch: 'full', redirectTo: 'medico/dashboard' },
+  { path: 'paneladmininstitucional', pathMatch: 'full', redirectTo: 'admin/dashboard' },
   { path: '**', redirectTo: '' },
 ];

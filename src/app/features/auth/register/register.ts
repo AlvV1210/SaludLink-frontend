@@ -37,12 +37,19 @@ export class RegisterComponent {
       return;
     }
 
-    // Sin backend de login activo: abrimos sesión demo local.
-    this.auth.enterDemoSession();
-    void this.router.navigate(['/panelpaciente']);
+    const selectedRole = this.selectedRole();
+    const role = selectedRole === 'PROFESIONAL' ? 'DOCTOR' : selectedRole === 'CLINICA' ? 'ADMIN' : 'PATIENT';
+
+    // Sin backend de login activo: abrimos sesión demo local por rol.
+    this.auth.enterDemoSession(role);
+    void this.router.navigate([this.auth.getDefaultRouteByRole()]);
   }
 
   protected goHome(): void {
     void this.router.navigate(['/bienvenidacuenta']);
+  }
+
+  protected goRecoverPassword(): void {
+    void this.router.navigate(['/recuperar-contrasena']);
   }
 }

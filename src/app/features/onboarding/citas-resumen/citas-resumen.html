@@ -1,0 +1,25 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <h1>Resumen de tu cita</h1>
+  <p class="subtitle">Revisa los detalles antes de pagar</p>
+  <section class="card item" style="background:#ecfdf5;border-color:#a7f3d0"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a - Colegiatura CMP 045678</div></div></section>
+  <section class="card">
+    <div class="row" style="justify-content:space-between"><span>Fecha</span><strong>Mi&eacute;rcoles 7 de mayo, 2026</strong></div>
+    <div class="row" style="justify-content:space-between"><span>Hora</span><strong>10:00 AM (30 min)</strong></div>
+    <div class="row" style="justify-content:space-between"><span>Lugar</span><strong>Cl&iacute;nica San Pablo - Sede J. Mar&iacute;a</strong></div>
+    <div class="row" style="justify-content:space-between"><span>Para</span><strong>Lupe Ruben (titular)</strong></div>
+    <div class="row" style="justify-content:space-between"><span>Tipo</span><strong>Consulta presencial</strong></div>
+  </section>
+  <section class="card"><div class="row" style="justify-content:space-between"><span>Consulta</span><strong>S/ 120.00</strong></div><div class="row" style="justify-content:space-between"><strong>Total a pagar</strong><strong style="color:#059669;font-size:1.5rem">S/ 120.00</strong></div></section>
+  <div class="row"><button type="button" class="btn ghost" (click)="back()">Modificar</button><button type="button" class="btn primary" (click)="pay()">Pagar S/120</button></div>
+</app-patient-dashboard-shell>

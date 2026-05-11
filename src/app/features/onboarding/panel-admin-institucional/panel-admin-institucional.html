@@ -1,26 +1,93 @@
 <section class="layout">
   <aside class="sidebar">
-    <h2>SaludLink<br />ADMIN</h2>
-    <ul><li class="active">Dashboard</li><li>Médicos</li><li>Citas</li><li>Pacientes</li><li>Reportes</li><li>Facturación</li><li>Soporte</li><li>Config.</li></ul>
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <h2>SL ADMIN</h2>
+    </div>
+
+    <ul>
+      <li class="active" (click)="goDashboard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+        <span>Dashboard</span>
+      </li>
+      <li (click)="goMedicos()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="3"/><path d="M2 20a6 6 0 0 1 12 0"/><path d="M16 5l5 5"/><path d="M21 5l-5 5"/></svg>
+        <span>Médicos</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/><path d="M8 2v4M16 2v4"/></svg>
+        <span>Citas</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M13 20a4.5 4.5 0 0 1 8 0"/></svg>
+        <span>Pacientes</span>
+      </li>
+      <li (click)="goReportes()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V8"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V11"/></svg>
+        <span>Reportes</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span>Facturación</span>
+      </li>
+      <li>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+        <span>Config.</span>
+      </li>
+    </ul>
+
+    <button type="button" class="logout" (click)="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      <span>Log out</span>
+    </button>
   </aside>
+
   <main class="main">
-    <header>
+    <header class="topbar">
       <nav>Inicio · Mi clínica · Reportes · Soporte</nav>
-      <div><span class="chip">Clínica San Pablo</span><button type="button" (click)="goFullPanel()">Cerrar sesión</button></div>
+      <div class="topbar-actions">
+        <span class="chip">🏥 Clínica San Pablo</span>
+        <span class="chip muted">3 sedes activas</span>
+      </div>
     </header>
+
     <section class="welcome">
-      <h1>¡Bienvenido, Carlos!</h1>
-      <p>Clínica San Pablo · Lima · Sede Jesús María</p>
+      <h1>Buenos días, Carlos 👋</h1>
+      <p>Vista 360° de tu institución</p>
     </section>
+
     <div class="stats">
-      <article><h3>Citas hoy</h3><p>142</p></article>
-      <article><h3>Médicos activos</h3><p>28</p></article>
-      <article><h3>No-shows</h3><p class="warn">6.2%</p></article>
+      <article><h3>Citas hoy</h3><p>142</p><small>+18% vs ayer</small></article>
+      <article><h3>Médicos</h3><p>28</p><small>activos</small></article>
+      <article><h3>No-shows</h3><p class="warn">6.2%</p><small>↓ 1.4%</small></article>
+      <article><h3>Pacientes</h3><p>2.4K</p><small>activos</small></article>
     </div>
-    <div class="next">
-      <button type="button" class="primary" (click)="goMedicos()">👨‍⚕️ Afiliar médicos (HU22)</button>
-      <button type="button" class="ghost" (click)="goReportes()">📊 Ver reportes (HU23)</button>
-    </div>
-    <button type="button" class="submit" (click)="goFullPanel()">Ir al panel completo →</button>
+
+    <section class="sedes">
+      <h2>Por sede</h2>
+      <div class="sede-grid">
+        <article class="sede-item">
+          <div class="sede-meta"><strong>Jesús María</strong><span>Sede principal</span><small>68 citas</small></div>
+          <span class="sede-score">94%</span>
+        </article>
+        <article class="sede-item">
+          <div class="sede-meta"><strong>San Borja</strong><span>Sede 2</span><small>45 citas</small></div>
+          <span class="sede-score">93%</span>
+        </article>
+        <article class="sede-item">
+          <div class="sede-meta"><strong>Surco</strong><span>Sede 3</span><small>29 citas</small></div>
+          <span class="sede-score dark">88%</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="pending" (click)="goReportes()">
+      <div class="pending-title">
+        <span class="pending-icon">⚠</span>
+        <strong>Acciones pendientes</strong>
+      </div>
+      <p>2 médicos por validar · 5 facturas vencidas · 3 no-shows hoy</p>
+      <button type="button">Ver →</button>
+    </section>
   </main>
 </section>

@@ -1,0 +1,60 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <div class="row" style="justify-content:space-between;align-items:center">
+    <div>
+      <h1>Mis Citas M&eacute;dicas</h1>
+      <p class="subtitle">Gestiona tus citas pr&oacute;ximas y pasadas</p>
+    </div>
+    <button type="button" class="btn primary" (click)="goNuevaCita()">+ Nueva cita</button>
+  </div>
+
+  <div class="row">
+    <button type="button" class="btn" [class.primary]="tab() === 'proximas'" [class.ghost]="tab() !== 'proximas'" (click)="setTab('proximas')">Pr&oacute;ximas (2)</button>
+    <button type="button" class="btn" [class.primary]="tab() === 'pasadas'" [class.ghost]="tab() !== 'pasadas'" (click)="setTab('pasadas')">Pasadas (8)</button>
+    <button type="button" class="btn" [class.primary]="tab() === 'canceladas'" [class.ghost]="tab() !== 'canceladas'" (click)="setTab('canceladas')">Canceladas</button>
+  </div>
+
+  <input class="input" placeholder="Buscar especialista" />
+
+  @if (tab() === 'proximas') {
+    <section class="card item">
+      <div class="avatar">JP</div>
+      <div><strong>Dr. Juan P&eacute;rez · Cardiolog&iacute;a</strong><div class="subtitle">Mi&eacute; 7 may · 10:00 · Cl&iacute;nica San Pablo</div></div>
+      <span class="status ok">Confirmada</span>
+    </section>
+    <div class="row">
+      <button type="button" class="btn ghost" (click)="goReprogramar()">Reprogramar</button>
+      <button type="button" class="btn ghost">Cancelar</button>
+    </div>
+    <section class="card item">
+      <div class="avatar" style="background:#4fd1c5">MR</div>
+      <div><strong>Dra. Mar&iacute;a R&iacute;os · Pediatr&iacute;a</strong><div class="subtitle">Vie 9 may · 16:30 · Para Sebasti&aacute;n</div></div>
+      <span class="status warn">Pendiente</span>
+    </section>
+    <p class="subtitle">Tip: Puedes reprogramar hasta 4h antes de tu cita (HU14)</p>
+  }
+
+  @if (tab() === 'pasadas') {
+    <section class="card item">
+      <div class="avatar">JP</div>
+      <div><strong>Dr. Juan P&eacute;rez · Cardiolog&iacute;a</strong><div class="subtitle">Mi&eacute; 30 abr · 10:00 · Completada</div></div>
+      <button type="button" class="btn outline" (click)="goCalificar()">Calificar atenci&oacute;n</button>
+    </section>
+  }
+
+  @if (tab() === 'canceladas') {
+    <section class="card">
+      <p class="subtitle">No tienes citas canceladas recientes.</p>
+    </section>
+  }
+</app-patient-dashboard-shell>

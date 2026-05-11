@@ -1,0 +1,22 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <h1>Buscar especialista</h1>
+  <p class="subtitle">Filtra por especialidad y disponibilidad</p>
+  <input class="input" value="cardiologia" />
+  <div class="row"><button type="button" class="btn primary">Cardiolog&iacute;a</button><button type="button" class="btn ghost">Pediatr&iacute;a</button><button type="button" class="btn ghost">Dermatolog&iacute;a</button></div>
+  <div class="row"><button type="button" class="btn ghost">Hoy</button><button type="button" class="btn primary">Esta semana</button><button type="button" class="btn ghost">Este mes</button></div>
+  <p class="subtitle">3 resultados encontrados</p>
+  <section class="card item" style="border-color:#10b981;background:#ecfdf5"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a · Cl&iacute;nica San Pablo · 4.9/5</div></div><strong style="color:#0f766e">S/120</strong></section>
+  <section class="card item"><div class="avatar" style="background:#0f7662">CR</div><div><strong>Dr. Carlos Ram&iacute;rez</strong><div class="subtitle">Cardiolog&iacute;a · Hospital Lima · 4.6/5</div></div><strong style="color:#0f766e">S/150</strong></section>
+  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" (click)="next()">siguiente</button></div>
+</app-patient-dashboard-shell>

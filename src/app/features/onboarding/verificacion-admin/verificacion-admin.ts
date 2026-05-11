@@ -14,6 +14,6 @@ export class VerificacionAdminComponent {
   }
 
   protected createInstitution(): void {
-    void this.router.navigate(['/paneladmininstitucional']);
+    void this.router.navigate(['/admin/dashboard']);
   }
 }

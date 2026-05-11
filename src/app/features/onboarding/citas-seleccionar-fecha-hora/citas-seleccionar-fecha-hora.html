@@ -1,0 +1,20 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <h1>Seleccionar Fecha y Hora</h1>
+  <section class="card item"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez - Cardiolog&iacute;a</strong><div class="subtitle">Cl&iacute;nica San Pablo - S/120</div></div></section>
+  <h3>Mayo 2026</h3>
+  <div class="grid-3"><button class="btn ghost" type="button">6</button><button class="btn primary" type="button">7</button><button class="btn ghost" type="button">8</button></div>
+  <h3>Horarios mi&eacute;rcoles 7</h3>
+  <div class="grid-3"><button class="btn ghost" type="button">8:00</button><button class="btn ghost" type="button">9:00</button><button class="btn primary" type="button">10:00</button><button class="btn ghost" type="button">11:00</button><button class="btn ghost" type="button">16:00</button><button class="btn ghost" type="button">18:00</button></div>
+  <div class="row"><button type="button" class="btn ghost" (click)="back()">Volver</button><button type="button" class="btn primary" (click)="confirm()">Confirmar 7 may - 10:00</button></div>
+</app-patient-dashboard-shell>

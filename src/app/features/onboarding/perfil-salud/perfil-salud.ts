@@ -10,10 +10,10 @@ export class PerfilSaludComponent {
   private readonly router = inject(Router);
 
   protected skip(): void {
-    void this.router.navigate(['/panelpaciente']);
+    void this.router.navigate(['/paciente/dashboard']);
   }
 
   protected saveAndContinue(): void {
-    void this.router.navigate(['/panelpaciente']);
+    void this.router.navigate(['/paciente/dashboard']);
   }
 }
