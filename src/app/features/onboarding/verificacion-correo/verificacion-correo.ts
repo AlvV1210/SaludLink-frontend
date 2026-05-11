@@ -20,8 +20,4 @@ export class VerificacionCorreoComponent {
   protected continueFlow(): void {
     void this.router.navigate(['/perfilsalud']);
   }
-
-  protected logout(): void {
-    void this.router.navigate(['/bienvenidacuenta']);
-  }
 }

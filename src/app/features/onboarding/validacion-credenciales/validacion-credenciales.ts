@@ -10,10 +10,6 @@ export class ValidacionCredencialesComponent {
   private readonly router = inject(Router);
 
   protected submitValidation(): void {
-    void this.router.navigate(['/panelmedico']);
-  }
-
-  protected logout(): void {
-    void this.router.navigate(['/bienvenidacuenta']);
+    void this.router.navigate(['/medico/dashboard']);
   }
 }

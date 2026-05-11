@@ -1,79 +1,67 @@
-<section class="layout">
-  <aside class="sidebar">
-    <h2>SaludLink</h2>
-    <ul>
-      <li class="active"><button type="button" (click)="goLanding()">Dashboard</button></li>
-      <li><button type="button" (click)="goAppointments()">Citas</button></li>
-      <li><button type="button" (click)="goMedications()">Recordat.</button></li>
-      <li><button type="button" (click)="goProfile()">Historial</button></li>
-      <li><button type="button" (click)="goMentalHealth()">S. Mental</button></li>
-      <li><button type="button" (click)="goContact()">Planes</button></li>
-      <li><button type="button" (click)="goProfile()">Mi perfil</button></li>
-      <li><button type="button" (click)="goContact()">Config.</button></li>
-    </ul>
-  </aside>
-  <main class="main">
-    <header>
-      <nav>Inicio · Funcionalidades · Planes · Contacto</nav>
-      <div><span class="chip">Lupe</span><button type="button" (click)="logout()">Cerrar sesión</button></div>
-    </header>
-    <section class="hero">
-      <h1>¡Hola, Lupe! 👋</h1>
-      <button type="button" class="primary" (click)="goContact()">+ Agendar cita</button>
+<app-patient-dashboard-shell
+  activeItem="dashboard"
+  (dashboard)="goLanding()"
+  (citas)="goAppointments()"
+  (recordatorios)="goMedications()"
+  (historial)="goProfile()"
+  (mental)="goMentalHealth()"
+  (perfil)="goProfile()"
+  (planes)="goContact()"
+  (config)="goContact()"
+  (logout)="logout()"
+>
+  <section class="hero">
+    <h1>&iexcl;Hola, paciente!</h1>
+    <button type="button" class="primary" (click)="goContact()">+ Agendar cita</button>
+  </section>
+  <div class="stats">
+    <article><h3>Pr&oacute;xima cita</h3><p>Mi&eacute; 7 - 10:00</p></article>
+    <article><h3>Recordatorios hoy</h3><p>3</p></article>
+    <article><h3>Adherencia mes</h3><p>92%</p></article>
+  </div>
+  <div class="split">
+    <section class="card list-card">
+      <div class="card-head">
+        <h3 class="card-title">
+          <span class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+              <path d="M3 10h18"></path>
+              <path d="M8 2v4M16 2v4"></path>
+            </svg>
+          </span>
+          Pr&oacute;ximas citas
+        </h3>
+        <button type="button" (click)="goAppointments()">Ver todas</button>
+      </div>
+      <article class="item"><div class="avatar">JP</div><div class="meta"><strong>Dr. Juan P&eacute;rez</strong><span>Cardiolog&iacute;a - Cl&iacute;nica San Pablo</span></div><span class="badge">Mi&eacute; 10:00</span></article>
+      <article class="item"><div class="avatar alt">MR</div><div class="meta"><strong>Dra. Mar&iacute;a R&iacute;os</strong><span>Pediatr&iacute;a - Para Sebasti&aacute;n</span></div><span class="badge warn">Vie 16:30</span></article>
     </section>
-    <div class="stats">
-      <article><h3>Próxima cita</h3><p>Mié 7 · 10:00</p></article>
-      <article><h3>Recordatorios hoy</h3><p>3</p></article>
-      <article><h3>Adherencia mes</h3><p>92%</p></article>
-    </div>
-    <div class="split">
-      <section class="card list-card">
-        <div class="card-head">
-          <h3>📅 Próximas citas</h3>
-          <button type="button" (click)="goAppointments()">Ver todas →</button>
-        </div>
-        <article class="item">
-          <div class="avatar">JP</div>
-          <div class="meta">
-            <strong>Dr. Juan Pérez</strong>
-            <span>Cardiología · Clínica San Pablo</span>
-          </div>
-          <span class="badge">Mié 10:00</span>
-        </article>
-        <article class="item">
-          <div class="avatar alt">MR</div>
-          <div class="meta">
-            <strong>Dra. María Ríos</strong>
-            <span>Pediatría · Para Sebastián</span>
-          </div>
-          <span class="badge warn">Vie 16:30</span>
-        </article>
-      </section>
-      <section class="card list-card">
-        <div class="card-head">
-          <h3>💊 Recordatorios hoy</h3>
-          <button type="button" (click)="goMedications()">Ver todos →</button>
-        </div>
-        <article class="item med-item">
-          <div class="pill">✓</div>
-          <div class="meta">
-            <strong>Losartán 50mg</strong>
-            <span>8:00 AM · Tomado</span>
-          </div>
-        </article>
-        <article class="item med-item">
-          <div class="pill warn">⏰</div>
-          <div class="meta">
-            <strong>Vitamina D</strong>
-            <span>2:00 PM · Pendiente</span>
-          </div>
-          <button type="button" class="mark" (click)="goMedications()">Marcar</button>
-        </article>
-      </section>
-    </div>
-    <div class="bottom">
-      <button type="button" class="soft" (click)="goMentalHealth()">🧘 ¿Cómo te sientes hoy? · Iniciar →</button>
-      <button type="button" class="danger" (click)="goEmergency()">🆘 SOS Emergencia · Acceso rápido</button>
-    </div>
-  </main>
-</section>
+    <section class="card list-card">
+      <div class="card-head">
+        <h3 class="card-title">
+          <span class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9a6 6 0 1 1 12 0c0 3.1 1.2 5.6 2.6 7H3.4C4.8 14.6 6 12.1 6 9Z"></path>
+              <path d="M10 19a2 2 0 0 0 4 0"></path>
+            </svg>
+          </span>
+          Recordatorios hoy
+        </h3>
+        <button type="button" (click)="goMedications()">Ver todos</button>
+      </div>
+      <article class="item med-item"><div class="pill"><span class="pill-icon">P</span></div><div class="meta"><strong>Losart&aacute;n 50mg</strong><span>8:00 AM - Tomado</span></div></article>
+      <article class="item med-item"><div class="pill warn"><span class="pill-icon">V</span></div><div class="meta"><strong>Vitamina D</strong><span>2:00 PM - Pendiente</span></div><button type="button" class="mark" (click)="goMedications()">Marcar</button></article>
+    </section>
+  </div>
+  <div class="bottom">
+    <button type="button" class="soft" (click)="goMentalHealth()">
+      <span class="cta-icon" aria-hidden="true">+</span>
+      &iquest;C&oacute;mo te sientes hoy? - Iniciar test
+    </button>
+    <button type="button" class="danger" (click)="goEmergency()">
+      <span class="cta-icon" aria-hidden="true">!</span>
+      SOS Emergencia - Acceso r&aacute;pido
+    </button>
+  </div>
+</app-patient-dashboard-shell>

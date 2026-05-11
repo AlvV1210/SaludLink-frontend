@@ -1,21 +1,19 @@
-<section class="layout">
-  <aside class="sidebar">
-    <h2>SaludLink</h2>
-    <ul><li>Mi panel</li><li>Mi agenda</li><li>Pacientes</li><li>Adherencia</li><li>Telemedic.</li><li class="active">Mi perfil</li><li>Config.</li></ul>
-  </aside>
-  <main class="main">
-    <header>
-      <nav>Inicio · Funcionalidades · Planes · Contacto</nav>
-      <div><span class="chip">Dr. Pérez</span><button type="button" (click)="logout()">Cerrar sesión</button></div>
+<section class="flow-screen">
+  <article class="flow-card">
+    <header class="card-header">
+      <h1>Verificación profesional</h1>
+      <span>Paso 2 de 3</span>
     </header>
-    <h1>Verificación profesional</h1>
-    <p>Sube tus documentos para validar tu identidad</p>
+    <p class="lead">Sube tus documentos para validar tu identidad y habilitar tu perfil médico.</p>
+
     <div class="docs">
       <button type="button" class="doc ok">Carnet CMP<br /><small>✓ Subido</small></button>
       <button type="button" class="doc">Diploma especialidad<br /><small>Click para subir</small></button>
     </div>
+
     <div class="warn">Tu cuenta está pendiente de validación. El equipo SaludLink revisará tus credenciales en 24-48h.</div>
+
     <label>Hospital o clínica donde laboras (opcional)<input placeholder="Buscar institución afiliada..." /></label>
     <button type="button" class="submit" (click)="submitValidation()">Enviar para validación</button>
-  </main>
+  </article>
 </section>
