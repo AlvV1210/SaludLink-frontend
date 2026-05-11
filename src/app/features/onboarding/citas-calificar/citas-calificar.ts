@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+﻿import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shell/patient-dashboard-shell';
 
 @Component({
@@ -10,6 +11,7 @@ import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shel
 })
 export class CitasCalificarComponent {
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   protected readonly stars = signal(5);
 
   protected goDashboard(): void { void this.router.navigate(['/paciente/dashboard']); }
@@ -23,5 +25,6 @@ export class CitasCalificarComponent {
 
   protected setStars(value: number): void { this.stars.set(value); }
   protected publish(): void { void this.router.navigate(['/paciente/citas']); }
-  protected logout(): void { void this.router.navigate(['/bienvenidacuenta']); }
+  protected logout(): void { this.auth.logout(); void this.router.navigate(['/bienvenidacuenta']); }
 }
+

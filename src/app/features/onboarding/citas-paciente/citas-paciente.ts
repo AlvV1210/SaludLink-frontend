@@ -1,5 +1,6 @@
-import { Component, signal, inject } from '@angular/core';
+﻿import { Component, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shell/patient-dashboard-shell';
 
 @Component({
@@ -10,6 +11,7 @@ import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shel
 })
 export class CitasPacienteComponent {
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   protected readonly tab = signal<'proximas' | 'pasadas' | 'canceladas'>('proximas');
 
   protected goDashboard(): void { void this.router.navigate(['/paciente/dashboard']); }
@@ -25,5 +27,6 @@ export class CitasPacienteComponent {
   protected goNuevaCita(): void { void this.router.navigate(['/paciente/citas/buscar-especialista']); }
   protected goReprogramar(): void { void this.router.navigate(['/paciente/citas/reprogramar']); }
   protected goCalificar(): void { void this.router.navigate(['/paciente/citas/calificar']); }
-  protected logout(): void { void this.router.navigate(['/bienvenidacuenta']); }
+  protected logout(): void { this.auth.logout(); void this.router.navigate(['/bienvenidacuenta']); }
 }
+
