@@ -22,6 +22,11 @@ import { CitasPagoComponent } from './features/onboarding/citas-pago/citas-pago'
 import { CitasConfirmadaComponent } from './features/onboarding/citas-confirmada/citas-confirmada';
 import { CitasReprogramarComponent } from './features/onboarding/citas-reprogramar/citas-reprogramar';
 import { CitasCalificarComponent } from './features/onboarding/citas-calificar/citas-calificar';
+import { RecordatoriosPacienteComponent } from './features/onboarding/recordatorios-paciente/recordatorios-paciente';
+import { ConsultaPreviaComponent } from './features/onboarding/consulta-previa/consulta-previa';
+import { ConsultaVideollamadaComponent } from './features/onboarding/consulta-videollamada/consulta-videollamada';
+import { ConsultaFinalizadaComponent } from './features/onboarding/consulta-finalizada/consulta-finalizada';
+import { SosEmergenciaComponent } from './features/onboarding/sos-emergencia/sos-emergencia';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
@@ -129,6 +134,11 @@ export const routes: Routes = [
       { path: 'citas/confirmada', component: CitasConfirmadaComponent },
       { path: 'citas/reprogramar', component: CitasReprogramarComponent },
       { path: 'citas/calificar', component: CitasCalificarComponent },
+      { path: 'recordatorios', component: RecordatoriosPacienteComponent },
+      { path: 'consulta/previa', component: ConsultaPreviaComponent },
+      { path: 'consulta/videollamada', component: ConsultaVideollamadaComponent },
+      { path: 'consulta/finalizada', component: ConsultaFinalizadaComponent },
+      { path: 'sos', component: SosEmergenciaComponent },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
@@ -174,6 +184,11 @@ export const routes: Routes = [
   { path: 'citas/confirmada', pathMatch: 'full', redirectTo: 'paciente/citas/confirmada' },
   { path: 'citas/reprogramar', pathMatch: 'full', redirectTo: 'paciente/citas/reprogramar' },
   { path: 'citas/calificar', pathMatch: 'full', redirectTo: 'paciente/citas/calificar' },
+  { path: 'recordatorios', pathMatch: 'full', redirectTo: 'paciente/recordatorios' },
+  { path: 'consulta/previa', pathMatch: 'full', redirectTo: 'paciente/consulta/previa' },
+  { path: 'consulta/videollamada', pathMatch: 'full', redirectTo: 'paciente/consulta/videollamada' },
+  { path: 'consulta/finalizada', pathMatch: 'full', redirectTo: 'paciente/consulta/finalizada' },
+  { path: 'sos', pathMatch: 'full', redirectTo: 'paciente/sos' },
   { path: 'panelmedico', pathMatch: 'full', redirectTo: 'medico/dashboard' },
   { path: 'paneladmininstitucional', pathMatch: 'full', redirectTo: 'admin/dashboard' },
   { path: '**', redirectTo: '' },

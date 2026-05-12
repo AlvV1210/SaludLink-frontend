@@ -1,0 +1,50 @@
+<app-patient-dashboard-shell
+  activeItem="recordatorios"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="page">
+    <header class="heading">
+      <div class="icon">✓</div>
+      <div>
+        <h1>Consulta finalizada</h1>
+        <p>Dr. Perez - 28 min - 14:30 - 14:58</p>
+      </div>
+    </header>
+
+    <article class="card">
+      <h3>Indicaciones subidas por el medico</h3>
+      <ul>
+        <li>Continuar Losartan 50mg cada 12h</li>
+        <li>Reducir consumo de sal</li>
+        <li>Caminar 30 min, 3 veces/semana</li>
+        <li>Control en 30 dias</li>
+      </ul>
+    </article>
+
+    <article class="card success">
+      <strong>Receta digital generada</strong>
+      <p>2 medicamentos - Valida 30 dias</p>
+    </article>
+
+    <article class="card chat">
+      <div>
+        <strong>Tienes dudas?</strong>
+        <p>Chatea con el Dr. Perez (HU20)</p>
+      </div>
+      <button type="button">Chat</button>
+    </article>
+
+    <div class="actions">
+      <button type="button" class="ghost">Calificar</button>
+      <button type="button" class="primary" (click)="goHome()">Volver al inicio</button>
+    </div>
+  </section>
+</app-patient-dashboard-shell>

@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.page {
+  display: grid;
+  gap: 0.8rem;
+  min-height: calc(100vh - 140px);
+}
+
+.alert-banner {
+  background: #ef4444;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+}
+
+.alert-banner p {
+  margin: 0.2rem 0 0;
+  opacity: 0.95;
+}
+
+h2 {
+  margin: 0.1rem 0;
+  font-size: 1rem;
+}
+
+.contact-card {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.contact-card p {
+  margin: 0.2rem 0 0;
+  color: #6b7280;
+}
+
+.contact-card a {
+  text-decoration: none;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 0.45rem 0.95rem;
+  font-weight: 700;
+}
+
+.emergency-person {
+  border-color: #6ee7b7;
+  background: #d1fae5;
+}
+
+.emergency-person a {
+  background: #10b981;
+}
