@@ -21,6 +21,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 1 1 12 0c0 3.1 1.2 5.6 2.6 7H3.4C4.8 14.6 6 12.1 6 9Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
         <span>Recordatorios</span>
       </li>
+      <li [class.active]="activeSection() === 'chat-postconsulta'" (click)="openSection('chat-postconsulta')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
+        <span>Chat Postconsulta</span>
+      </li>
       <li [class.active]="activeSection() === 'salud-mental'" (click)="openSection('salud-mental')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78"/></svg>
         <span>Salud Mental</span>
@@ -63,6 +67,10 @@
         <article class="kpi"><span>Citas salud mental</span><strong>{{ quickSummary().mental }}</strong></article>
         <article class="kpi"><span>Próximas activas</span><strong>{{ quickSummary().activas }}</strong></article>
         <article class="kpi"><span>Documentos subidos</span><strong>{{ quickSummary().documentos }}</strong></article>
+        <article class="kpi"><span>Chats postconsulta</span><strong>{{ quickSummary().chatsPostconsulta }}</strong></article>
+        <article class="kpi"><span>Tests realizados</span><strong>{{ mentalSummary().totalTests }}</strong></article>
+        <article class="kpi"><span>Último resultado</span><strong>{{ mentalSummary().lastLevel }}</strong></article>
+        <article class="kpi"><span>Última evaluación</span><strong>{{ mentalSummary().lastDate }}</strong></article>
       </section>
 
       <section class="chart-card fade-in">
@@ -162,12 +170,104 @@
                   <td><span [class]="getStatusClass(item.estado)">{{ item.estado }}</span></td>
                   <td class="actions">
                     <button type="button" class="btn ghost" (click)="reprogramAppointment(item.id)">Reprogramar cita</button>
+                    <button type="button" class="btn ghost" (click)="finalizeAppointment(item.id)">Finalizar consulta</button>
                     <button type="button" class="btn danger" (click)="cancelAppointment(item.id)">Cancelar cita</button>
                   </td>
                 </tr>
               }
             </tbody>
           </table>
+        </section>
+      </section>
+    }
+
+    @if (activeSection() === 'chat-postconsulta') {
+      <section class="module fade-in">
+        <div class="module-header">
+          <div>
+            <h2>CHAT POSTCONSULTA</h2>
+            <p class="subtitle">Seguimiento médico para consultas presenciales y virtuales completadas.</p>
+          </div>
+        </div>
+
+        <section class="postconsulta-layout">
+          <aside class="postconsulta-list">
+            <h3>Médicos disponibles</h3>
+            <select
+              [ngModel]="selectedPostconsultaDoctorId() ?? ''"
+              (ngModelChange)="selectPostconsultaDoctorFromSelect($event)"
+              name="postconsultaDoctorSelect"
+            >
+              <option value="">Seleccionar médico</option>
+              @for (doctor of postconsultaDoctors(); track doctor.id) {
+                <option [value]="doctor.id">Doctor · {{ doctor.modalidad }} · {{ doctor.consultaFecha }}</option>
+              }
+            </select>
+            <div class="postconsulta-items">
+              @for (doctor of postconsultaDoctors(); track doctor.id) {
+                <button
+                  type="button"
+                  class="postconsulta-item"
+                  [class.active]="selectedPostconsultaDoctorId() === doctor.id"
+                  (click)="selectPostconsultaDoctor(doctor.id)"
+                >
+                  <span class="postconsulta-avatar">{{ doctor.avatar }}</span>
+                  <div>
+                    <strong>{{ doctor.etiqueta }}</strong>
+                    <small>
+                      <i class="online-dot"></i>
+                      {{ doctor.online ? 'En línea' : 'Desconectado' }} · {{ doctor.disponible ? 'Disponible' : 'No disponible' }}
+                    </small>
+                  </div>
+                </button>
+              }
+            </div>
+          </aside>
+
+          <article class="postconsulta-chat">
+            @if (!selectedPostconsultaDoctor()) {
+              <p class="empty-chat">Selecciona un médico disponible para iniciar chat postconsulta.</p>
+            } @else {
+              <header class="postconsulta-header">
+                <div class="postconsulta-doc">
+                  <span class="postconsulta-avatar">{{ selectedPostconsultaDoctor()!.avatar }}</span>
+                  <div>
+                    <strong>Doctor</strong>
+                    <small>
+                      <i class="online-dot"></i>
+                      En línea
+                    </small>
+                  </div>
+                </div>
+                <span class="postconsulta-date">Consulta del {{ selectedPostconsultaDoctor()!.consultaFecha }}</span>
+              </header>
+
+              <div class="postconsulta-messages" #postconsultaMessagesContainer>
+                <p class="postconsulta-day-label">Hoy · 15:42</p>
+                @for (msg of activePostconsultaMessages(); track msg.time + msg.text) {
+                  <article class="postconsulta-bubble" [class.me]="msg.from === 'me'">
+                    <p>{{ msg.text }}</p>
+                    <small>{{ msg.time }}</small>
+                  </article>
+                }
+                @if (doctorTyping()) {
+                  <div class="typing-row">
+                    <span class="postconsulta-avatar mini">DR</span>
+                    <small>escribiendo...</small>
+                  </div>
+                }
+              </div>
+
+              <div class="postconsulta-input">
+                <input
+                  [ngModel]="postconsultaInput()"
+                  (ngModelChange)="updatePostconsultaInput($event)"
+                  placeholder="Escribe un mensaje..."
+                />
+                <button type="button" class="btn primary send" (click)="sendPostconsultaMessage()">➤</button>
+              </div>
+            }
+          </article>
         </section>
       </section>
     }
@@ -334,75 +434,167 @@
 
     @if (activeSection() === 'salud-mental') {
       <section class="mental-module fade-in">
-        <header class="mental-header">
-          <h2>¡Hola, Lupe! 👋</h2>
-          <p>¿Cómo te sientes hoy?</p>
-        </header>
+        @if (mentalView() === 'home') {
+          <header class="mental-header">
+            <h2>Salud Mental</h2>
+            <p>Cuida tu bienestar emocional</p>
+          </header>
 
-        <article class="mental-checkin">
-          <div class="mental-checkin-title">
-            <span>🧘</span>
-            <div>
-              <h3>Tu bienestar también importa</h3>
-              <p>Realiza un check-in de salud mental</p>
+          <article class="mental-main-card">
+            <div class="mental-checkin-title">
+              <span>🧠</span>
+              <div>
+                <h3>Test de cribado emocional</h3>
+                <p>Evalúa tu bienestar en 5 min - PHQ-9 / GAD-7</p>
+              </div>
             </div>
-          </div>
-          <p class="mental-question">¿Cómo te sientes?</p>
-          <div class="mental-mood-grid">
-            @for (mood of mentalMoods; track mood.id) {
-              <button type="button" class="mood-card" [class.active]="selectedMoodId() === mood.id" (click)="selectMentalMood(mood.id)">
-                <strong>{{ mood.emoji }}</strong>
-                <span>{{ mood.label }}</span>
+            <button type="button" class="btn primary mental-cta" (click)="startMentalTest()">Empezar</button>
+          </article>
+
+          <article class="mental-checkin">
+            <div class="mental-checkin-title">
+              <span>🧘</span>
+              <div>
+                <h3>Tu bienestar también importa</h3>
+                <p>Realiza un check-in de salud mental</p>
+              </div>
+            </div>
+            <p class="mental-question">¿Cómo te sientes?</p>
+            <div class="mental-mood-grid">
+              @for (mood of mentalMoods; track mood.id) {
+                <button type="button" class="mood-card" [class.active]="selectedMoodId() === mood.id" (click)="selectMentalMood(mood.id)">
+                  <strong>{{ mood.emoji }}</strong>
+                  <span>{{ mood.label }}</span>
+                </button>
+              }
+            </div>
+          </article>
+
+          <section class="mental-resources">
+            <div class="module-header">
+              <div>
+                <h2>RECURSOS DE VIAJES Y BIENESTAR</h2>
+                <p class="subtitle">Materiales rápidos para regular emociones y recuperar energía.</p>
+              </div>
+            </div>
+            <div class="mental-resource-grid">
+              @for (resource of mentalResources; track resource.id) {
+                <article class="mental-resource-card">
+                  <small>{{ resource.minutes }}</small>
+                  <h4>{{ resource.title }}</h4>
+                  <p>{{ resource.description }}</p>
+                  <button type="button" class="btn ghost">Abrir recurso</button>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
+        @if (mentalView() === 'intro') {
+          <article class="mental-test-detail">
+            <div class="check">🧘</div>
+            <h3>Test de bienestar emocional</h3>
+            <p>Un cuestionario breve y validado para identificar cómo te has sentido en las últimas 2 semanas</p>
+            <div class="mental-kpis">
+              <div><i>⏱️</i><strong>5 min</strong><span>9 preguntas</span></div>
+              <div><i>🔒</i><strong>Privado</strong><span>Solo tú lo ves</span></div>
+              <div><i>📊</i><strong>Validado</strong><span>PHQ-9 / GAD-7</span></div>
+            </div>
+            <div class="mental-alert">
+              <strong>⚠ Importante</strong>
+              <p>Este test no reemplaza un diagnóstico profesional. Es una guía orientativa que puede sugerirte buscar ayuda especializada si los resultados lo indican.</p>
+            </div>
+            <div class="actions mental-actions">
+              <button type="button" class="btn ghost" (click)="goBackMentalHome()">Cancelar</button>
+              <button type="button" class="btn primary" (click)="beginMentalQuestionnaire()">Comenzar test →</button>
+            </div>
+          </article>
+        }
+
+        @if (mentalView() === 'test') {
+          <article class="mental-test-flow">
+            <header class="mental-test-head">
+              <small>Pregunta {{ mentalQuestionIndex() + 1 }} de {{ mentalQuestions.length }}</small>
+              <strong>{{ mentalProgress() }}%</strong>
+            </header>
+            <div class="progress-wrap">
+              <div class="progress-bar"><i [style.width.%]="mentalProgress()"></i></div>
+            </div>
+            <p class="mental-test-prompt">Durante las últimas 2 semanas, ¿con qué frecuencia te ha molestado:</p>
+            <h3>{{ currentMentalQuestion() }}</h3>
+            <div class="mental-options">
+              @for (option of mentalAnswerOptions; track option.label) {
+                <label class="mental-option" [class.active]="mentalAnswers()[mentalQuestionIndex()] === option.value">
+                  <input
+                    type="radio"
+                    [name]="'mentalQuestion' + mentalQuestionIndex()"
+                    [checked]="mentalAnswers()[mentalQuestionIndex()] === option.value"
+                    (change)="selectMentalAnswer(option.value)"
+                  />
+                  <span>{{ option.label }}</span>
+                  <small>{{ option.value }} pts</small>
+                </label>
+              }
+            </div>
+            <div class="actions mental-actions">
+              <button type="button" class="btn ghost" (click)="previousMentalQuestion()" [disabled]="mentalQuestionIndex() === 0">← Anterior</button>
+              <button type="button" class="btn primary" (click)="nextMentalQuestion()" [disabled]="!canContinueMental()">
+                {{ mentalQuestionIndex() === mentalQuestions.length - 1 ? 'Ver resultado →' : 'Siguiente →' }}
               </button>
-            }
-          </div>
-        </article>
-
-        <article class="mental-test-card">
-          <div>
-            <h4>Test de bienestar emocional</h4>
-            <p>5 min · Confidencial · Última vez: hace 2 semanas</p>
-          </div>
-          <button type="button" class="btn primary mental-cta" (click)="startMentalTest()">Iniciar test →</button>
-        </article>
-
-        <section class="mental-resources">
-          <div class="module-header">
-            <div>
-              <h2>RECURSOS DE VIAJES Y BIENESTAR</h2>
-              <p class="subtitle">Materiales rápidos para regular emociones y recuperar energía.</p>
             </div>
-          </div>
-          <div class="mental-resource-grid">
-            @for (resource of mentalResources; track resource.id) {
-              <article class="mental-resource-card">
-                <small>{{ resource.minutes }}</small>
-                <h4>{{ resource.title }}</h4>
-                <p>{{ resource.description }}</p>
-                <button type="button" class="btn ghost">Abrir recurso</button>
-              </article>
-            }
-          </div>
-        </section>
+          </article>
+        }
 
-        <article class="mental-test-detail">
-          <div class="check">🧘</div>
-          <h3>Test de bienestar emocional</h3>
-          <p>Un cuestionario breve y validado para identificar cómo te has sentido en las últimas 2 semanas</p>
-          <div class="mental-kpis">
-            <div><i>⏱️</i><strong>5 min</strong><span>9 preguntas</span></div>
-            <div><i>🔒</i><strong>Privado</strong><span>Solo tú lo ves</span></div>
-            <div><i>📊</i><strong>Validado</strong><span>PHQ-9 GMS</span></div>
-          </div>
-          <div class="mental-alert">
-            <strong>⚠ Importante</strong>
-            <p>Este test no reemplaza un diagnóstico profesional. Es una guía orientativa que puede sugerirte buscar ayuda especializada si los resultados lo indican.</p>
-          </div>
-          <div class="actions mental-actions">
-            <button type="button" class="btn ghost">Cancelar</button>
-            <button type="button" class="btn primary" (click)="startMentalTest()">Comenzar test →</button>
-          </div>
-        </article>
+        @if (mentalView() === 'result' && activeMentalResult(); as result) {
+          <article class="mental-result-card" [class.green]="result.level === 'Sin síntomas relevantes'" [class.yellow]="result.level === 'Leve'" [class.orange]="result.level === 'Moderado'" [class.red]="result.level === 'Alto riesgo emocional'">
+            <div class="result-icon">⭐</div>
+            <h3>Resultado del test</h3>
+            <p>Completado el {{ result.dateLabel }} · Puntaje: {{ result.score }}/27</p>
+            <div class="result-banner">
+              <strong>{{ result.level }}</strong>
+              <span>{{ result.score }} pts</span>
+            </div>
+            <div class="mental-alert">
+              <strong>Áreas con mayor puntaje</strong>
+              @for (highlight of result.highlights; track highlight) {
+                <p>{{ highlight }}</p>
+              }
+            </div>
+            <button type="button" class="btn primary" (click)="openMentalRecommendations()">Ver recomendaciones →</button>
+          </article>
+
+          @if (mentalShowRecommendations()) {
+            <section class="mental-recommendations">
+              <h3>Pasos sugeridos</h3>
+              <article class="summary-card">
+                @if (result.level === 'Sin síntomas relevantes') {
+                  <p>⭐ Mantén rutinas saludables de sueño y actividad física.</p>
+                  <p>⭐ Programa chequeos emocionales periódicos para prevención.</p>
+                }
+                @if (result.level === 'Leve') {
+                  <p>⭐ Practica respiración diafragmática 2 veces al día.</p>
+                  <p>⭐ Establece pausas activas y mejora hábitos de sueño.</p>
+                }
+                @if (result.level === 'Moderado') {
+                  <p>⭐ Aplica técnicas de relajación y monitorea síntomas diariamente.</p>
+                  <p>⭐ Conversa con un especialista para intervención temprana.</p>
+                }
+                @if (result.level === 'Alto riesgo emocional') {
+                  <p>⭐ Se recomienda acompañamiento profesional inmediato.</p>
+                  <p>⭐ Prioriza soporte psicológico y red de apoyo cercana.</p>
+                }
+              </article>
+
+              <article class="mental-schedule-card">
+                <div>
+                  <h4>Agendar con un psicólogo</h4>
+                  <p>Profesionales disponibles · Desde S/80 · Modalidad virtual/presencial</p>
+                </div>
+                <button type="button" class="btn primary" (click)="schedulePsychologyAppointment()">Agendar →</button>
+              </article>
+            </section>
+          }
+        }
       </section>
     }
 
@@ -492,7 +684,7 @@
 
         @if (bookingStep() === 'doctores') {
           <div class="doctor-grid">
-            @for (doctor of doctors(); track doctor.id) {
+            @for (doctor of filteredBookingDoctors(); track doctor.id) {
               <article class="doctor-card" (click)="selectDoctor(doctor)">
                 <img [src]="doctor.foto" alt="Doctor" />
                 <strong>{{ doctor.nombreCompleto }}</strong>
