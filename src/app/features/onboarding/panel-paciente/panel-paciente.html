@@ -25,6 +25,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78"/></svg>
         <span>Salud Mental</span>
       </li>
+      <li [class.active]="activeSection() === 'historial'" (click)="openSection('historial')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+        <span>Historial</span>
+      </li>
       <li [class.active]="activeSection() === 'perfil'" (click)="openSection('perfil')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
         <span>Mi Perfil</span>
@@ -58,6 +62,7 @@
         <article class="kpi"><span>Total de recordatorios</span><strong>{{ quickSummary().reminders }}</strong></article>
         <article class="kpi"><span>Citas salud mental</span><strong>{{ quickSummary().mental }}</strong></article>
         <article class="kpi"><span>Próximas activas</span><strong>{{ quickSummary().activas }}</strong></article>
+        <article class="kpi"><span>Documentos subidos</span><strong>{{ quickSummary().documentos }}</strong></article>
       </section>
 
       <section class="chart-card fade-in">
@@ -335,6 +340,55 @@
       </section>
     }
 
+    @if (activeSection() === 'historial') {
+      <section class="module fade-in">
+        <div class="module-header">
+          <div>
+            <h2>HISTORIAL</h2>
+            <p class="subtitle">Gestión documental médica del paciente.</p>
+          </div>
+          <button type="button" class="btn primary cta" (click)="openUploadDocumentModal()">Subir Documento</button>
+        </div>
+
+        <section class="table-card">
+          <table>
+            <thead><tr><th>Nombre del documento</th><th>Tipo</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Resumen</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (doc of documents(); track doc.id) {
+                <tr>
+                  <td>{{ doc.nombre }}</td>
+                  <td>{{ doc.tipoArchivo }}</td>
+                  <td>{{ doc.fecha }}</td>
+                  <td>{{ doc.hora }}</td>
+                  <td><span class="status ok">{{ doc.estado }}</span></td>
+                  <td>{{ doc.resumen }}</td>
+                  <td class="actions">
+                    <button type="button" class="btn ghost" (click)="selectDocument(doc.id)">Ver documento</button>
+                    <button type="button" class="btn ghost" (click)="downloadDocument(doc.id)">Descargar documento</button>
+                    <button type="button" class="btn danger" (click)="deleteDocument(doc.id)">Eliminar documento</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        @if (selectedDocument(); as selectedDoc) {
+          <article class="summary-card doc-info">
+            <h4>Información del Documento</h4>
+            <p><strong>Nombre:</strong> {{ selectedDoc.nombre }}</p>
+            <p><strong>Fecha de subida:</strong> {{ selectedDoc.fecha }} · {{ selectedDoc.hora }}</p>
+            <p><strong>Tamaño:</strong> {{ selectedDoc.sizeLabel }}</p>
+            <p><strong>Tipo:</strong> {{ selectedDoc.tipoArchivo }}</p>
+            <p><strong>Observaciones:</strong> {{ selectedDoc.observaciones }}</p>
+            @if (selectedDoc.previewUrl) {
+              <img [src]="selectedDoc.previewUrl" alt="Vista previa documento" class="doc-preview" />
+            }
+          </article>
+        }
+      </section>
+    }
+
     @if (activeSection() === 'perfil') {
       <section class="module fade-in">
         <h2>MI PERFIL</h2>
@@ -465,6 +519,67 @@
             <li><strong>Emergencia médica</strong><a href="tel:117">117</a></li>
             <li><strong>Línea salud mental</strong><a href="tel:113">113 opción 5</a></li>
           </ul>
+        </article>
+      </section>
+    }
+
+    @if (showUploadModal()) {
+      <section class="sos-backdrop" (click)="closeUploadDocumentModal()">
+        <article class="upload-modal" (click)="$event.stopPropagation()">
+          <header>
+            <h3>Subir documento</h3>
+            <button type="button" class="btn ghost" (click)="closeUploadDocumentModal()">Cerrar</button>
+          </header>
+
+          @if (uploadStep() === 'upload') {
+            <div class="doc-type-grid">
+              <button type="button" class="doc-type active">Examen lab.</button>
+              <button type="button" class="doc-type">Imagen</button>
+              <button type="button" class="doc-type">Receta</button>
+              <button type="button" class="doc-type">Informe</button>
+              <button type="button" class="doc-type">Vacuna</button>
+              <button type="button" class="doc-type">Otros</button>
+            </div>
+
+            <label class="dropzone" (dragover)="handleDragOver($event)" (drop)="handleFileDrop($event)">
+              <input type="file" hidden (change)="handleFileInput($event)" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif" />
+              <strong>Arrastra aquí tu documento o haz clic para seleccionar</strong>
+              <small>PDF, imágenes, recetas, análisis, radiografías, certificados e informes</small>
+              @if (pendingFile(); as file) {
+                <span class="file-chip">{{ file.name }}</span>
+              }
+            </label>
+
+            <div class="progress-wrap">
+              <div class="progress-bar"><i [style.width.%]="uploadProgress()"></i></div>
+              <small>{{ uploadProgress() }}%</small>
+            </div>
+
+            <button type="button" class="btn primary" [disabled]="!pendingFile()" (click)="continueDocumentForm()">Continuar</button>
+          }
+
+          @if (uploadStep() === 'form') {
+            <form class="form-card">
+              <div class="field-grid">
+                <label>Nombre del documento
+                  <input [(ngModel)]="documentForm.nombre" name="docName" placeholder="Examen sangre mayo" />
+                </label>
+                <label>Fecha
+                  <input [(ngModel)]="documentForm.fecha" name="docDate" type="date" />
+                </label>
+                <label>Hora
+                  <input [(ngModel)]="documentForm.hora" name="docTime" type="time" />
+                </label>
+                <label>Observaciones
+                  <input [(ngModel)]="documentForm.observaciones" name="docNotes" placeholder="Control semestral" />
+                </label>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn ghost" (click)="goBackToUploadStep()">Volver</button>
+                <button type="button" class="btn primary" (click)="saveDocument()">Guardar documento</button>
+              </div>
+            </form>
+          }
         </article>
       </section>
     }
