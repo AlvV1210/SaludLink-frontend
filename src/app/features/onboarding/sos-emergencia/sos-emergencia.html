@@ -1,0 +1,53 @@
+<app-patient-dashboard-shell
+  activeItem="recordatorios"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="page">
+    <article class="alert-banner">
+      <strong>Emergencia activada</strong>
+      <p>Selecciona el numero que necesitas</p>
+    </article>
+
+    <h2>Lineas locales 24/7 (Lima)</h2>
+
+    <article class="contact-card">
+      <div>
+        <strong>SAMU</strong>
+        <p>Atencion medica de urgencia</p>
+      </div>
+      <a href="tel:106">106</a>
+    </article>
+
+    <article class="contact-card">
+      <div>
+        <strong>Bomberos</strong>
+        <p>Cuerpo General de Bomberos</p>
+      </div>
+      <a href="tel:116">116</a>
+    </article>
+
+    <article class="contact-card">
+      <div>
+        <strong>PNP</strong>
+        <p>Policia Nacional del Peru</p>
+      </div>
+      <a href="tel:105">105</a>
+    </article>
+
+    <article class="contact-card emergency-person">
+      <div>
+        <strong>Contacto emergencia</strong>
+        <p>Maria Schermacha (Madre)</p>
+      </div>
+      <a href="tel:+51999111222">999...222</a>
+    </article>
+  </section>
+</app-patient-dashboard-shell>

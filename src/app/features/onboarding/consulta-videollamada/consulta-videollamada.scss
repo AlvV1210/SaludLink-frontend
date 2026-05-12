@@ -1,0 +1,84 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.video-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0b6e5b 0%, #065f46 100%);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.video-topbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.7rem;
+}
+
+.status,
+.timer {
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #ecfdf5;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.video-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.doctor-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.self-view {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 110px;
+  height: 82px;
+  border-radius: 10px;
+  border: 2px solid #ffffff;
+  background: linear-gradient(135deg, #34d399, #10b981);
+  display: grid;
+  place-items: center;
+}
+
+.self-icon {
+  color: #ecfeff;
+  font-weight: 700;
+}
+
+.video-controls {
+  padding: 0.8rem;
+  background: rgba(15, 23, 42, 0.8);
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.video-controls button {
+  border: 0;
+  border-radius: 999px;
+  background: #334155;
+  color: #f8fafc;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+}
+
+.video-controls button.danger {
+  background: #ef4444;
+}

@@ -1,0 +1,263 @@
+<section class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <h2>SL MÉDICO</h2>
+    </div>
+
+    <ul>
+      <li [class.active]="activeSection() === 'dashboard'" (click)="goDashboard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+        <span>Dashboard</span>
+      </li>
+      <li [class.active]="activeSection() === 'agenda'" (click)="openSection('agenda')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18"/><path d="M8 2v4M16 2v4"/></svg>
+        <span>Mi Agenda</span>
+      </li>
+      <li [class.active]="activeSection() === 'horarios'" (click)="openSection('horarios')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6l4 2"/></svg>
+        <span>Mis Horarios</span>
+      </li>
+      <li [class.active]="activeSection() === 'pacientes'" (click)="openSection('pacientes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M13 20a4.5 4.5 0 0 1 8 0"/></svg>
+        <span>Pacientes</span>
+      </li>
+      <li [class.active]="activeSection() === 'reportes'" (click)="openSection('reportes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V8"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V11"/></svg>
+        <span>Reportes</span>
+      </li>
+      <li [class.active]="activeSection() === 'adherencia'" (click)="openSection('adherencia')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V8"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V11"/></svg>
+        <span>Adherencia</span>
+      </li>
+      <li [class.active]="activeSection() === 'perfil'" (click)="openSection('perfil')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
+        <span>Perfil</span>
+      </li>
+    </ul>
+
+    <button type="button" class="logout" (click)="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      <span>Logout</span>
+    </button>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Módulo Médico</h1>
+        <p>Gestión clínica profesional con experiencia moderna.</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="chip">Dr. {{ perfil().apellido }}</span>
+        <span class="chip muted">{{ totalCitas() }} citas</span>
+      </div>
+    </header>
+
+    @if (toastMessage()) {
+      <div class="toast" (click)="clearToast()">{{ toastMessage() }}</div>
+    }
+
+    @if (activeSection() === 'dashboard') {
+      <section class="stats-grid">
+        <article class="kpi"><span>Pacientes</span><strong>{{ totalPacientes() }}</strong><small>registrados</small></article>
+        <article class="kpi"><span>Citas</span><strong>{{ totalCitas() }}</strong><small>programadas</small></article>
+        <article class="kpi"><span>Virtuales</span><strong>{{ totalCitasVirtuales() }}</strong><small>activas</small></article>
+        <article class="kpi"><span>Horarios</span><strong>{{ totalHorarios() }}</strong><small>disponibles</small></article>
+      </section>
+      <section class="card-grid">
+        <article class="card">
+          <h3>Resumen médico</h3>
+          <p>Gestiona agenda, horarios y pacientes desde una vista profesional centralizada.</p>
+        </article>
+        <article class="card">
+          <h3>Rendimiento semanal</h3>
+          <p>Seguimiento en tiempo real de disponibilidad, citas virtuales y continuidad clínica.</p>
+        </article>
+      </section>
+    }
+
+    @if (activeSection() === 'agenda') {
+      <section class="module">
+        <h2>Mi Agenda</h2>
+        <p class="subtitle">Gestión de citas virtuales del médico.</p>
+        <form class="form-card" (ngSubmit)="createVirtualCita()">
+          <div class="field-grid">
+            <label>Nombre de la paciente
+              <input [(ngModel)]="agendaForm.paciente" name="agendaPaciente" [class.invalid]="agendaAttempted && agendaForm.paciente.trim().length < 3" placeholder="Lupe Cunyas" />
+            </label>
+            <label>Día
+              <select [(ngModel)]="agendaForm.dia" name="agendaDia">
+                <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option>
+              </select>
+            </label>
+            <label>Semana
+              <select [(ngModel)]="agendaForm.semana" name="agendaSemana">
+                <option>Semana 1</option><option>Semana 2</option><option>Semana 3</option><option>Semana 4</option>
+              </select>
+            </label>
+            <label>Mes
+              <select [(ngModel)]="agendaForm.mes" name="agendaMes">
+                <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+              </select>
+            </label>
+            <label>Tipo de cita
+              <input [value]="agendaForm.tipo" readonly />
+            </label>
+          </div>
+          <button type="submit" class="btn primary">Crear cita virtual</button>
+        </form>
+
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Nombre de la paciente</th><th>Día</th><th>Semana</th><th>Mes</th><th>Estado de la cita</th><th>Tipo de cita</th><th>Acciones</th></tr></thead>
+            <tbody>
+              @for (item of agendaItems(); track item.id) {
+                <tr>
+                  <td>{{ item.paciente }}</td>
+                  <td>{{ item.dia }}</td>
+                  <td>{{ item.semana }}</td>
+                  <td>{{ item.mes }}</td>
+                  <td><span class="status" [class.reprog]="item.estado === 'Reprogramada'">{{ item.estado }}</span></td>
+                  <td>{{ item.tipo }}</td>
+                  <td class="actions">
+                    <button type="button" class="btn ghost" (click)="reprogramCita(item.id)">Reprogramar cita</button>
+                    <button type="button" class="btn danger" (click)="removeCita(item.id)">Eliminar cita</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'horarios') {
+      <section class="module">
+        <h2>Mis Horarios</h2>
+        <p class="subtitle">Configura disponibilidad presencial y virtual.</p>
+        <form class="form-card" (ngSubmit)="saveHorario()">
+          <div class="field-grid">
+            <label>Seleccionar día
+              <select [(ngModel)]="horarioForm.dia" name="horarioDia">
+                <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option>
+              </select>
+            </label>
+            <label>Seleccionar hora
+              <input [(ngModel)]="horarioForm.hora" name="horarioHora" type="time" [class.invalid]="horarioAttempted && !horarioForm.hora" />
+            </label>
+            <label>Modalidad
+              <select [(ngModel)]="horarioForm.modalidad" name="horarioModalidad">
+                <option>Presencial</option><option>Virtual</option>
+              </select>
+            </label>
+            <label>Link de reunión virtual
+              <input [(ngModel)]="horarioForm.link" name="horarioLink" placeholder="https://meet.google.com/..." [class.invalid]="horarioAttempted && horarioForm.modalidad === 'Virtual' && !horarioForm.link.trim()" />
+            </label>
+          </div>
+          <button type="submit" class="btn primary">Guardar horario</button>
+        </form>
+
+        <section class="cards-list">
+          @for (item of horarios(); track item.id) {
+            <article class="slot-card">
+              <div><strong>{{ item.dia }} · {{ item.hora }}</strong><p>{{ item.modalidad }} · {{ item.link }}</p></div>
+              <span class="status" [class.reserved]="item.estado === 'Reservado'">{{ item.estado }}</span>
+              <div class="actions">
+                <button type="button" class="btn ghost" (click)="editHorario(item)">Editar horario</button>
+                <button type="button" class="btn danger" (click)="deleteHorario(item.id)">Eliminar horario</button>
+              </div>
+            </article>
+          }
+        </section>
+      </section>
+    }
+
+    @if (activeSection() === 'pacientes') {
+      <section class="module">
+        <h2>Pacientes</h2>
+        <p class="subtitle">Pacientes con reservas en tus horarios.</p>
+        <section class="stats-grid compact">
+          <article class="kpi"><span>Pacientes únicos</span><strong>{{ totalPacientes() }}</strong></article>
+          <article class="kpi"><span>Citas activas</span><strong>{{ totalCitas() }}</strong></article>
+          <article class="kpi"><span>Modalidad virtual</span><strong>{{ totalCitasVirtuales() }}</strong></article>
+        </section>
+        <div class="search-wrap">
+          <input [ngModel]="patientSearch()" (ngModelChange)="setPatientSearch($event)" name="patientSearch" placeholder="Buscar paciente..." />
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Nombre del paciente</th><th>Fecha de cita</th><th>Hora</th><th>Modalidad</th><th>Estado de atención</th></tr></thead>
+            <tbody>
+              @for (paciente of filteredPacientes(); track paciente.paciente) {
+                <tr>
+                  <td>{{ paciente.paciente }}</td>
+                  <td>{{ paciente.fecha }}</td>
+                  <td>{{ paciente.hora }}</td>
+                  <td>{{ paciente.modalidad }}</td>
+                  <td><span class="status">{{ paciente.estado }}</span></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @if (activeSection() === 'reportes') {
+      <section class="module">
+        <h2>Reportes</h2>
+        <p class="subtitle">KPIs analíticos del rendimiento médico.</p>
+        <section class="stats-grid">
+          <article class="kpi"><span>Cantidad total de pacientes</span><strong>{{ totalPacientes() }}</strong></article>
+          <article class="kpi"><span>Total de citas programadas</span><strong>{{ totalCitas() }}</strong></article>
+          <article class="kpi"><span>Total de citas virtuales</span><strong>{{ totalCitasVirtuales() }}</strong></article>
+          <article class="kpi"><span>Total de horarios disponibles</span><strong>{{ totalHorarios() }}</strong></article>
+        </section>
+        <section class="chart-card">
+          <h3>Citas por mes</h3>
+          @for (bar of reporteMes(); track bar.mes) {
+            <div class="bar-row">
+              <span>{{ bar.mes }}</span>
+              <div class="bar-track"><i [style.width.%]="bar.width"></i></div>
+              <strong>{{ bar.total }}</strong>
+            </div>
+          }
+        </section>
+      </section>
+    }
+
+    @if (activeSection() === 'adherencia') {
+      <section class="coming-soon">
+        <h2>Próximamente</h2>
+        <p>Este módulo estará disponible en una próxima iteración.</p>
+      </section>
+    }
+
+    @if (activeSection() === 'perfil') {
+      <section class="module">
+        <h2>Perfil</h2>
+        <p class="subtitle">Información profesional del médico conectado.</p>
+        <article class="profile-card">
+          <img [src]="editingPerfil ? perfilDraft.foto : perfil().foto" alt="Foto de perfil" />
+          <div class="profile-fields">
+            <label>Nombre <input [(ngModel)]="perfilDraft.nombre" name="perfilNombre" [readonly]="!editingPerfil" /></label>
+            <label>Apellido <input [(ngModel)]="perfilDraft.apellido" name="perfilApellido" [readonly]="!editingPerfil" /></label>
+            <label>Correo <input [(ngModel)]="perfilDraft.correo" name="perfilCorreo" [readonly]="!editingPerfil" /></label>
+            <label>Especialidad <input [(ngModel)]="perfilDraft.especialidad" name="perfilEspecialidad" [readonly]="!editingPerfil" /></label>
+            <label>Sede <input [(ngModel)]="perfilDraft.sede" name="perfilSede" [readonly]="!editingPerfil" /></label>
+            <label>Estado <input [(ngModel)]="perfilDraft.estado" name="perfilEstado" [readonly]="!editingPerfil" /></label>
+          </div>
+          <div class="actions">
+            @if (!editingPerfil) {
+              <button type="button" class="btn primary" (click)="editPerfil()">Editar perfil</button>
+            } @else {
+              <button type="button" class="btn primary" (click)="savePerfil()">Guardar cambios</button>
+            }
+            <button type="button" class="btn ghost" (click)="changePassword()">Cambiar contraseña</button>
+          </div>
+        </article>
+      </section>
+    }
+  </main>
+</section>

@@ -1,0 +1,142 @@
+<section class="feature appointments-ui">
+  <div class="page__header">
+    <div>
+      <h1 class="page__title">Citas médicas</h1>
+      <p class="page__lead">
+        Consulta, agenda y administra tus próximas visitas con tu equipo médico.
+      </p>
+    </div>
+    <a mat-raised-button class="btn-sl-primary" routerLink="/appointments/nueva">
+      <mat-icon>add</mat-icon>
+      Nueva cita
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="state state--center">
+      <mat-spinner diameter="40" mode="indeterminate" />
+    </div>
+  } @else if (appointments().length === 0) {
+    <mat-card class="empty-card">
+      <mat-card-content>
+        <p>No tienes citas programadas aún.</p>
+        <a mat-raised-button class="btn-sl-primary" routerLink="/appointments/nueva">
+          Agendar cita
+        </a>
+      </mat-card-content>
+    </mat-card>
+  } @else if (isHandset()) {
+    <div class="card-grid">
+      @for (a of appointments(); track a.id) {
+        <mat-card class="appt-card">
+          <mat-card-header>
+            <mat-card-title>{{ a.doctorName }}</mat-card-title>
+            <p class="mat-mdc-card-subtitle">{{ a.specialty }}</p>
+          </mat-card-header>
+          <mat-card-content>
+            <dl class="card-meta">
+              <div>
+                <dt>Fecha</dt>
+                <dd>{{ a.appointmentDate | date: 'dd/MM/yyyy' }}</dd>
+              </div>
+              <div>
+                <dt>Hora</dt>
+                <dd>{{ a.appointmentDate | date: 'HH:mm' }}</dd>
+              </div>
+              <div>
+                <dt>Modalidad</dt>
+                <dd>{{ displayModality(a.modality) }}</dd>
+              </div>
+            </dl>
+            <div class="card-status">
+              <mat-chip-set>
+                <mat-chip [class]="statusChipClass(a.status)">{{
+                  statusLabel(a.status)
+                }}</mat-chip>
+              </mat-chip-set>
+            </div>
+            @if (a.status === AppointmentStatus.PENDING) {
+              <div class="card-actions">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="btn-sl-outline btn-sl-outline--danger"
+                  [disabled]="cancellingId() === a.id"
+                  (click)="cancel(a, $event)"
+                >
+                  Cancelar
+                </button>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  } @else {
+    <mat-card class="appt-panel">
+      <mat-card-header>
+        <mat-card-title>Mis citas</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-wrap">
+          <table mat-table [dataSource]="appointments()">
+            <ng-container matColumnDef="doctorName">
+              <th mat-header-cell *matHeaderCellDef>Médico</th>
+              <td mat-cell *matCellDef="let a">{{ a.doctorName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="specialty">
+              <th mat-header-cell *matHeaderCellDef>Especialidad</th>
+              <td mat-cell *matCellDef="let a">{{ a.specialty }}</td>
+            </ng-container>
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let a">
+                {{ a.appointmentDate | date: 'dd/MM/yyyy' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="time">
+              <th mat-header-cell *matHeaderCellDef>Hora</th>
+              <td mat-cell *matCellDef="let a">
+                {{ a.appointmentDate | date: 'HH:mm' }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="modality">
+              <th mat-header-cell *matHeaderCellDef>Modalidad</th>
+              <td mat-cell *matCellDef="let a">
+                {{ displayModality(a.modality) }}
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let a">
+                <mat-chip-set>
+                  <mat-chip [class]="statusChipClass(a.status)">{{
+                    statusLabel(a.status)
+                  }}</mat-chip>
+                </mat-chip-set>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let a">
+                @if (a.status === AppointmentStatus.PENDING) {
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    class="btn-sl-outline btn-sl-outline--danger"
+                    [disabled]="cancellingId() === a.id"
+                    (click)="cancel(a, $event)"
+                  >
+                    Cancelar
+                  </button>
+                }
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

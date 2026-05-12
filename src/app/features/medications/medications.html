@@ -1,0 +1,139 @@
+<section class="medications-page">
+  <header class="page-header">
+    <div>
+      <h1>Medicamentos y <span class="accent">Recordatorios</span></h1>
+      <p>Gestiona tu tratamiento y el estado de tus tomas del dia.</p>
+    </div>
+    <button mat-flat-button type="button" class="btn-primary" (click)="focusForm()">
+      Agregar medicamento
+    </button>
+  </header>
+
+  <main class="page-content">
+    <section class="medications-section">
+      <h2>Lista de medicamentos</h2>
+
+      <div class="cards-grid" *ngIf="medications.length; else emptyMedications">
+        <mat-card class="medication-card" *ngFor="let med of medications">
+          <mat-card-header>
+            <mat-card-title>{{ med.name }}</mat-card-title>
+            <mat-card-subtitle>{{ med.dosage }} • {{ med.frequency }}</mat-card-subtitle>
+            <span
+              class="status-badge"
+              [ngClass]="med.active ? 'active' : 'inactive'"
+              [matBadge]="med.active ? 'Activo' : 'Inactivo'"
+              matBadgeOverlap="false"
+            ></span>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p><strong>Fecha inicio:</strong> {{ med.startDate | date: 'dd/MM/yyyy' }}</p>
+            <p><strong>Fecha fin:</strong> {{ med.endDate | date: 'dd/MM/yyyy' }}</p>
+          </mat-card-content>
+
+          <mat-card-actions>
+            <button
+              mat-stroked-button
+              type="button"
+              [disabled]="!med.active || loadingMedicationId === med.id"
+              (click)="deactivateMedication(med.id)"
+            >
+              Desactivar
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <ng-template #emptyMedications>
+        <mat-card>
+          <mat-card-content>No hay medicamentos registrados todavia.</mat-card-content>
+        </mat-card>
+      </ng-template>
+
+      <mat-card class="form-card">
+        <mat-card-header>
+          <mat-card-title>Nuevo medicamento</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form [formGroup]="medicationForm" (ngSubmit)="saveMedication()" class="medication-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del medicamento</mat-label>
+              <input #nameInput matInput formControlName="name" />
+              <mat-error *ngIf="isInvalid('name')">Campo obligatorio (min. 2 caracteres)</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Dosis</mat-label>
+              <input matInput formControlName="dosage" />
+              <mat-error *ngIf="isInvalid('dosage')">Campo obligatorio</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Frecuencia</mat-label>
+              <input matInput formControlName="frequency" />
+              <mat-error *ngIf="isInvalid('frequency')">Campo obligatorio</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha inicio</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+              <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              <mat-error *ngIf="isInvalid('startDate')">Campo obligatorio</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Fecha fin</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+              <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              <mat-error *ngIf="isInvalid('endDate')">Campo obligatorio</mat-error>
+            </mat-form-field>
+
+            <button
+              mat-flat-button
+              type="submit"
+              class="btn-primary full-width"
+              [disabled]="medicationForm.invalid || savingMedication"
+            >
+              Guardar medicamento
+            </button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </section>
+
+    <aside class="reminders-section">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>Recordatorios</mat-card-title>
+          <mat-card-subtitle>{{ pendingRemindersCount }} pendiente(s)</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="reminder-list" *ngIf="dailyReminders.length; else emptyReminders">
+            <div class="reminder-item" *ngFor="let reminder of dailyReminders">
+              <div>
+                <p class="reminder-med">{{ reminder.medicationName }}</p>
+                <p class="reminder-meta">{{ reminder.time }} - {{ reminder.taken ? 'Tomado' : 'Pendiente' }}</p>
+              </div>
+
+              <button
+                mat-stroked-button
+                type="button"
+                class="btn-primary-outline"
+                *ngIf="!reminder.taken"
+                (click)="markAsTaken(reminder.id)"
+              >
+                Marcar como tomado
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <ng-template #emptyReminders>
+        <p>No hay recordatorios para hoy.</p>
+      </ng-template>
+    </aside>
+  </main>
+</section>

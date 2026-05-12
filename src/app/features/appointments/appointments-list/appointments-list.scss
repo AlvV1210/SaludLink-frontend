@@ -1,0 +1,226 @@
+@use '../appointments.design-tokens' as sl;
+
+:host {
+  display: block;
+  min-height: 100%;
+  padding: 1.25rem 1.25rem 2.5rem;
+  box-sizing: border-box;
+  background: linear-gradient(
+    165deg,
+    sl.$sl-support 0%,
+    #ffffff 22%,
+    #ffffff 100%
+  );
+}
+
+.appointments-ui {
+  font-family: sl.$sl-font;
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+.page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid sl.$sl-scale-100;
+}
+
+.page__title {
+  margin: 0;
+  @include sl.sl-h3;
+}
+
+.page__lead {
+  margin: 0.5rem 0 0;
+  max-width: 36rem;
+  @include sl.sl-lead-1;
+}
+
+@include sl.sl-btn-primary;
+@include sl.sl-btn-outline;
+
+.state--center {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.empty-card {
+  border-radius: 16px !important;
+  border: 1px solid sl.$sl-scale-100 !important;
+  box-shadow: 0 8px 32px rgba(1, 19, 19, 0.06) !important;
+  background: #fff !important;
+  text-align: center;
+  padding: 0.5rem 0;
+
+  p {
+    @include sl.sl-body-1;
+    margin: 0 0 1.25rem;
+    color: sl.$sl-scale-50;
+  }
+}
+
+.card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.appt-card {
+  border-radius: 16px !important;
+  border: 1px solid sl.$sl-scale-100 !important;
+  box-shadow: 0 6px 24px rgba(1, 19, 19, 0.06) !important;
+  overflow: hidden;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 10px 36px rgba(0, 86, 121, 0.1) !important;
+    border-color: rgba(115, 223, 230, 0.55) !important;
+  }
+
+  .mat-mdc-card-header {
+    padding: 1.25rem 1.25rem 0;
+  }
+
+  .mat-mdc-card-title {
+    font-family: sl.$sl-font !important;
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    color: sl.$sl-scale-0 !important;
+  }
+
+  .mat-mdc-card-subtitle {
+    margin: 0.35rem 0 0 !important;
+    @include sl.sl-body-2;
+    color: sl.$sl-scale-50 !important;
+  }
+
+  .mat-mdc-card-content {
+    padding: 1rem 1.25rem 1.25rem !important;
+  }
+}
+
+.card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.card-meta dt {
+  @include sl.sl-small-label;
+  margin: 0;
+}
+
+.card-meta dd {
+  margin: 0.2rem 0 0;
+  @include sl.sl-body-1;
+  font-weight: 500;
+  color: sl.$sl-scale-25;
+}
+
+.card-status {
+  margin-bottom: 0.75rem;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.appt-panel {
+  border-radius: 16px !important;
+  border: 1px solid sl.$sl-scale-100 !important;
+  box-shadow: 0 8px 32px rgba(1, 19, 19, 0.07) !important;
+  overflow: hidden;
+
+  .mat-mdc-card-header {
+    padding: 1.25rem 1.5rem 0;
+    background: linear-gradient(
+      90deg,
+      sl.$sl-secondary 0%,
+      rgba(209, 248, 255, 0.35) 100%
+    );
+    border-bottom: 1px solid sl.$sl-scale-100;
+  }
+
+  .mat-mdc-card-title {
+    font-family: sl.$sl-font !important;
+    @include sl.sl-h5;
+    color: sl.$sl-scale-25 !important;
+  }
+
+  .mat-mdc-card-content {
+    padding: 0 !important;
+  }
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table.mat-mdc-table {
+  min-width: 44rem;
+}
+
+:host ::ng-deep .appointments-ui {
+  .mat-mdc-header-row {
+    background: sl.$sl-secondary;
+  }
+
+  .mat-mdc-header-cell {
+    font-family: sl.$sl-font !important;
+    @include sl.sl-medium-label;
+    color: sl.$sl-scale-25 !important;
+    border-bottom-color: sl.$sl-scale-100 !important;
+  }
+
+  .mat-mdc-cell {
+    font-family: sl.$sl-font !important;
+    @include sl.sl-body-2;
+    border-bottom-color: sl.$sl-scale-100 !important;
+  }
+
+  .mat-mdc-row:hover .mat-mdc-cell {
+    background-color: rgba(249, 249, 231, 0.45);
+  }
+}
+
+.status-pending {
+  --mdc-chip-elevated-container-color: #fff8e1;
+  --mdc-chip-label-text-color: #856404;
+  background-color: #fff8e1 !important;
+  font-family: sl.$sl-font !important;
+  font-weight: 600 !important;
+}
+
+.status-confirmed {
+  --mdc-chip-label-text-color: #1b5e20;
+  background-color: rgba(91, 188, 112, 0.22) !important;
+  font-family: sl.$sl-font !important;
+  font-weight: 600 !important;
+}
+
+.status-cancelled {
+  background-color: #ffebee !important;
+  --mdc-chip-label-text-color: #b71c1c;
+  font-family: sl.$sl-font !important;
+  font-weight: 600 !important;
+}
+
+.status-completed {
+  background-color: sl.$sl-scale-100 !important;
+  --mdc-chip-label-text-color: sl.$sl-scale-0;
+  font-family: sl.$sl-font !important;
+  font-weight: 600 !important;
+}

@@ -1,0 +1,142 @@
+// Salud-Link · tokens tipográficos y de color (Figma)
+// Fuente: Manrope
+
+$sl-font: 'Manrope', system-ui, -apple-system, sans-serif;
+
+// Paleta
+$sl-primary: #73dfe6;
+$sl-hover: #5bbc70;
+$sl-disabled: #3a7979;
+$sl-secondary: #d1f8ff;
+$sl-support: #f9f9e7;
+$sl-scale-100: #daeeee;
+$sl-scale-50: #8eb4c4;
+$sl-scale-25: #005679;
+$sl-scale-0: #011313;
+
+// Tipografía (tamaños en px del sistema → equivalentes)
+@mixin sl-h3 {
+  font-family: $sl-font;
+  font-size: 2rem; // 32
+  line-height: calc(54 / 32);
+  font-weight: 800;
+  letter-spacing: 0;
+  color: $sl-scale-0;
+}
+
+@mixin sl-h5 {
+  font-family: $sl-font;
+  font-size: 1.5rem; // 24
+  line-height: calc(32 / 24);
+  font-weight: 600;
+  letter-spacing: 0;
+  color: $sl-scale-0;
+}
+
+@mixin sl-subtitle-1 {
+  font-family: $sl-font;
+  font-size: 1.125rem; // 18
+  line-height: calc(28 / 18);
+  font-weight: 700;
+  color: $sl-scale-25;
+}
+
+@mixin sl-lead-1 {
+  font-family: $sl-font;
+  font-size: 1.125rem;
+  line-height: calc(32 / 18);
+  font-weight: 400;
+  color: $sl-scale-50;
+}
+
+@mixin sl-body-1 {
+  font-family: $sl-font;
+  font-size: 1rem;
+  line-height: calc(26 / 16);
+  font-weight: 400;
+  color: $sl-scale-0;
+}
+
+@mixin sl-body-2 {
+  font-family: $sl-font;
+  font-size: 0.875rem;
+  line-height: calc(22 / 14);
+  font-weight: 400;
+  color: $sl-scale-0;
+}
+
+@mixin sl-medium-label {
+  font-family: $sl-font;
+  font-size: 0.875rem;
+  line-height: calc(20 / 14);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+@mixin sl-small-label {
+  font-family: $sl-font;
+  font-size: 0.625rem;
+  line-height: calc(16 / 10);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $sl-scale-50;
+}
+
+@mixin sl-btn-primary {
+  .btn-sl-primary.mat-mdc-raised-button {
+    border-radius: 8px !important;
+    min-height: 44px;
+    padding: 0 1.35rem !important;
+    font-family: $sl-font !important;
+    font-weight: 600 !important;
+    font-size: 0.9375rem !important;
+    letter-spacing: 0.02em !important;
+    background-color: $sl-scale-25 !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(0, 86, 121, 0.22) !important;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.15s;
+    mat-icon {
+      margin-right: 0.35rem;
+    }
+    &:hover:not(:disabled) {
+      background-color: $sl-hover !important;
+      box-shadow: 0 4px 14px rgba(91, 188, 112, 0.35) !important;
+    }
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    &:disabled {
+      background-color: $sl-disabled !important;
+      color: rgba(255, 255, 255, 0.85) !important;
+      box-shadow: none !important;
+    }
+  }
+}
+
+@mixin sl-btn-outline {
+  .btn-sl-outline.mat-mdc-outlined-button {
+    border-radius: 8px !important;
+    min-height: 40px;
+    font-family: $sl-font !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    border-color: $sl-scale-50 !important;
+    color: $sl-scale-25 !important;
+    transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+    &:hover:not(:disabled) {
+      border-color: $sl-hover !important;
+      color: $sl-hover !important;
+      background-color: rgba(91, 188, 112, 0.08) !important;
+    }
+  }
+  .btn-sl-outline--danger.mat-mdc-outlined-button {
+    border-color: #c62828 !important;
+    color: #c62828 !important;
+    &:hover:not(:disabled) {
+      border-color: #e53935 !important;
+      color: #e53935 !important;
+      background-color: rgba(229, 57, 53, 0.06) !important;
+    }
+  }
+}

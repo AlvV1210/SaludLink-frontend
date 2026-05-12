@@ -1,0 +1,100 @@
+<section class="feature form-page appointments-ui">
+  <div class="form-page__top">
+    <a mat-button type="button" routerLink="/appointments" class="back-link">
+      ← Volver a citas
+    </a>
+    <h1 class="form-page__title">Nueva cita</h1>
+    <p class="form-page__lead">
+      Elige especialidad, médico, fecha y modalidad. Las notas son opcionales.
+    </p>
+  </div>
+
+  @if (isLoadingMeta()) {
+    <p class="muted">Cargando especialidades…</p>
+  } @else {
+    <form class="appt-form" (ngSubmit)="submit()" [formGroup]="form">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Especialidad</mat-label>
+        <mat-select formControlName="specialty" required>
+          @for (s of specialties(); track s) {
+            <mat-option [value]="s">{{ s }}</mat-option>
+          }
+        </mat-select>
+        @if (form.get("specialty")?.invalid && form.get("specialty")?.touched) {
+          <mat-error>Selecciona una especialidad</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Médico</mat-label>
+        <mat-select formControlName="doctorId" required>
+          @for (d of doctors(); track d.id) {
+            <mat-option [value]="d.id">{{ d.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.get("specialty")?.value && doctors().length === 0) {
+          <mat-hint>No hay médicos disponibles para esta especialidad</mat-hint>
+        }
+        @if (form.get("doctorId")?.invalid && form.get("doctorId")?.touched) {
+          <mat-error>Selecciona un médico</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="row">
+        <mat-form-field appearance="outline" class="grow">
+          <mat-label>Fecha</mat-label>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            formControlName="date"
+            [min]="minDate"
+          />
+          <mat-datepicker-toggle matIconSuffix [for]="picker" />
+          <mat-datepicker #picker />
+          @if (form.get("date")?.invalid && form.get("date")?.touched) {
+            <mat-error>Elige una fecha</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="time-field">
+          <mat-label>Hora</mat-label>
+          <input matInput type="time" formControlName="time" />
+          @if (form.get("time")?.invalid && form.get("time")?.touched) {
+            <mat-error>Indica la hora</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Modalidad</mat-label>
+        <mat-select formControlName="modality" required>
+          <mat-option [value]="AppointmentModality.inPerson"
+            >Presencial</mat-option
+          >
+          <mat-option [value]="AppointmentModality.virtual">Virtual</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Notas (opcional)</mat-label>
+        <textarea
+          matInput
+          formControlName="notes"
+          rows="3"
+          placeholder="Motivo de la consulta, preferencias, etc."
+        ></textarea>
+      </mat-form-field>
+
+      <div class="form-actions">
+        <button
+          mat-raised-button
+          class="btn-sl-primary"
+          type="submit"
+          [disabled]="isSubmitting()"
+        >
+          Confirmar cita
+        </button>
+      </div>
+    </form>
+  }
+</section>

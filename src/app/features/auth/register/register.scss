@@ -1,0 +1,278 @@
+:host {
+  display: grid;
+  min-height: 100vh;
+  width: 100%;
+  padding: 1rem;
+  place-items: center;
+}
+
+.auth-shell {
+  width: min(1120px, 100%);
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(300px, 36%) 1fr;
+  min-height: min(900px, calc(100vh - 2rem));
+}
+
+.auth-hero {
+  background: linear-gradient(160deg, #10b981 0%, #0f766e 100%);
+  color: #fff;
+  padding: clamp(1.4rem, 1.1rem + 1.3vw, 2.4rem);
+  display: grid;
+  align-content: start;
+  gap: 1.05rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: 'Roboto Slab', serif;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.brand-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f172a;
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.auth-hero h1 {
+  font-family: 'Roboto Slab', serif;
+  font-size: clamp(1.6rem, 1.2rem + 1.1vw, 2.35rem);
+  line-height: 1.1;
+  margin-top: 0.35rem;
+}
+
+.auth-hero p {
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.55;
+  max-width: 32ch;
+}
+
+.hero-points {
+  list-style: none;
+  margin: 0.35rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.hero-points li {
+  position: relative;
+  padding-left: 1.2rem;
+}
+
+.hero-points li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #d1fae5;
+  position: absolute;
+  left: 0;
+  top: 0.52rem;
+}
+
+.hero-tip {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 0.95rem 1rem;
+}
+
+.hero-tip h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.hero-tip p {
+  font-size: 0.9rem;
+  max-width: none;
+}
+
+.auth-card {
+  padding: clamp(1.4rem, 1.1rem + 1.2vw, 2.25rem);
+  display: grid;
+  align-content: start;
+  gap: 0.95rem;
+}
+
+.auth-card h2 {
+  font-size: clamp(1.45rem, 1.2rem + 0.8vw, 2rem);
+  line-height: 1.12;
+}
+
+.subtitle {
+  color: #6b7280;
+}
+
+.role-switch {
+  margin: 0.4rem 0 0.7rem;
+  padding: 0.3rem;
+  border-radius: 12px;
+  background: #f3f4f6;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+}
+
+.role-btn {
+  border: 0;
+  border-radius: 9px;
+  padding: 0.58rem 0.35rem;
+  background: transparent;
+  color: #4b5563;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.role-btn.active {
+  background: #fff;
+  color: #0f766e;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+form {
+  display: grid;
+  gap: 0.58rem;
+}
+
+.label {
+  margin-top: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.74rem 0.88rem;
+  font: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px #d1fae5;
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap .input {
+  padding-right: 5.5rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.row-between {
+  margin-top: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #4b5563;
+}
+
+.remember input {
+  accent-color: #10b981;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: #0f766e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit-btn {
+  margin-top: 0.35rem;
+  border: 0;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  background: #10b981;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: #0f9f71;
+}
+
+.auth-footer {
+  margin-top: 0.7rem;
+  display: inline-flex;
+  gap: 0.6rem;
+  color: #6b7280;
+}
+
+.create-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #0f766e;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.error {
+  margin-top: -0.2rem;
+  font-size: 0.82rem;
+  color: #dc2626;
+}
+
+@media (max-width: 920px) {
+  :host {
+    width: min(620px, 100%);
+  }
+
+  .auth-shell {
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero {
+    gap: 0.75rem;
+  }
+
+  .hero-tip {
+    margin-top: 0.35rem;
+  }
+}

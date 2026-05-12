@@ -1,0 +1,43 @@
+<app-patient-dashboard-shell
+  activeItem="recordatorios"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="page">
+    <header>
+      <h1>Tu cita virtual</h1>
+      <p>Conexion disponible 5 min antes</p>
+    </header>
+
+    <article class="doctor-card">
+      <div class="avatar">JP</div>
+      <div>
+        <strong>Dr. Juan Perez</strong>
+        <p>Cardiologia - CMP 045678</p>
+        <small>4.9 - 234 resenas</small>
+      </div>
+      <span class="pill">Virtual</span>
+    </article>
+
+    <section class="details">
+      <div><span>Fecha</span><strong>Hoy, lunes 4 de mayo</strong></div>
+      <div><span>Hora</span><strong>14:30 (30 min)</strong></div>
+      <div><span>Motivo</span><strong>Control hipertension</strong></div>
+      <div><span>Modalidad</span><strong>Videollamada SaludLink</strong></div>
+    </section>
+
+    <article class="warning">
+      <strong>Faltan 15 minutos</strong>
+      <p>Recomendamos probar tu camara y microfono antes de unirte</p>
+    </article>
+
+    <button type="button" class="join" (click)="joinMeet()">Unirse a la consulta</button>
+  </section>
+</app-patient-dashboard-shell>

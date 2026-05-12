@@ -1,0 +1,33 @@
+<section class="flow-shell medico">
+  <aside class="left-pane">
+    <div class="brand"><span class="plus">+</span> SaludLink</div>
+    <h1>Registro de profesionales de salud</h1>
+    <p>Conecta con tus pacientes y optimiza tu consulta.</p>
+    <ul>
+      <li>Gestión de agenda inteligente</li>
+      <li>Tablero de adherencia</li>
+      <li>Telemedicina integrada</li>
+    </ul>
+  </aside>
+
+  <div class="form-pane">
+    <h2>Datos profesionales</h2>
+    <div class="grid two">
+      <label>Nombres<input placeholder="Juan Carlos" /></label>
+      <label>Apellidos<input placeholder="Pérez Salazar" /></label>
+    </div>
+    <div class="grid two">
+      <label>Especialidad<input placeholder="Cardiología" /></label>
+      <label>N° CMP<input placeholder="CMP 045678" /></label>
+    </div>
+    <div class="grid one">
+      <label>Correo profesional<input placeholder="dr.jperez@saludlink.pe" /></label>
+    </div>
+    <div class="grid two">
+      <label>Contraseña<input type="password" placeholder="••••••••" /></label>
+      <label>Confirmar<input type="password" placeholder="••••••••" /></label>
+    </div>
+    <label class="check"><input type="checkbox" checked /> Acepto Código de Ética y Privacidad</label>
+    <button type="button" class="submit" (click)="finish()">Crear cuenta profesional</button>
+  </div>
+</section>

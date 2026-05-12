@@ -1,0 +1,22 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <h1>&iquest;C&oacute;mo fue tu cita?</h1>
+  <p class="subtitle">Tu opini&oacute;n ayuda a otros pacientes</p>
+  <section class="card item" style="background:#ecfdf5;border-color:#a7f3d0"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a - Mi&eacute; 7 may - Completada</div></div></section>
+  <div style="text-align:center"><h3>Calificaci&oacute;n general</h3><div class="row" style="justify-content:center">@for (star of [1,2,3,4,5]; track star) {<button type="button" class="btn ghost" [class.primary]="star <= stars()" (click)="setStars(star)">{{ star }}</button>}</div><p style="color:#059669;font-weight:700">&iexcl;Excelente!</p></div>
+  <div class="row"><div>Puntualidad 5/5<br />Claridad 5/5</div><div>Trato 5/5<br />Limpieza 5/5</div></div>
+  <label for="resena"><strong>Tu rese&ntilde;a (opcional)</strong></label>
+  <textarea id="resena" class="input" rows="4">Excelente atenci&oacute;n, muy claro al explicar...</textarea>
+  <p class="subtitle">Tu rese&ntilde;a ser&aacute; p&uacute;blica en el perfil del m&eacute;dico</p>
+  <button type="button" class="btn primary" (click)="publish()">Publicar rese&ntilde;a</button>
+</app-patient-dashboard-shell>

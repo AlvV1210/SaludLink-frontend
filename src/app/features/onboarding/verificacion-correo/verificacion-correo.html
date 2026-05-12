@@ -1,0 +1,15 @@
+<section class="verification-screen">
+  <article class="verification-card">
+    <div class="mail-icon" aria-hidden="true">✉</div>
+    <h1>Verifica tu correo</h1>
+    <p>Te enviamos un enlace de verificación a <strong>luperuben@gmail.com</strong></p>
+    <small>Revisa tu bandeja de entrada y carpeta spam</small>
+
+    <div class="actions-row">
+      <button type="button" class="ghost" (click)="changeEmail()">Cambiar correo</button>
+      <button type="button" class="outline" (click)="resend()">Reenviar enlace</button>
+    </div>
+
+    <button type="button" class="link" (click)="continueFlow()">¿Ya verificaste? Continuar →</button>
+  </article>
+</section>

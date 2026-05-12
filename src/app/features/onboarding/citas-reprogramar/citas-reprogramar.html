@@ -1,0 +1,21 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <h1>Reprogramar tu cita</h1>
+  <p class="subtitle">Selecciona un nuevo horario disponible</p>
+  <section class="card" style="background:#fef2f2;border-color:#fecaca"><strong>Cita actual</strong><div class="subtitle">Mié 7 may · 10:00 · Dr. Juan Pérez</div><div class="subtitle">Esta cita se liberará al confirmar la nueva</div></section>
+  <h3>Nuevos horarios disponibles</h3>
+  <div class="grid-3"><button class="btn ghost" type="button">6</button><button class="btn primary" type="button">8</button><button class="btn ghost" type="button">9</button></div>
+  <div class="grid-3"><button class="btn ghost" type="button">9:00</button><button class="btn primary" type="button">11:00</button><button class="btn ghost" type="button">17:00</button></div>
+  <p class="subtitle">Sin costo adicional · Reprogramación gratuita hasta 4h antes</p>
+  <div class="row"><button type="button" class="btn ghost" (click)="cancel()">Cancelar</button><button type="button" class="btn primary" (click)="confirm()">Confirmar nueva fecha</button></div>
+</app-patient-dashboard-shell>

@@ -1,0 +1,21 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <div class="row" style="justify-content:space-between;align-items:center"><h1>M&eacute;todo de pago</h1><strong style="color:#059669;font-size:1.8rem">S/ 120.00</strong></div>
+  <p class="subtitle">Selecciona c&oacute;mo deseas pagar</p>
+  <section class="card" style="border-color:#10b981"><strong>VISA - Tarjeta de cr&eacute;dito/d&eacute;bito</strong><div class="subtitle">Visa, Mastercard, AmEx</div></section>
+  <section class="card"><strong>Yape / Plin</strong><div class="subtitle">Pago instantáneo</div></section>
+  <div class="row"><input class="input" value="4532 **** **** 8192" /><input class="input" value="LUPE R CUNYAS" /></div>
+  <div class="row"><input class="input" value="12/27" /><input class="input" value="***" /></div>
+  <p class="subtitle">Pago seguro - Cifrado SSL - No guardamos tu CVV</p>
+  <button type="button" class="btn primary" (click)="payNow()">Pagar S/120 ahora</button>
+</app-patient-dashboard-shell>

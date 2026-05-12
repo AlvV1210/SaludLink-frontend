@@ -1,0 +1,132 @@
+.medications-page {
+  padding: 1.5rem;
+  color: #333333;
+  background: #f3f3f3;
+  min-height: 100%;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    color: #092c4c;
+    font-size: 2rem;
+  }
+
+  p {
+    margin: 0.25rem 0 0;
+    color: #4f4f4f;
+  }
+}
+
+.accent {
+  color: #00b5a0;
+}
+
+.page-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+}
+
+.medications-section h2 {
+  color: #092c4c;
+  margin: 0 0 1rem;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.medication-card {
+  border-left: 4px solid #00b5a0;
+}
+
+.status-badge {
+  margin-left: auto;
+}
+
+:host ::ng-deep .active .mat-badge-content {
+  background-color: #00b5a0;
+  color: #ffffff;
+}
+
+:host ::ng-deep .inactive .mat-badge-content {
+  background-color: #eb5757;
+  color: #ffffff;
+}
+
+.form-card {
+  margin-top: 1.25rem;
+}
+
+.medication-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.reminders-section .reminder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reminder-item {
+  border: 1px solid #dcdcdc;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reminder-med {
+  margin: 0;
+  font-weight: 600;
+  color: #092c4c;
+}
+
+.reminder-meta {
+  margin: 0.2rem 0 0;
+  color: #4f4f4f;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  --mat-sys-primary: #00b5a0;
+}
+
+.btn-primary-outline {
+  color: #00b5a0;
+  border-color: #00b5a0;
+}
+
+@media (max-width: 960px) {
+  .page-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .medication-form {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

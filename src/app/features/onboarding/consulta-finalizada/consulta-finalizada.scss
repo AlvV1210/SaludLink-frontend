@@ -1,0 +1,120 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.page {
+  display: grid;
+  gap: 0.8rem;
+  min-height: calc(100vh - 140px);
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #047857;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+h1 {
+  margin: 0;
+}
+
+.heading p {
+  margin: 0.2rem 0 0;
+  color: #6b7280;
+}
+
+.card {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.8rem;
+}
+
+.card h3 {
+  margin: 0 0 0.5rem;
+}
+
+.card ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: #374151;
+}
+
+.success {
+  border-color: #6ee7b7;
+  background: #d1fae5;
+}
+
+.success p {
+  margin: 0.2rem 0 0;
+  color: #065f46;
+}
+
+.chat {
+  border-color: #86efac;
+  background: #ecfdf5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat p {
+  margin: 0.2rem 0 0;
+  color: #6b7280;
+}
+
+.chat button {
+  border: 0;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  padding: 0.45rem 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.actions {
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.ghost,
+.primary {
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ghost {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+}
+
+.primary {
+  border: 1px solid #10b981;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+@media (max-width: 760px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,38 @@
+.main-layout {
+  display: flex;
+  min-height: 100%;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid color-mix(in srgb, CanvasText 12%, transparent);
+  padding: 1rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-nav a {
+  color: inherit;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.sidebar-nav a:hover {
+  background: color-mix(in srgb, CanvasText 6%, transparent);
+}
+
+.sidebar-nav a.active {
+  font-weight: 600;
+  background: color-mix(in srgb, CanvasText 10%, transparent);
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+}

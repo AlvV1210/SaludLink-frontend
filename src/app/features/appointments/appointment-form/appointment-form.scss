@@ -1,0 +1,139 @@
+@use '../appointments.design-tokens' as sl;
+
+:host {
+  display: block;
+  min-height: 100%;
+  padding: 1.25rem 1.25rem 2.5rem;
+  box-sizing: border-box;
+  background: linear-gradient(
+    165deg,
+    sl.$sl-support 0%,
+    #ffffff 24%,
+    #ffffff 100%
+  );
+}
+
+.appointments-ui {
+  font-family: sl.$sl-font;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.form-page {
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.form-page__top {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid sl.$sl-scale-100;
+}
+
+.form-page__title {
+  margin: 0.65rem 0 0;
+  @include sl.sl-h3;
+}
+
+.form-page__lead {
+  margin: 0.5rem 0 0;
+  @include sl.sl-lead-1;
+}
+
+.back-link {
+  text-decoration: none;
+  font-family: sl.$sl-font;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: sl.$sl-scale-25 !important;
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+  margin-left: -0.5rem;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    color: sl.$sl-hover !important;
+    background-color: rgba(91, 188, 112, 0.08);
+  }
+}
+
+.muted {
+  @include sl.sl-body-2;
+  color: sl.$sl-scale-50;
+  margin: 0;
+}
+
+.appt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid sl.$sl-scale-100;
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(1, 19, 19, 0.06);
+}
+
+.full {
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.grow {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.time-field {
+  flex: 0 1 10rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid sl.$sl-scale-100;
+}
+
+@include sl.sl-btn-primary;
+
+:host ::ng-deep .appointments-ui {
+  .mat-mdc-form-field {
+    font-family: sl.$sl-font;
+    --mdc-outlined-text-field-outline-color: #{sl.$sl-scale-50};
+    --mdc-outlined-text-field-hover-outline-color: #{sl.$sl-scale-25};
+    --mdc-outlined-text-field-focus-outline-color: #{sl.$sl-scale-25};
+    --mdc-outlined-text-field-label-text-color: #{sl.$sl-scale-50};
+    --mdc-outlined-text-field-focus-label-text-color: #{sl.$sl-scale-25};
+    --mdc-outlined-text-field-input-text-color: #{sl.$sl-scale-0};
+    --mat-form-field-container-vertical-padding: 14px;
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    font-family: sl.$sl-font;
+  }
+
+  .mat-mdc-floating-label,
+  .mdc-floating-label {
+    font-family: sl.$sl-font !important;
+  }
+
+  .mat-mdc-input-element,
+  .mat-mdc-select-value {
+    font-family: sl.$sl-font !important;
+    @include sl.sl-body-1;
+  }
+
+  .mat-datepicker-toggle {
+    color: sl.$sl-scale-25;
+  }
+}

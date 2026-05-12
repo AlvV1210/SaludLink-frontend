@@ -1,0 +1,314 @@
+<div class="landing">
+  <header class="topbar">
+    <button type="button" class="brand" (click)="goTo('inicio', $event)">
+      <span class="logo-dot">+</span>
+      SaludLink
+    </button>
+
+    <nav class="menu-links">
+      <button type="button" (click)="goTo('inicio', $event)">Inicio</button>
+      <button type="button" (click)="goTo('funcionalidades', $event)">Funcionalidades</button>
+      <button type="button" (click)="goTo('planes', $event)">Planes</button>
+      <button type="button" (click)="goTo('contacto', $event)">Contacto</button>
+    </nav>
+
+    <div class="actions">
+      <a routerLink="/bienvenidacuenta" class="btn ghost">Iniciar sesión</a>
+      <a routerLink="/bienvenidacuenta" class="avatar" aria-label="Usuario">
+        <span class="user-icon" aria-hidden="true"></span>
+      </a>
+    </div>
+  </header>
+
+  <section class="hero section-card" id="inicio">
+    <div class="hero-copy">
+      <p class="chip">Plataforma de salud digital</p>
+      <h1>Tu salud, siempre conectada</h1>
+      <p>
+        Agenda citas, sigue tu tratamiento, accede a tu historial clínico y cuida tu bienestar emocional desde un
+        solo lugar.
+      </p>
+      <a routerLink="/bienvenidacuenta" class="btn primary">Empieza gratis</a>
+      <ul class="hero-benefits">
+        <li>Sin filas</li>
+        <li>100% online</li>
+        <li>Atención 24/7</li>
+      </ul>
+    </div>
+
+    <article class="hero-panel">
+      <p class="chip soft">Activo</p>
+      <div class="hero-metrics">
+        <div>
+          <strong>2</strong>
+          <span>Citas esta semana</span>
+        </div>
+        <div>
+          <strong>87%</strong>
+          <span>Adherencia semanal</span>
+        </div>
+      </div>
+      <div class="next-appointment">
+        <span>Próxima cita</span>
+        <strong>Dr. Fernando Olivares</strong>
+        <small>Medicina General · Virtual</small>
+        <small>Mié 24 Abr · 10:30 AM</small>
+      </div>
+      <div class="quick-tabs">
+        <button type="button">Mis citas</button>
+        <button type="button">Medicación</button>
+        <button type="button">Historial</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="stats section-card">
+    <article><strong>10K+</strong><span>Pacientes activos</span></article>
+    <article><strong>500+</strong><span>Médicos certificados</span></article>
+    <article><strong>25</strong><span>Clínicas afiliadas</span></article>
+    <article><strong>87%</strong><span>Adherencia promedio</span></article>
+  </section>
+
+  <section class="section" id="funcionalidades">
+    <p class="chip">Funcionalidades</p>
+    <h2>Todo lo que necesitas en un solo lugar</h2>
+    <p class="section-text">Cuatro ejes principales para gestionar tu salud de forma integral, sin filas y sin llamadas.</p>
+    <div class="feature-grid">
+      <article class="info-card">
+        <h3>Próximas citas</h3>
+        <p>Consulta rápida y fácil de tus citas programadas, con recordatorios automáticos.</p>
+        <button type="button" (click)="goTo('planes', $event)">Ver todas</button>
+      </article>
+      <article class="info-card">
+        <h3>Medicamentos hoy</h3>
+        <p>Controla tus dosis y recibe recordatorios inteligentes para no olvidar tu tratamiento.</p>
+        <button type="button" (click)="goTo('planes', $event)">Gestionar</button>
+      </article>
+      <article class="info-card">
+        <h3>Historial clínico</h3>
+        <p>Accede a tus documentos médicos y pruebas en cualquier momento, desde cualquier lugar.</p>
+        <button type="button" (click)="goTo('contacto', $event)">Ver historial</button>
+      </article>
+      <article class="info-card">
+        <h3>Salud mental</h3>
+        <p>Apoyo emocional cuando más lo necesitas, con tests validados y recursos guiados.</p>
+        <button type="button" (click)="goTo('contacto', $event)">Empezar</button>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="chip">Para todos</p>
+    <h2>Diseñado para cada perfil</h2>
+    <p class="section-text">Una plataforma que conecta tres mundos: pacientes, médicos y clínicas.</p>
+    <div class="profile-grid">
+      <article class="profile-card featured">
+        <h3>Paciente</h3>
+        <p>Gestiona tu salud diaria desde una sola app.</p>
+        <ul>
+          <li>Agenda citas en minutos</li>
+          <li>Recordatorios de medicación</li>
+          <li>Telemedicina y chat con tu médico</li>
+          <li>Historial digital exportable</li>
+        </ul>
+        <a routerLink="/bienvenidacuenta" class="btn primary full">Empezar gratis</a>
+      </article>
+      <article class="profile-card">
+        <h3>Médico</h3>
+        <p>Optimiza tu agenda y cuida mejor a tus pacientes.</p>
+        <ul>
+          <li>Agenda inteligente y disponibilidad</li>
+          <li>Validación de credenciales</li>
+          <li>Telemedicina integrada</li>
+          <li>Recetas digitales</li>
+        </ul>
+        <a routerLink="/registromedico" class="btn ghost full">Soy médico</a>
+      </article>
+      <article class="profile-card">
+        <h3>Clínica</h3>
+        <p>Gestiona tu institución de salud al 360°.</p>
+        <ul>
+          <li>Panel administrativo institucional</li>
+          <li>Gestión de médicos afiliados</li>
+          <li>Reportes de no-shows y asistencia</li>
+          <li>Facturación automática</li>
+        </ul>
+        <a routerLink="/registroinstitucion" class="btn ghost full">Soy clínica</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section-card alt-bg">
+    <p class="chip">24 funciones</p>
+    <h2>Una plataforma completa</h2>
+    <p class="section-text">
+      Cada función fue diseñada con metodología Lean UX para resolver una necesidad real de pacientes, médicos y
+      clínicas.
+    </p>
+    <div class="feature-list">
+      <article><h3>Búsqueda de especialistas</h3><p>Encuentra médicos por especialidad, ubicación y disponibilidad.</p></article>
+      <article><h3>Reserva de citas</h3><p>Agenda en minutos sin llamadas ni filas.</p></article>
+      <article><h3>Telemedicina</h3><p>Videoconsulta con cifrado E2E.</p></article>
+      <article><h3>Recordatorios</h3><p>Alertas inteligentes y personalizables.</p></article>
+      <article><h3>Historial clínico</h3><p>Sube exámenes, recetas e informes.</p></article>
+      <article><h3>Salud mental</h3><p>Tests PHQ-9 y derivación profesional.</p></article>
+      <article><h3>Exportar historial</h3><p>PDF protegido con código temporal.</p></article>
+      <article><h3>Reprogramar citas</h3><p>Cambia tu cita en pocos toques.</p></article>
+      <article><h3>Dependientes</h3><p>Gestiona la salud de tus hijos o familiares.</p></article>
+      <article><h3>Pago en línea</h3><p>Yape, Visa y más, seguro y rápido.</p></article>
+      <article><h3>Calificar consulta</h3><p>Tu opinión mejora la calidad.</p></article>
+      <article><h3>SOS médico</h3><p>Acceso rápido a contactos de emergencia.</p></article>
+    </div>
+  </section>
+
+  <section class="section how-it-works">
+    <p class="chip">Cómo funciona</p>
+    <h2>Empieza en 4 pasos</h2>
+    <p class="section-text">Configura tu cuenta en menos de 5 minutos y empieza a gestionar tu salud sin complicaciones.</p>
+    <div class="steps-grid">
+      <article><span>1</span><h3>Regístrate</h3><p>Crea tu cuenta gratis con correo y DNI.</p></article>
+      <article><span>2</span><h3>Configura tu perfil</h3><p>Añade tus datos de salud y contacto de emergencia.</p></article>
+      <article><span>3</span><h3>Encuentra tu especialista</h3><p>Busca por especialidad, calificación o ubicación.</p></article>
+      <article><span>4</span><h3>Gestiona tu salud</h3><p>Recibe recordatorios y consulta tu historial.</p></article>
+    </div>
+  </section>
+
+  <section class="section section-card security-card">
+    <div>
+      <h2>Tu información, protegida y segura</h2>
+      <p>SaludLink cumple con los más altos estándares de seguridad y privacidad de datos en el Perú.</p>
+      <button type="button" class="btn primary" (click)="goTo('contacto', $event)">Conoce más sobre seguridad</button>
+    </div>
+    <ul>
+      <li><strong>Cifrado E2E</strong><span>Tus datos clínicos viajan cifrados de extremo a extremo.</span></li>
+      <li><strong>Ley 29733 cumplida</strong><span>Protección de datos personales del Perú.</span></li>
+      <li><strong>Validado por SUSALUD</strong><span>Cumplimos estándares de instituciones prestadoras.</span></li>
+      <li><strong>Médicos validados (CMP)</strong><span>Cada profesional valida sus credenciales.</span></li>
+    </ul>
+  </section>
+
+  <section class="section" id="planes">
+    <p class="chip">Planes</p>
+    <h2>Elige el plan ideal para ti</h2>
+    <p class="section-text">Planes para pacientes, médicos y clínicas con herramientas de coordinación a tu medida.</p>
+    <div class="plans-grid">
+      <article class="plan-card">
+        <h3>Plan Personal</h3>
+        <p class="plan-price">S/ 0 <span>/mes</span></p>
+        <ul>
+          <li>Acceso a citas médicas</li>
+          <li>Historial médico personal</li>
+          <li>Recordatorios de medicinas</li>
+          <li>Tests de salud mental</li>
+        </ul>
+        <a routerLink="/bienvenidacuenta" class="btn ghost full">Empezar gratis</a>
+      </article>
+      <article class="plan-card">
+        <h3>Plan Profesional</h3>
+        <p class="plan-price">S/ 49 <span>/mes</span></p>
+        <ul>
+          <li>Agenda y disponibilidad</li>
+          <li>Tablero de adherencia</li>
+          <li>Telemedicina ilimitada</li>
+          <li>Recetas digitales</li>
+        </ul>
+        <a routerLink="/registromedico" class="btn ghost full">Soy médico</a>
+      </article>
+      <article class="plan-card featured-plan">
+        <h3>Plan Clínico</h3>
+        <p class="plan-price">S/ 99 <span>/mes</span></p>
+        <ul>
+          <li>Todas las funciones del personal</li>
+          <li>Citas de telemedicina</li>
+          <li>Historial médico compartido</li>
+          <li>Reportes institucionales</li>
+        </ul>
+        <a routerLink="/registroinstitucion" class="btn primary full">Contratar ahora</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="section section-card alt-bg">
+    <p class="chip">Testimonios</p>
+    <h2>Lo que dicen nuestros usuarios</h2>
+    <p class="section-text">Miles de pacientes, médicos y clínicas ya confían en SaludLink para gestionar su salud.</p>
+    <div class="testimonials-grid">
+      <article>
+        <p>
+          "Antes perdía horas en filas de la clínica. Ahora reservo desde el celular y los recordatorios me ayudan a no
+          olvidar ninguna pastilla."
+        </p>
+        <strong>Lupe Cunyas</strong>
+        <span>Paciente · Lima</span>
+      </article>
+      <article>
+        <p>"El tablero de adherencia me cambió la práctica. Veo de un vistazo qué pacientes necesitan más atención."</p>
+        <strong>Dr. Juan Pérez</strong>
+        <span>Cardiólogo · CMP 045678</span>
+      </article>
+      <article>
+        <p>
+          "Coordinar 28 médicos en 3 sedes era un caos. Con SaludLink tenemos toda la información en un solo panel."
+        </p>
+        <strong>Carlos Mendoza</strong>
+        <span>Director · Clínica San Pablo</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section contact-section" id="contacto">
+    <p class="chip">Contacto</p>
+    <h2>¿Tienes alguna pregunta?</h2>
+    <p class="section-text">Estamos listos para ayudarte con tu bienestar. Escríbenos y te respondemos en menos de 24 horas.</p>
+    <div class="contact-grid">
+      <article class="contact-form">
+        <h3>Envíanos un mensaje</h3>
+        <form>
+          <div class="input-grid">
+            <label>Nombre completo<input type="text" placeholder="Tu nombre" /></label>
+            <label>Correo electrónico<input type="email" placeholder="tu@correo.com" /></label>
+            <label>Teléfono<input type="text" placeholder="+51 999 999 999" /></label>
+            <label>Soy<input type="text" placeholder="Paciente" /></label>
+          </div>
+          <label>Mensaje<textarea rows="4" placeholder="Cuéntanos cómo podemos ayudarte..."></textarea></label>
+          <button type="button" class="btn primary full">Enviar mensaje</button>
+        </form>
+      </article>
+      <article class="contact-data">
+        <h3>Contacto directo</h3>
+        <ul>
+          <li><strong>Email</strong><span>contacto&#64;saludlink.pe</span></li>
+          <li><strong>Ubicación</strong><span>Lima, Perú</span></li>
+          <li><strong>Teléfono</strong><span>+51 999 888 777</span></li>
+          <li><strong>Línea de salud mental</strong><span>113 SaludMental MINSA · 24/7</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <strong>SaludLink</strong>
+      <p>Plataforma de salud digital que conecta pacientes, médicos y clínicas en el Perú.</p>
+    </div>
+    <div class="footer-columns">
+      <div>
+        <h4>Producto</h4>
+        <a href="#funcionalidades" (click)="goTo('funcionalidades', $event)">Funcionalidades</a>
+        <a href="#planes" (click)="goTo('planes', $event)">Planes</a>
+        <a routerLink="/registro">Telemedicina</a>
+      </div>
+      <div>
+        <h4>Empresa</h4>
+        <a href="#inicio" (click)="goTo('inicio', $event)">Sobre nosotros</a>
+        <a href="#contacto" (click)="goTo('contacto', $event)">Contacto</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="#contacto" (click)="goTo('contacto', $event)">Términos y condiciones</a>
+        <a href="#contacto" (click)="goTo('contacto', $event)">Política de privacidad</a>
+      </div>
+    </div>
+    <p class="footer-copy">© 2026 SaludLink · Todos los derechos reservados</p>
+  </footer>
+</div>

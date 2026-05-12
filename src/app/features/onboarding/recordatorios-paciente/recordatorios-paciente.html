@@ -1,0 +1,54 @@
+<app-patient-dashboard-shell
+  activeItem="recordatorios"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="page">
+    <h1>!Hola, Lupe!</h1>
+    <p class="subtitle">Tienes una cita virtual hoy</p>
+
+    <article class="meeting-highlight">
+      <div>
+        <strong>Cita virtual en 15 minutos</strong>
+        <p>Dr. Juan Perez - 14:30 - Cardiologia</p>
+      </div>
+      <button type="button" class="join-btn" (click)="joinConsultation()">Unirse</button>
+    </article>
+
+    <section class="kpis">
+      <article>
+        <span>Proxima virtual</span>
+        <strong>Hoy 14:30</strong>
+        <small>Dr. Perez</small>
+      </article>
+      <article>
+        <span>Recordat.</span>
+        <strong>3</strong>
+        <small>2 tomados</small>
+      </article>
+      <article>
+        <span>Adherencia</span>
+        <strong>92%</strong>
+        <small>16%</small>
+      </article>
+    </section>
+
+    <section class="quick-actions">
+      <button type="button" class="mood-btn">
+        <span>Como te sientes?</span>
+        <small>Test rapido salud mental</small>
+      </button>
+      <button type="button" class="sos-btn" (click)="goEmergency()">
+        <span>SOS</span>
+        <small>Emergencia</small>
+      </button>
+    </section>
+  </section>
+</app-patient-dashboard-shell>

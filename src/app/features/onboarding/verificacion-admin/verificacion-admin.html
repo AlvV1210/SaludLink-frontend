@@ -1,0 +1,30 @@
+<section class="flow-screen">
+  <article class="flow-card">
+    <div class="steps">
+      <span class="ok">✓ Datos</span>
+      <span class="active">2. RUC</span>
+      <span>3. Admin</span>
+    </div>
+    <div class="ok-card">RUC verificado en SUNAT · CLINICA SAN PABLO SAC · Activo</div>
+    <h1>Administrador principal</h1>
+    <p>Esta persona será responsable legal y tendrá acceso total al panel institucional.</p>
+
+    <div class="grid two">
+      <label>Nombres<input placeholder="Carlos Eduardo" /></label>
+      <label>Apellidos<input placeholder="Mendoza Vargas" /></label>
+    </div>
+    <div class="grid two">
+      <label>Cargo<input placeholder="Director Médico" /></label>
+      <label>DNI<input placeholder="45678912" /></label>
+    </div>
+    <div class="grid one">
+      <label>Correo institucional<input placeholder="cmendoza@clinicasanpablo.pe" /></label>
+    </div>
+    <label class="check"><input type="checkbox" checked /> Acepto el acuerdo institucional.</label>
+
+    <div class="actions">
+      <button type="button" class="ghost" (click)="goBack()">← Volver</button>
+      <button type="button" class="submit" (click)="createInstitution()">Crear institución</button>
+    </div>
+  </article>
+</section>

@@ -1,0 +1,94 @@
+<section class="auth-shell">
+  <aside class="auth-hero">
+    <div class="brand">
+      <div class="brand-icon">+</div>
+      <span>SaludLink</span>
+    </div>
+
+    <h1>Bienvenido de vuelta</h1>
+    <p>Inicia sesión para gestionar tu salud, atender pacientes o administrar tu institución.</p>
+
+    <ul class="hero-points">
+      <li>Sesión segura cifrada</li>
+      <li>Misma puerta para los 3 perfiles</li>
+      <li>Cumplimiento Ley 29733</li>
+    </ul>
+
+    <div class="hero-tip">
+      <h2>¿Cómo funciona?</h2>
+      <p>Detectamos automáticamente si eres paciente, médico o clínica según tu correo registrado.</p>
+    </div>
+  </aside>
+
+  <div class="auth-card">
+    <h2>Iniciar sesión</h2>
+    <p class="subtitle">Usa tu correo y contraseña</p>
+
+    <div class="role-switch" role="tablist" aria-label="Seleccionar perfil">
+      <button
+        type="button"
+        class="role-btn"
+        [class.active]="selectedRole() === 'PACIENTE'"
+        (click)="selectRole('PACIENTE')"
+      >
+        Paciente
+      </button>
+      <button
+        type="button"
+        class="role-btn"
+        [class.active]="selectedRole() === 'PROFESIONAL'"
+        (click)="selectRole('PROFESIONAL')"
+      >
+        Profesional
+      </button>
+      <button
+        type="button"
+        class="role-btn"
+        [class.active]="selectedRole() === 'CLINICA'"
+        (click)="selectRole('CLINICA')"
+      >
+        Clínica
+      </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label class="label" for="email">Correo electrónico</label>
+      <input id="email" class="input" type="email" formControlName="email" placeholder="luperuben@gmail.com" />
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p class="error">Ingresa un correo válido.</p>
+      }
+
+      <label class="label" for="password">Contraseña</label>
+      <div class="password-wrap">
+        <input
+          id="password"
+          class="input"
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          placeholder="••••••••"
+        />
+        <button type="button" class="toggle-password" (click)="togglePassword()">
+          {{ showPassword() ? 'Ocultar' : 'Mostrar' }}
+        </button>
+      </div>
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p class="error">La contraseña debe tener al menos 6 caracteres.</p>
+      }
+
+      <div class="row-between">
+        <label class="remember">
+          <input type="checkbox" formControlName="remember" />
+          Recordarme
+        </label>
+        <button type="button" class="link-btn" (click)="goRecoverPassword()">¿Olvidaste tu contraseña?</button>
+      </div>
+
+      <button type="submit" class="submit-btn">Iniciar sesión</button>
+    </form>
+
+    <div class="auth-footer">
+      <span>¿No tienes cuenta?</span>
+      <button type="button" class="create-link" (click)="goHome()">Crear cuenta</button>
+    </div>
+  </div>
+</section>

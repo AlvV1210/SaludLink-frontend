@@ -1,0 +1,23 @@
+<section class="profile-screen">
+  <article class="profile-card">
+    <header class="card-header">
+      <h1>Completa tu perfil de salud</h1>
+      <span>Paso 1 de 2</span>
+    </header>
+
+    <div class="form-grid">
+      <label>Fecha de nacimiento<input placeholder="15 / 03 / 1995" /></label>
+      <label>Sexo<input placeholder="Femenino" /></label>
+      <label>DNI<input placeholder="12345678" /></label>
+      <label>Grupo sanguíneo<input placeholder="O+" /></label>
+      <label class="full">Antecedentes médicos<input placeholder="Hipertensión, alergia a penicilina..." /></label>
+      <label class="full">Contacto de emergencia<input placeholder="María Schermacha · +51 999 111 222" /></label>
+      <div class="alert full">Tu información está protegida. Solo médicos autorizados podrán acceder.</div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="ghost" (click)="skip()">Omitir</button>
+      <button type="button" class="primary" (click)="saveAndContinue()">Guardar y continuar →</button>
+    </div>
+  </article>
+</section>
