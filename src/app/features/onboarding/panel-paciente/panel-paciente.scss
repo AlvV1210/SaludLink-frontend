@@ -381,6 +381,11 @@ th {
   color: #1d4ed8;
 }
 
+.status.done {
+  background: #d1fae5;
+  color: #065f46;
+}
+
 .status.off {
   background: #fee2e2;
   color: #b91c1c;
@@ -774,6 +779,220 @@ th {
   padding: 0.58rem 0.68rem;
 }
 
+.postconsulta-layout {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 0.8rem;
+}
+
+.postconsulta-list {
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+
+.postconsulta-list h3 {
+  margin: 0;
+  color: var(--pt-text);
+}
+
+.postconsulta-list select {
+  border: 1px solid #c7ddd5;
+  border-radius: 10px;
+  padding: 0.52rem 0.62rem;
+  background: #ffffff;
+}
+
+.postconsulta-items {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.postconsulta-item {
+  border: 1px solid #deefe9;
+  border-radius: 10px;
+  background: #f8fffd;
+  padding: 0.58rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.postconsulta-item.active {
+  border-color: #14b8a6;
+  background: #ecfdf5;
+}
+
+.postconsulta-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.postconsulta-item strong {
+  color: #0f172a;
+}
+
+.postconsulta-item small {
+  color: #6b7280;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #10b981;
+  display: inline-block;
+}
+
+.postconsulta-chat {
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 480px;
+}
+
+.postconsulta-header {
+  border-bottom: 1px solid #deefe9;
+  background: #d1fae5;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.postconsulta-doc {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.postconsulta-doc strong {
+  color: #0f172a;
+}
+
+.postconsulta-doc small {
+  color: #4b5563;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.postconsulta-date {
+  color: #0f766e;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.postconsulta-messages {
+  padding: 0.8rem;
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  overflow: auto;
+  max-height: 430px;
+}
+
+.postconsulta-day-label {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.postconsulta-bubble {
+  width: fit-content;
+  max-width: 76%;
+  border-radius: 14px;
+  border: 1px solid #deefe9;
+  background: #d1fae5;
+  padding: 0.55rem 0.7rem;
+}
+
+.postconsulta-bubble p {
+  margin: 0;
+  color: #1f2937;
+}
+
+.postconsulta-bubble small {
+  margin-top: 0.2rem;
+  display: block;
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.postconsulta-bubble.me {
+  justify-self: end;
+  background: linear-gradient(135deg, #10b981, #0f766e);
+  border-color: #10b981;
+}
+
+.postconsulta-bubble.me p,
+.postconsulta-bubble.me small {
+  color: #ffffff;
+}
+
+.typing-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.postconsulta-avatar.mini {
+  width: 26px;
+  height: 26px;
+  font-size: 0.72rem;
+}
+
+.typing-row small {
+  color: #9ca3af;
+}
+
+.postconsulta-input {
+  border-top: 1px solid #deefe9;
+  padding: 0.65rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.55rem;
+}
+
+.postconsulta-input input {
+  border: 1px solid #c7ddd5;
+  border-radius: 999px;
+  padding: 0.6rem 0.8rem;
+}
+
+.postconsulta-input .send {
+  border-radius: 999px;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  min-width: 42px;
+}
+
 .mental-module {
   display: grid;
   gap: 0.85rem;
@@ -790,6 +1009,19 @@ th {
   margin: 0.2rem 0 0;
   color: #6b7280;
   font-size: 1.02rem;
+}
+
+.mental-main-card {
+  border: 1px solid var(--pt-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+  padding: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .mental-checkin {
@@ -941,6 +1173,155 @@ th {
   display: grid;
   gap: 0.72rem;
   text-align: center;
+}
+
+.mental-test-flow {
+  border: 1px solid var(--pt-border);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+  display: grid;
+  gap: 0.78rem;
+}
+
+.mental-test-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mental-test-head small {
+  color: #64748b;
+  font-weight: 600;
+}
+
+.mental-test-head strong {
+  color: #14b8a6;
+}
+
+.mental-test-prompt {
+  margin: 0;
+  color: #64748b;
+}
+
+.mental-options {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mental-option {
+  border: 1px solid #deefe9;
+  border-radius: 10px;
+  background: #f8fffd;
+  padding: 0.55rem 0.7rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.mental-option.active {
+  border-color: #14b8a6;
+  background: #ecfdf5;
+}
+
+.mental-option input {
+  margin: 0;
+}
+
+.mental-option span {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.mental-option small {
+  color: #64748b;
+}
+
+.mental-result-card {
+  border: 1px solid var(--pt-border);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+  text-align: center;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.result-icon {
+  font-size: 2rem;
+}
+
+.mental-result-card h3 {
+  margin: 0;
+}
+
+.mental-result-card p {
+  margin: 0;
+  color: #64748b;
+}
+
+.result-banner {
+  border-radius: 12px;
+  padding: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+
+.mental-result-card.green .result-banner {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mental-result-card.yellow .result-banner {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.mental-result-card.orange .result-banner {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.mental-result-card.red .result-banner {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.mental-recommendations {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.mental-recommendations h3 {
+  margin: 0;
+  color: var(--pt-text);
+}
+
+.mental-schedule-card {
+  border: 1px solid var(--pt-border);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  padding: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mental-schedule-card h4 {
+  margin: 0;
+}
+
+.mental-schedule-card p {
+  margin: 0.15rem 0 0;
+  color: #64748b;
 }
 
 .mental-test-detail h3 {
@@ -1242,6 +1623,9 @@ th {
   .mental-resource-grid {
     grid-template-columns: 1fr 1fr;
   }
+  .postconsulta-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 980px) {
@@ -1302,6 +1686,13 @@ th {
   .profile-fields {
     grid-template-columns: 1fr;
   }
+  .postconsulta-input {
+    grid-template-columns: 1fr;
+  }
+  .postconsulta-input .send {
+    width: 100%;
+    border-radius: 10px;
+  }
   .mental-mood-grid,
   .mental-kpis {
     grid-template-columns: 1fr;
@@ -1310,6 +1701,11 @@ th {
     grid-template-columns: 1fr;
   }
   .mental-test-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .mental-main-card,
+  .mental-schedule-card {
     flex-direction: column;
     align-items: flex-start;
   }

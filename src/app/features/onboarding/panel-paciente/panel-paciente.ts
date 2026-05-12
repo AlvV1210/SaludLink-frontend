@@ -1,12 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
-type PatientSection = 'dashboard' | 'citas' | 'salas' | 'recordatorios' | 'salud-mental' | 'historial' | 'perfil';
+type PatientSection =
+  | 'dashboard'
+  | 'citas'
+  | 'salas'
+  | 'recordatorios'
+  | 'chat-postconsulta'
+  | 'salud-mental'
+  | 'historial'
+  | 'perfil';
 type Modalidad = 'Virtual' | 'Presencial';
-type EstadoCita = 'Confirmada' | 'Programada' | 'Reprogramada' | 'Cancelada';
+type EstadoCita = 'Confirmada' | 'Programada' | 'Reprogramada' | 'Cancelada' | 'Completada';
 type PaymentMethod = 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia' | 'Pago presencial';
 type ReminderFrequency = '1 vez/día' | '2 veces/día' | '3 veces/día';
 
@@ -104,6 +112,23 @@ interface MentalResourceItem {
   minutes: string;
 }
 
+interface MentalTestResult {
+  score: number;
+  level: 'Sin síntomas relevantes' | 'Leve' | 'Moderado' | 'Alto riesgo emocional';
+  dateLabel: string;
+  highlights: string[];
+}
+
+interface PostconsultaDoctor {
+  id: number;
+  etiqueta: 'Doctor';
+  avatar: string;
+  online: boolean;
+  disponible: boolean;
+  consultaFecha: string;
+  modalidad: Modalidad;
+}
+
 @Component({
   selector: 'app-panel-paciente',
   imports: [CommonModule, FormsModule],
@@ -113,6 +138,7 @@ interface MentalResourceItem {
 export class PanelPacienteComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  @ViewChild('postconsultaMessagesContainer') private postconsultaMessagesContainer?: ElementRef<HTMLDivElement>;
   protected readonly activeSection = signal<PatientSection>('dashboard');
   protected readonly toastMessage = signal('');
   protected readonly bookingStep = signal<'doctores' | 'horarios' | 'resumen' | 'pago' | 'exito'>('doctores');
@@ -133,6 +159,15 @@ export class PanelPacienteComponent {
   protected readonly uploadProgress = signal(0);
   protected readonly pendingFile = signal<File | null>(null);
   protected readonly selectedMoodId = signal('normal');
+  protected readonly mentalView = signal<'home' | 'intro' | 'test' | 'result'>('home');
+  protected readonly mentalQuestionIndex = signal(0);
+  protected readonly mentalAnswers = signal<number[]>(Array(9).fill(-1));
+  protected readonly mentalShowRecommendations = signal(false);
+  protected readonly mentalResults = signal<MentalTestResult[]>([]);
+  protected readonly bookingSpecialtyFilter = signal('');
+  protected readonly selectedPostconsultaDoctorId = signal<number | null>(null);
+  protected readonly postconsultaInput = signal('');
+  protected readonly doctorTyping = signal(false);
   protected editingReminderId: string | null = null;
   protected editingProfile = false;
 
@@ -141,12 +176,12 @@ export class PanelPacienteComponent {
       id: 'SL-PT-10421',
       doctor: 'Dr. Juan Perez',
       especialidad: 'Cardiología',
-      fecha: '2026-05-18',
-      hora: '14:30',
-      modalidad: 'Virtual',
+      fecha: '2026-05-04',
+      hora: '15:30',
+      modalidad: 'Presencial',
       sede: 'Sede Central',
-      estado: 'Confirmada',
-      tipo: 'Virtual',
+      estado: 'Completada',
+      tipo: 'Presencial',
     },
     {
       id: 'SL-PT-10612',
@@ -228,6 +263,24 @@ export class PanelPacienteComponent {
       minutes: '5 min',
     },
   ];
+  protected readonly mentalQuestions = [
+    'Poco interés o placer en hacer cosas',
+    'Sentirse triste o sin esperanza',
+    'Problemas para dormir o dormir demasiado',
+    'Sentirse cansado/a o con poca energía',
+    'Falta de apetito o comer en exceso',
+    'Sentirse mal contigo mismo/a',
+    'Problemas para concentrarte en actividades diarias',
+    'Lentitud o inquietud notable',
+    'Pensamientos negativos o de daño',
+  ];
+  protected readonly mentalAnswerOptions = [
+    { label: 'Nunca', value: 0 },
+    { label: 'Varios días', value: 1 },
+    { label: 'Más de la mitad de los días', value: 2 },
+    { label: 'Casi todos los días', value: 3 },
+  ];
+  protected readonly postconsultaMessagesByDoctor = signal<Record<number, ChatMessage[]>>({});
 
   protected reminderForm = {
     medicamento: '',
@@ -253,17 +306,31 @@ export class PanelPacienteComponent {
     const citas = this.appointments();
     return {
       total: citas.length,
-      activas: citas.filter((cita) => cita.estado !== 'Cancelada').length,
-      virtuales: citas.filter((cita) => cita.modalidad === 'Virtual' && cita.estado !== 'Cancelada').length,
-      presenciales: citas.filter((cita) => cita.modalidad === 'Presencial' && cita.estado !== 'Cancelada').length,
+      activas: citas.filter((cita) => cita.estado !== 'Cancelada' && cita.estado !== 'Completada').length,
+      virtuales: citas.filter(
+        (cita) => cita.modalidad === 'Virtual' && cita.estado !== 'Cancelada' && cita.estado !== 'Completada',
+      ).length,
+      presenciales: citas.filter(
+        (cita) => cita.modalidad === 'Presencial' && cita.estado !== 'Cancelada' && cita.estado !== 'Completada',
+      ).length,
       mental: citas.filter((cita) => cita.especialidad.toLowerCase().includes('psic')).length,
       reminders: this.reminders().filter((item) => item.activo).length,
       documentos: this.documents().length,
+      chatsPostconsulta: this.postconsultaDoctors().length,
+    };
+  });
+
+  protected readonly mentalSummary = computed(() => {
+    const latest = this.mentalResults()[0];
+    return {
+      totalTests: this.mentalResults().length,
+      lastLevel: latest?.level ?? 'Sin evaluaciones',
+      lastDate: latest?.dateLabel ?? '-',
     };
   });
 
   protected readonly nextAppointment = computed(() => {
-    return this.appointments().find((cita) => cita.estado !== 'Cancelada') ?? null;
+    return this.appointments().find((cita) => cita.estado !== 'Cancelada' && cita.estado !== 'Completada') ?? null;
   });
 
   protected readonly alerts = computed(() => {
@@ -307,8 +374,18 @@ export class PanelPacienteComponent {
     return horario.modalidad === 'Virtual' ? 'S/ 85.00' : 'S/ 120.00';
   });
 
+  protected readonly filteredBookingDoctors = computed(() => {
+    const specialty = this.bookingSpecialtyFilter().trim().toLowerCase();
+    if (!specialty) {
+      return this.doctors();
+    }
+    return this.doctors().filter((doctor) => doctor.especialidad.toLowerCase().includes(specialty));
+  });
+
   protected readonly virtualAppointments = computed(() =>
-    this.appointments().filter((item) => item.modalidad === 'Virtual' && item.estado !== 'Cancelada'),
+    this.appointments().filter(
+      (item) => item.modalidad === 'Virtual' && item.estado !== 'Cancelada' && item.estado !== 'Completada',
+    ),
   );
 
   protected readonly selectedVirtualAppointment = computed(() => {
@@ -343,6 +420,51 @@ export class PanelPacienteComponent {
     return this.documents().find((item) => item.id === id) ?? null;
   });
 
+  protected readonly postconsultaDoctors = computed<PostconsultaDoctor[]>(() => {
+    const completed = this.appointments().filter((item) => item.estado === 'Completada');
+    const byDoctor = new Map<string, PostconsultaDoctor>();
+    for (const cita of completed) {
+      const key = cita.doctor;
+      if (byDoctor.has(key)) {
+        continue;
+      }
+      byDoctor.set(key, {
+        id: this.getDoctorSeed(key),
+        etiqueta: 'Doctor',
+        avatar: 'DR',
+        online: true,
+        disponible: true,
+        consultaFecha: cita.fecha,
+        modalidad: cita.modalidad,
+      });
+    }
+    return Array.from(byDoctor.values());
+  });
+
+  protected readonly selectedPostconsultaDoctor = computed(() => {
+    const id = this.selectedPostconsultaDoctorId();
+    if (!id) {
+      return null;
+    }
+    return this.postconsultaDoctors().find((doctor) => doctor.id === id) ?? null;
+  });
+
+  protected readonly activePostconsultaMessages = computed(() => {
+    const doctor = this.selectedPostconsultaDoctor();
+    if (!doctor) {
+      return [];
+    }
+    return this.postconsultaMessagesByDoctor()[doctor.id] ?? [];
+  });
+
+  protected readonly currentMentalQuestion = computed(() => this.mentalQuestions[this.mentalQuestionIndex()]);
+
+  protected readonly mentalProgress = computed(() => Math.round(((this.mentalQuestionIndex() + 1) / this.mentalQuestions.length) * 100));
+
+  protected readonly canContinueMental = computed(() => this.mentalAnswers()[this.mentalQuestionIndex()] >= 0);
+
+  protected readonly activeMentalResult = computed(() => this.mentalResults()[0] ?? null);
+
   protected goDashboard(): void {
     this.activeSection.set('dashboard');
     void this.router.navigate(['/paciente/dashboard']);
@@ -353,17 +475,122 @@ export class PanelPacienteComponent {
   }
 
   protected startMentalTest(): void {
-    this.showToast('Test de bienestar emocional iniciado.');
+    this.mentalView.set('intro');
+  }
+
+  protected beginMentalQuestionnaire(): void {
+    this.mentalView.set('test');
+    this.mentalQuestionIndex.set(0);
+    this.mentalAnswers.set(Array(this.mentalQuestions.length).fill(-1));
+    this.mentalShowRecommendations.set(false);
+  }
+
+  protected goBackMentalHome(): void {
+    this.mentalView.set('home');
+  }
+
+  protected selectMentalAnswer(value: number): void {
+    this.mentalAnswers.update((answers) => {
+      const updated = [...answers];
+      updated[this.mentalQuestionIndex()] = value;
+      return updated;
+    });
+  }
+
+  protected previousMentalQuestion(): void {
+    this.mentalQuestionIndex.update((index) => Math.max(index - 1, 0));
+  }
+
+  protected nextMentalQuestion(): void {
+    if (!this.canContinueMental()) {
+      return;
+    }
+    if (this.mentalQuestionIndex() >= this.mentalQuestions.length - 1) {
+      this.finishMentalQuestionnaire();
+      return;
+    }
+    this.mentalQuestionIndex.update((index) => index + 1);
+  }
+
+  protected openMentalRecommendations(): void {
+    this.mentalShowRecommendations.set(true);
+  }
+
+  protected schedulePsychologyAppointment(): void {
+    this.openBookingFlow('Psicología');
+    this.showToast('Filtro aplicado: Especialidad Psicología.');
   }
 
   protected openSection(section: PatientSection): void {
     this.activeSection.set(section);
+    if (section === 'salud-mental') {
+      this.mentalView.set('home');
+      this.mentalShowRecommendations.set(false);
+    }
+    if (section === 'chat-postconsulta' && !this.selectedPostconsultaDoctorId()) {
+      const firstDoctor = this.postconsultaDoctors()[0];
+      if (firstDoctor) {
+        this.selectPostconsultaDoctor(firstDoctor.id);
+      }
+    }
   }
 
-  protected openBookingFlow(): void {
+  protected selectPostconsultaDoctor(id: number): void {
+    this.selectedPostconsultaDoctorId.set(id);
+    this.postconsultaInput.set('');
+    this.ensurePostconsultaThread(id);
+    this.scrollPostconsultaToBottom();
+  }
+
+  protected selectPostconsultaDoctorFromSelect(rawId: string): void {
+    const parsed = Number(rawId);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+      this.selectedPostconsultaDoctorId.set(null);
+      return;
+    }
+    this.selectPostconsultaDoctor(parsed);
+  }
+
+  protected updatePostconsultaInput(value: string): void {
+    this.postconsultaInput.set(value);
+  }
+
+  protected sendPostconsultaMessage(): void {
+    const doctor = this.selectedPostconsultaDoctor();
+    const text = this.postconsultaInput().trim();
+    if (!doctor || !text) {
+      return;
+    }
+    const time = this.getCurrentTime();
+    this.postconsultaMessagesByDoctor.update((all) => ({
+      ...all,
+      [doctor.id]: [...(all[doctor.id] ?? []), { from: 'me', text, time }],
+    }));
+    this.postconsultaInput.set('');
+    this.doctorTyping.set(true);
+    this.scrollPostconsultaToBottom();
+    setTimeout(() => {
+      this.postconsultaMessagesByDoctor.update((all) => ({
+        ...all,
+        [doctor.id]: [
+          ...(all[doctor.id] ?? []),
+          {
+            from: 'doctor',
+            text: 'Recibido. Continúa con la medicación indicada y avísame si presentas algún cambio.',
+            time: this.getCurrentTime(),
+          },
+        ],
+      }));
+      this.doctorTyping.set(false);
+      this.scrollPostconsultaToBottom();
+    }, 1200);
+  }
+
+  protected openBookingFlow(specialtyFilter = ''): void {
     this.activeSection.set('citas');
     this.showBookingFlow.set(true);
     this.bookingStep.set('doctores');
+    this.bookingSpecialtyFilter.set(specialtyFilter);
     this.selectedDoctor.set(null);
     this.selectedHorarioId.set(null);
   }
@@ -538,6 +765,7 @@ export class PanelPacienteComponent {
   protected closeBookingFlow(): void {
     this.showBookingFlow.set(false);
     this.bookingStep.set('doctores');
+    this.bookingSpecialtyFilter.set('');
     this.selectedDoctor.set(null);
     this.selectedHorarioId.set(null);
   }
@@ -690,6 +918,13 @@ export class PanelPacienteComponent {
     this.showToast('Cita cancelada.');
   }
 
+  protected finalizeAppointment(id: string): void {
+    this.appointments.update((items) =>
+      items.map((item) => (item.id === id ? { ...item, estado: 'Completada' as EstadoCita } : item)),
+    );
+    this.showToast('Consulta finalizada. Chat postconsulta habilitado.');
+  }
+
   protected getStatusClass(status: EstadoCita): string {
     if (status === 'Confirmada') {
       return 'status ok';
@@ -699,6 +934,9 @@ export class PanelPacienteComponent {
     }
     if (status === 'Reprogramada') {
       return 'status reprog';
+    }
+    if (status === 'Completada') {
+      return 'status done';
     }
     return 'status pending';
   }
@@ -761,6 +999,87 @@ export class PanelPacienteComponent {
       hora: '',
       observaciones: '',
     };
+  }
+
+  private finishMentalQuestionnaire(): void {
+    const answers = this.mentalAnswers().map((item) => (item < 0 ? 0 : item));
+    const score = answers.reduce((sum, value) => sum + value, 0);
+    const level = this.getMentalLevel(score);
+    const highlights = answers
+      .map((value, index) => ({ value, index }))
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 3)
+      .map((item) => `${this.mentalQuestions[item.index]} (${item.value} pts)`);
+
+    this.mentalResults.update((items) => [
+      {
+        score,
+        level,
+        dateLabel: this.getTodayLabel(),
+        highlights: highlights.length > 0 ? highlights : ['Sin síntomas destacados en esta evaluación.'],
+      },
+      ...items,
+    ]);
+    this.mentalView.set('result');
+    this.mentalShowRecommendations.set(false);
+  }
+
+  private getMentalLevel(score: number): MentalTestResult['level'] {
+    if (score <= 4) {
+      return 'Sin síntomas relevantes';
+    }
+    if (score <= 9) {
+      return 'Leve';
+    }
+    if (score <= 14) {
+      return 'Moderado';
+    }
+    return 'Alto riesgo emocional';
+  }
+
+  private getTodayLabel(): string {
+    const now = new Date();
+    return now.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  private getCurrentTime(): string {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private ensurePostconsultaThread(doctorId: number): void {
+    const existing = this.postconsultaMessagesByDoctor()[doctorId];
+    if (existing && existing.length > 0) {
+      return;
+    }
+    this.postconsultaMessagesByDoctor.update((all) => ({
+      ...all,
+      [doctorId]: [
+        {
+          from: 'doctor',
+          text: 'Hola Lupe, te dejo las indicaciones de hoy en tu historial. Cualquier duda, escríbeme por aquí.',
+          time: '15:42',
+        },
+      ],
+    }));
+  }
+
+  private getDoctorSeed(value: string): number {
+    let seed = 0;
+    for (const char of value) {
+      seed += char.charCodeAt(0);
+    }
+    return seed;
+  }
+
+  private scrollPostconsultaToBottom(): void {
+    setTimeout(() => {
+      const container = this.postconsultaMessagesContainer?.nativeElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 30);
   }
 
   private getDoctorCatalog(): DoctorOption[] {
