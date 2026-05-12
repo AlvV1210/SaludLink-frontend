@@ -333,10 +333,76 @@
     }
 
     @if (activeSection() === 'salud-mental') {
-      <section class="coming-soon fade-in">
-        <div class="check">❤</div>
-        <h2>Próximamente</h2>
-        <p>Módulo de bienestar emocional en diseño minimalista profesional.</p>
+      <section class="mental-module fade-in">
+        <header class="mental-header">
+          <h2>¡Hola, Lupe! 👋</h2>
+          <p>¿Cómo te sientes hoy?</p>
+        </header>
+
+        <article class="mental-checkin">
+          <div class="mental-checkin-title">
+            <span>🧘</span>
+            <div>
+              <h3>Tu bienestar también importa</h3>
+              <p>Realiza un check-in de salud mental</p>
+            </div>
+          </div>
+          <p class="mental-question">¿Cómo te sientes?</p>
+          <div class="mental-mood-grid">
+            @for (mood of mentalMoods; track mood.id) {
+              <button type="button" class="mood-card" [class.active]="selectedMoodId() === mood.id" (click)="selectMentalMood(mood.id)">
+                <strong>{{ mood.emoji }}</strong>
+                <span>{{ mood.label }}</span>
+              </button>
+            }
+          </div>
+        </article>
+
+        <article class="mental-test-card">
+          <div>
+            <h4>Test de bienestar emocional</h4>
+            <p>5 min · Confidencial · Última vez: hace 2 semanas</p>
+          </div>
+          <button type="button" class="btn primary mental-cta" (click)="startMentalTest()">Iniciar test →</button>
+        </article>
+
+        <section class="mental-resources">
+          <div class="module-header">
+            <div>
+              <h2>RECURSOS DE VIAJES Y BIENESTAR</h2>
+              <p class="subtitle">Materiales rápidos para regular emociones y recuperar energía.</p>
+            </div>
+          </div>
+          <div class="mental-resource-grid">
+            @for (resource of mentalResources; track resource.id) {
+              <article class="mental-resource-card">
+                <small>{{ resource.minutes }}</small>
+                <h4>{{ resource.title }}</h4>
+                <p>{{ resource.description }}</p>
+                <button type="button" class="btn ghost">Abrir recurso</button>
+              </article>
+            }
+          </div>
+        </section>
+
+        <article class="mental-test-detail">
+          <div class="check">🧘</div>
+          <h3>Test de bienestar emocional</h3>
+          <p>Un cuestionario breve y validado para identificar cómo te has sentido en las últimas 2 semanas</p>
+          <div class="mental-kpis">
+            <div><i>⏱️</i><strong>5 min</strong><span>9 preguntas</span></div>
+            <div><i>🔒</i><strong>Privado</strong><span>Solo tú lo ves</span></div>
+            <div><i>📊</i><strong>Validado</strong><span>PHQ-9 GMS</span></div>
+          </div>
+          <div class="mental-alert">
+            <strong>⚠ Importante</strong>
+            <p>Este test no reemplaza un diagnóstico profesional. Es una guía orientativa que puede sugerirte buscar ayuda especializada si los resultados lo indican.</p>
+          </div>
+          <div class="actions mental-actions">
+            <button type="button" class="btn ghost">Cancelar</button>
+            <button type="button" class="btn primary" (click)="startMentalTest()">Comenzar test →</button>
+          </div>
+        </article>
       </section>
     }
 

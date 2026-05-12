@@ -91,6 +91,19 @@ interface MedicalDocumentItem {
   previewUrl?: string;
 }
 
+interface MentalMoodOption {
+  id: string;
+  emoji: string;
+  label: string;
+}
+
+interface MentalResourceItem {
+  id: string;
+  title: string;
+  description: string;
+  minutes: string;
+}
+
 @Component({
   selector: 'app-panel-paciente',
   imports: [CommonModule, FormsModule],
@@ -119,6 +132,7 @@ export class PanelPacienteComponent {
   protected readonly uploadStep = signal<'upload' | 'form'>('upload');
   protected readonly uploadProgress = signal(0);
   protected readonly pendingFile = signal<File | null>(null);
+  protected readonly selectedMoodId = signal('normal');
   protected editingReminderId: string | null = null;
   protected editingProfile = false;
 
@@ -187,6 +201,33 @@ export class PanelPacienteComponent {
       observaciones: 'Llevar a próxima consulta de cardiología.',
     },
   ]);
+  protected readonly mentalMoods: MentalMoodOption[] = [
+    { id: 'genial', emoji: '😁', label: 'Genial' },
+    { id: 'bien', emoji: '🙂', label: 'Bien' },
+    { id: 'normal', emoji: '😐', label: 'Normal' },
+    { id: 'mal', emoji: '😟', label: 'Mal' },
+    { id: 'muy-mal', emoji: '😢', label: 'Muy mal' },
+  ];
+  protected readonly mentalResources: MentalResourceItem[] = [
+    {
+      id: 'viaje-breve',
+      title: 'Viaje guiado de respiración',
+      description: 'Relajación y respiración consciente para bajar ansiedad.',
+      minutes: '6 min',
+    },
+    {
+      id: 'mindful-break',
+      title: 'Pausa de bienestar',
+      description: 'Micro rutina para recuperar enfoque y reducir tensión.',
+      minutes: '4 min',
+    },
+    {
+      id: 'sueno-saludable',
+      title: 'Higiene del sueño',
+      description: 'Recomendaciones prácticas para dormir mejor.',
+      minutes: '5 min',
+    },
+  ];
 
   protected reminderForm = {
     medicamento: '',
@@ -305,6 +346,14 @@ export class PanelPacienteComponent {
   protected goDashboard(): void {
     this.activeSection.set('dashboard');
     void this.router.navigate(['/paciente/dashboard']);
+  }
+
+  protected selectMentalMood(moodId: string): void {
+    this.selectedMoodId.set(moodId);
+  }
+
+  protected startMentalTest(): void {
+    this.showToast('Test de bienestar emocional iniciado.');
   }
 
   protected openSection(section: PatientSection): void {
