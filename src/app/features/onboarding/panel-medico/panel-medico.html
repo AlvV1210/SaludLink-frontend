@@ -30,6 +30,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V8"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V11"/></svg>
         <span>Adherencia</span>
       </li>
+      <li [class.active]="activeSection() === 'chat'" (click)="openSection('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
+        <span>Chat</span>
+      </li>
       <li [class.active]="activeSection() === 'perfil'" (click)="openSection('perfil')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
         <span>Perfil</span>
@@ -228,9 +232,210 @@
     }
 
     @if (activeSection() === 'adherencia') {
-      <section class="coming-soon">
-        <h2>Próximamente</h2>
-        <p>Este módulo estará disponible en una próxima iteración.</p>
+      <section class="module">
+        <h2>Adherencia</h2>
+        <p class="subtitle">Seguimiento clínico integral de adherencia al tratamiento y asistencia.</p>
+
+        <section class="stats-grid">
+          <article class="kpi kpi-high">
+            <span>Adherencia alta</span>
+            <strong>{{ adherenciaResumen().alta }}</strong>
+            <small>{{ adherenciaResumen().altaPct }}%</small>
+          </article>
+          <article class="kpi kpi-medium">
+            <span>Adherencia media</span>
+            <strong>{{ adherenciaResumen().media }}</strong>
+            <small>{{ adherenciaResumen().mediaPct }}%</small>
+          </article>
+          <article class="kpi kpi-low">
+            <span>Adherencia baja</span>
+            <strong>{{ adherenciaResumen().baja }}</strong>
+            <small>{{ adherenciaResumen().bajaPct }}%</small>
+          </article>
+          <article class="kpi">
+            <span>Total pacientes activos</span>
+            <strong>{{ adherenciaResumen().total }}</strong>
+            <small>{{ adherenciaResumen().riesgoAlto }} en riesgo alto</small>
+          </article>
+        </section>
+
+        <section class="adherencia-analytics">
+          <article class="card analytics-main">
+            <h3>Adherencia promedio</h3>
+            <div class="donut" [style.--adherencePct.%]="adherenciaResumen().promedio">
+              <strong>{{ adherenciaResumen().promedio }}%</strong>
+              <span>General</span>
+            </div>
+          </article>
+          <article class="card analytics-bars">
+            <h3>Distribución por niveles</h3>
+            <div class="bar-row">
+              <span>Alta</span>
+              <div class="bar-track"><i class="high" [style.width.%]="adherenciaResumen().altaPct"></i></div>
+              <strong>{{ adherenciaResumen().altaPct }}%</strong>
+            </div>
+            <div class="bar-row">
+              <span>Media</span>
+              <div class="bar-track"><i class="medium" [style.width.%]="adherenciaResumen().mediaPct"></i></div>
+              <strong>{{ adherenciaResumen().mediaPct }}%</strong>
+            </div>
+            <div class="bar-row">
+              <span>Baja</span>
+              <div class="bar-track"><i class="low" [style.width.%]="adherenciaResumen().bajaPct"></i></div>
+              <strong>{{ adherenciaResumen().bajaPct }}%</strong>
+            </div>
+          </article>
+          <article class="card analytics-side">
+            <h3>Indicadores</h3>
+            <p><strong>{{ adherenciaResumen().promedio }}%</strong> de adherencia general</p>
+            <p><strong>{{ adherenciaResumen().riesgoAlto }}</strong> pacientes en riesgo</p>
+            <p><strong>{{ adherenciaResumen().total }}</strong> pacientes activos</p>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="module-header">
+            <h3>Lista de pacientes</h3>
+          </div>
+          <div class="adherencia-list">
+            @for (paciente of adherenciaPacientes(); track paciente.id) {
+              <article class="adherencia-item" [class.active]="selectedAdherenciaPacienteId() === paciente.id" (click)="selectAdherenciaPaciente(paciente.id)">
+                <div>
+                  <strong>{{ paciente.nombre }}</strong>
+                  <small>{{ paciente.edad }} años · {{ paciente.diagnostico }}</small>
+                </div>
+                <span>{{ paciente.tiempoTratamiento }}</span>
+                <span class="risk-chip" [class.high]="paciente.riesgo === 'Riesgo alto'" [class.medium]="paciente.riesgo === 'Riesgo medio'" [class.low]="paciente.riesgo === 'Riesgo bajo'">
+                  {{ paciente.riesgo }}
+                </span>
+                <div class="progress-wrap">
+                  <i [style.width.%]="paciente.adherenciaPorcentaje" [class]="getAdherenciaClass(paciente.adherenciaPorcentaje)"></i>
+                </div>
+                <strong>{{ paciente.adherenciaPorcentaje }}%</strong>
+              </article>
+            }
+          </div>
+        </section>
+
+        @if (selectedAdherenciaPaciente(); as detalle) {
+          <section class="card adherencia-detail">
+            <h3>Detalle de Adherencia</h3>
+            <section class="detail-grid">
+              <article class="summary-card">
+                <p><strong>Nombre:</strong> {{ detalle.nombre }}</p>
+                <p><strong>Diagnóstico:</strong> {{ detalle.diagnostico }}</p>
+                <p><strong>DNI:</strong> {{ detalle.dni }}</p>
+                <p><strong>Adherencia:</strong> {{ detalle.adherenciaPorcentaje }}%</p>
+              </article>
+
+              <article class="summary-card">
+                <h4>Adherencia por medicamentos</h4>
+                @for (med of detalle.medicamentos; track med.nombre) {
+                  <div class="med-row">
+                    <div>
+                      <strong>{{ med.nombre }}</strong>
+                      <small>{{ med.dosis }} · {{ med.horario }}</small>
+                    </div>
+                    <div class="progress-wrap">
+                      <i [style.width.%]="med.cumplimiento" [class]="getAdherenciaClass(med.cumplimiento)"></i>
+                    </div>
+                    <span>{{ med.cumplimiento }}%</span>
+                  </div>
+                }
+              </article>
+            </section>
+
+            <section class="detail-grid">
+              <article class="summary-card">
+                <h4>Análisis de patrones</h4>
+                @for (alerta of detalle.alertas; track alerta) {
+                  <p class="alert-item" [class.high]="detalle.riesgo === 'Riesgo alto'" [class.medium]="detalle.riesgo === 'Riesgo medio'">
+                    {{ alerta }}
+                  </p>
+                }
+              </article>
+
+              <article class="summary-card">
+                <h4>Asistencia a consultas</h4>
+                @for (asistencia of detalle.asistenciaConsultas; track asistencia.fecha + asistencia.modalidad) {
+                  <div class="attendance-row">
+                    <span>{{ asistencia.modalidad }} · {{ asistencia.fecha }}</span>
+                    <strong [class.ok]="asistencia.asistio" [class.off]="!asistencia.asistio">{{ asistencia.asistio ? 'Asistió' : 'No asistió' }}</strong>
+                  </div>
+                }
+              </article>
+            </section>
+
+            <div class="actions">
+              <button type="button" class="btn primary" (click)="adjustTreatment()">Ajustar tratamiento</button>
+              <button type="button" class="btn ghost" (click)="messageFromAdherencia()">Enviar mensaje al paciente</button>
+            </div>
+          </section>
+        }
+      </section>
+    }
+
+    @if (activeSection() === 'chat') {
+      <section class="module">
+        <h2>Chat</h2>
+        <p class="subtitle">Pacientes con reservas en tus horarios disponibles.</p>
+
+        <section class="doctor-chat-layout">
+          <aside class="doctor-chat-list">
+            <h3>Pacientes con reservas en tus horarios</h3>
+            <select [ngModel]="selectedChatPacienteId() ?? ''" (ngModelChange)="selectChatPacienteFromSelect($event)" name="chatPacienteSelect">
+              <option value="">Seleccionar paciente</option>
+              @for (paciente of pacientesChat(); track paciente.id) {
+                <option [value]="paciente.id">{{ paciente.nombre }}</option>
+              }
+            </select>
+            <div class="doctor-chat-items">
+              @for (paciente of pacientesChat(); track paciente.id) {
+                <button type="button" class="doctor-chat-item" [class.active]="selectedChatPacienteId() === paciente.id" (click)="selectChatPaciente(paciente.id)">
+                  <span class="avatar">{{ paciente.iniciales }}</span>
+                  <div>
+                    <strong>{{ paciente.nombre }}</strong>
+                    <small><i class="dot"></i>{{ paciente.online ? 'En línea' : 'Desconectado' }} · {{ paciente.disponible ? 'Disponible' : 'No disponible' }}</small>
+                    <p>{{ paciente.ultimoMensaje }}</p>
+                  </div>
+                </button>
+              }
+            </div>
+          </aside>
+
+          <article class="doctor-chat-window">
+            @if (!selectedPacienteChat()) {
+              <p class="empty">Selecciona un paciente para abrir conversación.</p>
+            } @else {
+              <header class="doctor-chat-header">
+                <div class="doctor-chat-meta">
+                  <span class="avatar">{{ selectedPacienteChat()!.iniciales }}</span>
+                  <div>
+                    <strong>{{ selectedPacienteChat()!.nombre }}</strong>
+                    <small><i class="dot"></i>En línea</small>
+                  </div>
+                </div>
+              </header>
+
+              <div class="doctor-chat-messages" #doctorChatMessagesContainer>
+                @for (msg of activeChatMessages(); track msg.time + msg.text) {
+                  <article class="doctor-bubble" [class.me]="msg.from === 'medico'">
+                    <p>{{ msg.text }}</p>
+                    <small>{{ msg.time }}</small>
+                  </article>
+                }
+                @if (pacienteTyping()) {
+                  <div class="typing">escribiendo...</div>
+                }
+              </div>
+
+              <div class="doctor-chat-input">
+                <input [ngModel]="chatMedicoInput()" (ngModelChange)="updateDoctorChatInput($event)" placeholder="Escribe un mensaje..." />
+                <button type="button" class="btn primary send-btn" (click)="sendDoctorChatMessage()">➤</button>
+              </div>
+            }
+          </article>
+        </section>
       </section>
     }
 

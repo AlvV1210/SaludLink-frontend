@@ -1,13 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
-type MedicoSection = 'dashboard' | 'agenda' | 'horarios' | 'pacientes' | 'reportes' | 'adherencia' | 'perfil';
+type MedicoSection = 'dashboard' | 'agenda' | 'horarios' | 'pacientes' | 'reportes' | 'adherencia' | 'chat' | 'perfil';
 type AgendaStatus = 'Programada' | 'Reprogramada';
 type HorarioModalidad = 'Presencial' | 'Virtual';
 type HorarioStatus = 'Disponible' | 'Reservado';
+type AdherenciaNivel = 'Alta' | 'Media' | 'Baja';
+type RiesgoNivel = 'Riesgo alto' | 'Riesgo medio' | 'Riesgo bajo';
 
 interface AgendaItem {
   id: number;
@@ -38,6 +40,58 @@ interface PerfilMedico {
   estado: 'Activo' | 'Inactivo';
 }
 
+interface PacienteReserva {
+  id: number;
+  paciente: string;
+  fecha: string;
+  hora: string;
+  modalidad: HorarioModalidad;
+  estado: string;
+}
+
+interface ChatMedicoMessage {
+  from: 'medico' | 'paciente';
+  text: string;
+  time: string;
+}
+
+interface ChatPacienteItem {
+  id: number;
+  iniciales: string;
+  nombre: string;
+  online: boolean;
+  disponible: boolean;
+  ultimoMensaje: string;
+}
+
+interface AdherenciaMedicamento {
+  nombre: string;
+  dosis: string;
+  horario: string;
+  cumplimiento: number;
+}
+
+interface AsistenciaConsulta {
+  modalidad: HorarioModalidad;
+  fecha: string;
+  asistio: boolean;
+}
+
+interface AdherenciaPaciente {
+  id: number;
+  nombre: string;
+  edad: number;
+  diagnostico: string;
+  dni: string;
+  tiempoTratamiento: string;
+  adherenciaPorcentaje: number;
+  nivel: AdherenciaNivel;
+  riesgo: RiesgoNivel;
+  medicamentos: AdherenciaMedicamento[];
+  alertas: string[];
+  asistenciaConsultas: AsistenciaConsulta[];
+}
+
 @Component({
   selector: 'app-panel-medico',
   imports: [CommonModule, FormsModule],
@@ -47,9 +101,14 @@ interface PerfilMedico {
 export class PanelMedicoComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  @ViewChild('doctorChatMessagesContainer') private doctorChatMessagesContainer?: ElementRef<HTMLDivElement>;
   protected readonly activeSection = signal<MedicoSection>('dashboard');
   protected readonly toastMessage = signal('');
   protected readonly patientSearch = signal('');
+  protected readonly selectedChatPacienteId = signal<number | null>(null);
+  protected readonly chatMedicoInput = signal('');
+  protected readonly pacienteTyping = signal(false);
+  protected readonly selectedAdherenciaPacienteId = signal<number | null>(null);
   protected readonly agendaItems = signal<AgendaItem[]>([
     { id: 1, paciente: 'Lupe Cunyas', dia: 'Lunes', semana: 'Semana 1', mes: 'Mayo', tipo: 'Virtual', estado: 'Programada' },
     { id: 2, paciente: 'Maria Torres', dia: 'Martes', semana: 'Semana 1', mes: 'Mayo', tipo: 'Virtual', estado: 'Programada' },
@@ -92,14 +151,15 @@ export class PanelMedicoComponent {
   );
   protected readonly totalHorarios = computed(() => this.horarios().length);
 
-  protected readonly pacientesReservados = computed(() => {
-    const map = new Map<string, { paciente: string; fecha: string; hora: string; modalidad: HorarioModalidad; estado: string }>();
+  protected readonly pacientesReservados = computed<PacienteReserva[]>(() => {
+    const map = new Map<string, PacienteReserva>();
     this.agendaItems().forEach((agenda, index) => {
       const horario = this.horarios()[index % Math.max(this.horarios().length, 1)];
       if (!horario) {
         return;
       }
       map.set(agenda.paciente, {
+        id: this.getNumericId(agenda.paciente),
         paciente: agenda.paciente,
         fecha: `${agenda.dia}, ${agenda.mes}`,
         hora: horario.hora || 'Sin hora',
@@ -128,6 +188,80 @@ export class PanelMedicoComponent {
     }));
   });
 
+  protected readonly chatMessagesByPaciente = signal<Record<number, ChatMedicoMessage[]>>({});
+
+  protected readonly pacientesChat = computed<ChatPacienteItem[]>(() => {
+    return this.pacientesReservados().map((paciente) => {
+      const thread = this.chatMessagesByPaciente()[paciente.id] ?? [];
+      const last = thread[thread.length - 1];
+      return {
+        id: paciente.id,
+        iniciales: this.getInitials(paciente.paciente),
+        nombre: paciente.paciente,
+        online: true,
+        disponible: true,
+        ultimoMensaje: last?.text ?? 'Paciente agregado automáticamente por reserva en tu horario.',
+      };
+    });
+  });
+
+  protected readonly selectedPacienteChat = computed(() => {
+    const id = this.selectedChatPacienteId();
+    if (!id) {
+      return null;
+    }
+    return this.pacientesChat().find((item) => item.id === id) ?? null;
+  });
+
+  protected readonly activeChatMessages = computed(() => {
+    const paciente = this.selectedPacienteChat();
+    if (!paciente) {
+      return [];
+    }
+    return this.chatMessagesByPaciente()[paciente.id] ?? [];
+  });
+
+  protected readonly adherenciaPacientes = computed<AdherenciaPaciente[]>(() => {
+    const source = this.pacientesReservados();
+    const riskOrder: Record<RiesgoNivel, number> = {
+      'Riesgo alto': 0,
+      'Riesgo medio': 1,
+      'Riesgo bajo': 2,
+    };
+    return source
+      .map((item, index) => this.createAdherenciaPaciente(item, index))
+      .sort((a, b) => riskOrder[a.riesgo] - riskOrder[b.riesgo] || a.adherenciaPorcentaje - b.adherenciaPorcentaje);
+  });
+
+  protected readonly adherenciaResumen = computed(() => {
+    const list = this.adherenciaPacientes();
+    const total = Math.max(list.length, 1);
+    const alta = list.filter((item) => item.nivel === 'Alta').length;
+    const media = list.filter((item) => item.nivel === 'Media').length;
+    const baja = list.filter((item) => item.nivel === 'Baja').length;
+    const promedio = Math.round(list.reduce((sum, item) => sum + item.adherenciaPorcentaje, 0) / total);
+    const riesgoAlto = list.filter((item) => item.riesgo === 'Riesgo alto').length;
+    return {
+      total: list.length,
+      alta,
+      media,
+      baja,
+      promedio,
+      riesgoAlto,
+      altaPct: Math.round((alta / total) * 100),
+      mediaPct: Math.round((media / total) * 100),
+      bajaPct: Math.round((baja / total) * 100),
+    };
+  });
+
+  protected readonly selectedAdherenciaPaciente = computed(() => {
+    const id = this.selectedAdherenciaPacienteId();
+    if (!id) {
+      return null;
+    }
+    return this.adherenciaPacientes().find((item) => item.id === id) ?? null;
+  });
+
   protected goDashboard(): void {
     this.activeSection.set('dashboard');
     void this.router.navigate(['/medico/dashboard']);
@@ -139,6 +273,18 @@ export class PanelMedicoComponent {
       return;
     }
     this.activeSection.set(section);
+    if (section === 'chat' && !this.selectedChatPacienteId()) {
+      const first = this.pacientesChat()[0];
+      if (first) {
+        this.selectChatPaciente(first.id);
+      }
+    }
+    if (section === 'adherencia' && !this.selectedAdherenciaPacienteId()) {
+      const first = this.adherenciaPacientes()[0];
+      if (first) {
+        this.selectedAdherenciaPacienteId.set(first.id);
+      }
+    }
   }
 
   protected createVirtualCita(): void {
@@ -234,6 +380,84 @@ export class PanelMedicoComponent {
     this.patientSearch.set(value);
   }
 
+  protected selectChatPaciente(id: number): void {
+    this.selectedChatPacienteId.set(id);
+    this.chatMedicoInput.set('');
+    this.ensureChatThread(id);
+    this.scrollDoctorChatToBottom();
+  }
+
+  protected selectChatPacienteFromSelect(rawId: string): void {
+    const parsed = Number(rawId);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      this.selectedChatPacienteId.set(null);
+      return;
+    }
+    this.selectChatPaciente(parsed);
+  }
+
+  protected updateDoctorChatInput(value: string): void {
+    this.chatMedicoInput.set(value);
+  }
+
+  protected sendDoctorChatMessage(): void {
+    const paciente = this.selectedPacienteChat();
+    const text = this.chatMedicoInput().trim();
+    if (!paciente || !text) {
+      return;
+    }
+    this.chatMessagesByPaciente.update((all) => ({
+      ...all,
+      [paciente.id]: [...(all[paciente.id] ?? []), { from: 'medico', text, time: this.getCurrentTime() }],
+    }));
+    this.chatMedicoInput.set('');
+    this.pacienteTyping.set(true);
+    this.scrollDoctorChatToBottom();
+    setTimeout(() => {
+      this.chatMessagesByPaciente.update((all) => ({
+        ...all,
+        [paciente.id]: [
+          ...(all[paciente.id] ?? []),
+          {
+            from: 'paciente',
+            text: 'Gracias doctor, seguiré las indicaciones y le actualizo en la noche.',
+            time: this.getCurrentTime(),
+          },
+        ],
+      }));
+      this.pacienteTyping.set(false);
+      this.scrollDoctorChatToBottom();
+    }, 1200);
+  }
+
+  protected selectAdherenciaPaciente(id: number): void {
+    this.selectedAdherenciaPacienteId.set(id);
+  }
+
+  protected adjustTreatment(): void {
+    this.showToast('Ajuste de tratamiento registrado.');
+  }
+
+  protected messageFromAdherencia(): void {
+    const selected = this.selectedAdherenciaPaciente();
+    if (!selected) {
+      return;
+    }
+    this.openSection('chat');
+    this.selectChatPaciente(selected.id);
+    this.showToast('Paciente abierto en chat para seguimiento.');
+  }
+
+  protected getAdherenciaClass(value: number): string {
+    if (value >= 80) {
+      return 'good';
+    }
+    if (value >= 60) {
+      return 'medium';
+    }
+    return 'low';
+  }
+
   protected editPerfil(): void {
     this.perfilDraft = { ...this.perfil() };
     this.editingPerfil = true;
@@ -278,6 +502,92 @@ export class PanelMedicoComponent {
       foto: 'https://i.pravatar.cc/160?img=12',
       estado: 'Activo',
     };
+  }
+
+  private ensureChatThread(pacienteId: number): void {
+    const existing = this.chatMessagesByPaciente()[pacienteId];
+    if (existing && existing.length > 0) {
+      return;
+    }
+    this.chatMessagesByPaciente.update((all) => ({
+      ...all,
+      [pacienteId]: [
+        {
+          from: 'paciente',
+          text: 'Hola doctor, confirmo que reservé mi cita y estaré atento a sus indicaciones.',
+          time: '15:42',
+        },
+      ],
+    }));
+  }
+
+  private getCurrentTime(): string {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private getNumericId(text: string): number {
+    let seed = 0;
+    for (const char of text) {
+      seed += char.charCodeAt(0);
+    }
+    return seed;
+  }
+
+  private getInitials(name: string): string {
+    const parts = name
+      .split(' ')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    if (parts.length === 0) {
+      return 'PT';
+    }
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  private createAdherenciaPaciente(item: PacienteReserva, index: number): AdherenciaPaciente {
+    const seed = (item.id + index * 13) % 100;
+    const adherencia = Math.max(42, Math.min(96, 92 - seed));
+    const nivel: AdherenciaNivel = adherencia >= 80 ? 'Alta' : adherencia >= 60 ? 'Media' : 'Baja';
+    const riesgo: RiesgoNivel = adherencia < 60 ? 'Riesgo alto' : adherencia < 80 ? 'Riesgo medio' : 'Riesgo bajo';
+    return {
+      id: item.id,
+      nombre: item.paciente,
+      edad: 24 + (seed % 38),
+      diagnostico: index % 2 === 0 ? 'Hipertensión arterial' : 'Diabetes tipo 2',
+      dni: `74${String(200000 + item.id).slice(0, 6)}`,
+      tiempoTratamiento: `${4 + (seed % 10)} meses`,
+      adherenciaPorcentaje: adherencia,
+      nivel,
+      riesgo,
+      medicamentos: [
+        { nombre: 'Metformina', dosis: '850 mg', horario: '08:00', cumplimiento: Math.max(45, adherencia - 8) },
+        { nombre: 'Losartán', dosis: '50 mg', horario: '21:00', cumplimiento: Math.max(40, adherencia - 18) },
+      ],
+      alertas:
+        adherencia < 60
+          ? ['Patrón detectado: omite dosis nocturnas.', 'Baja adherencia en las últimas 2 semanas.']
+          : adherencia < 80
+            ? ['Seguimiento irregular en fines de semana.', 'Riesgo moderado de incumplimiento.']
+            : ['Buen cumplimiento global.', 'Mantener monitoreo quincenal.'],
+      asistenciaConsultas: [
+        { modalidad: 'Presencial', fecha: '2026-05-01', asistio: adherencia >= 70 },
+        { modalidad: 'Virtual', fecha: '2026-05-08', asistio: adherencia >= 55 },
+        { modalidad: item.modalidad, fecha: '2026-05-15', asistio: adherencia >= 65 },
+      ],
+    };
+  }
+
+  private scrollDoctorChatToBottom(): void {
+    setTimeout(() => {
+      const container = this.doctorChatMessagesContainer?.nativeElement;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 30);
   }
 
   private showToast(message: string): void {
