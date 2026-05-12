@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
-type PatientSection = 'dashboard' | 'citas' | 'salas' | 'recordatorios' | 'salud-mental' | 'perfil';
+type PatientSection = 'dashboard' | 'citas' | 'salas' | 'recordatorios' | 'salud-mental' | 'historial' | 'perfil';
 type Modalidad = 'Virtual' | 'Presencial';
 type EstadoCita = 'Confirmada' | 'Programada' | 'Reprogramada' | 'Cancelada';
 type PaymentMethod = 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia' | 'Pago presencial';
@@ -78,6 +78,19 @@ interface PatientProfile {
   estado: 'Activa' | 'Inactiva';
 }
 
+interface MedicalDocumentItem {
+  id: string;
+  nombre: string;
+  tipoArchivo: string;
+  fecha: string;
+  hora: string;
+  estado: 'Guardado' | 'Pendiente';
+  resumen: string;
+  sizeLabel: string;
+  observaciones: string;
+  previewUrl?: string;
+}
+
 @Component({
   selector: 'app-panel-paciente',
   imports: [CommonModule, FormsModule],
@@ -96,11 +109,16 @@ export class PanelPacienteComponent {
   protected readonly paymentMethods: PaymentMethod[] = ['Tarjeta', 'Yape', 'Plin', 'Transferencia', 'Pago presencial'];
   protected readonly showBookingFlow = signal(false);
   protected readonly showSosModal = signal(false);
+  protected readonly showUploadModal = signal(false);
   protected readonly selectedVirtualAppointmentId = signal<string | null>(null);
+  protected readonly selectedDocumentId = signal<string | null>(null);
   protected readonly selectedChatDoctorId = signal<number | null>(null);
   protected readonly chatInput = signal('');
   protected readonly showReminderForm = signal(false);
   protected readonly reminderStep = signal<1 | 2>(1);
+  protected readonly uploadStep = signal<'upload' | 'form'>('upload');
+  protected readonly uploadProgress = signal(0);
+  protected readonly pendingFile = signal<File | null>(null);
   protected editingReminderId: string | null = null;
   protected editingProfile = false;
 
@@ -156,6 +174,19 @@ export class PanelPacienteComponent {
     ],
     2: [{ from: 'doctor', text: '¿Cómo te sentiste esta semana?', time: '18:20' }],
   });
+  protected readonly documents = signal<MedicalDocumentItem[]>([
+    {
+      id: 'DOC-301',
+      nombre: 'Examen glucosa mayo',
+      tipoArchivo: 'PDF',
+      fecha: '2026-05-03',
+      hora: '10:15',
+      estado: 'Guardado',
+      resumen: 'Resultados de control metabólico.',
+      sizeLabel: '1.2 MB',
+      observaciones: 'Llevar a próxima consulta de cardiología.',
+    },
+  ]);
 
   protected reminderForm = {
     medicamento: '',
@@ -170,6 +201,12 @@ export class PanelPacienteComponent {
 
   protected readonly patientProfile = signal<PatientProfile>(this.getInitialProfile());
   protected profileDraft: PatientProfile = this.patientProfile();
+  protected documentForm = {
+    nombre: '',
+    fecha: '',
+    hora: '',
+    observaciones: '',
+  };
 
   protected readonly quickSummary = computed(() => {
     const citas = this.appointments();
@@ -180,6 +217,7 @@ export class PanelPacienteComponent {
       presenciales: citas.filter((cita) => cita.modalidad === 'Presencial' && cita.estado !== 'Cancelada').length,
       mental: citas.filter((cita) => cita.especialidad.toLowerCase().includes('psic')).length,
       reminders: this.reminders().filter((item) => item.activo).length,
+      documentos: this.documents().length,
     };
   });
 
@@ -256,6 +294,14 @@ export class PanelPacienteComponent {
     return this.chatMessagesByDoctor()[doctor.id] ?? [];
   });
 
+  protected readonly selectedDocument = computed(() => {
+    const id = this.selectedDocumentId();
+    if (!id) {
+      return null;
+    }
+    return this.documents().find((item) => item.id === id) ?? null;
+  });
+
   protected goDashboard(): void {
     this.activeSection.set('dashboard');
     void this.router.navigate(['/paciente/dashboard']);
@@ -271,6 +317,122 @@ export class PanelPacienteComponent {
     this.bookingStep.set('doctores');
     this.selectedDoctor.set(null);
     this.selectedHorarioId.set(null);
+  }
+
+  protected openUploadDocumentModal(): void {
+    this.showUploadModal.set(true);
+    this.uploadStep.set('upload');
+    this.uploadProgress.set(0);
+    this.pendingFile.set(null);
+    this.resetDocumentForm();
+  }
+
+  protected closeUploadDocumentModal(): void {
+    this.showUploadModal.set(false);
+    this.uploadStep.set('upload');
+    this.uploadProgress.set(0);
+    this.pendingFile.set(null);
+    this.resetDocumentForm();
+  }
+
+  protected handleDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  protected handleFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.prepareFile(file);
+  }
+
+  protected handleFileInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.prepareFile(file);
+  }
+
+  protected continueDocumentForm(): void {
+    if (!this.pendingFile()) {
+      return;
+    }
+    this.uploadStep.set('form');
+  }
+
+  protected goBackToUploadStep(): void {
+    this.uploadStep.set('upload');
+  }
+
+  protected saveDocument(): void {
+    const file = this.pendingFile();
+    if (!file || this.documentForm.nombre.trim().length < 3 || !this.documentForm.fecha || !this.documentForm.hora) {
+      return;
+    }
+
+    const docId = `DOC-${Math.floor(100 + Math.random() * 900)}`;
+    const extension = file.name.split('.').pop()?.toUpperCase() ?? file.type.split('/').pop()?.toUpperCase() ?? 'ARCHIVO';
+    const sizeLabel = file.size >= 1024 * 1024 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB` : `${Math.ceil(file.size / 1024)} KB`;
+    const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+
+    this.documents.update((items) => [
+      {
+        id: docId,
+        nombre: this.documentForm.nombre.trim(),
+        tipoArchivo: extension,
+        fecha: this.documentForm.fecha,
+        hora: this.documentForm.hora,
+        estado: 'Guardado',
+        resumen: `${extension} subido por paciente`,
+        sizeLabel,
+        observaciones: this.documentForm.observaciones.trim() || 'Sin observaciones.',
+        previewUrl,
+      },
+      ...items,
+    ]);
+
+    this.selectedDocumentId.set(docId);
+    this.showUploadModal.set(false);
+    this.uploadStep.set('upload');
+    this.uploadProgress.set(0);
+    this.pendingFile.set(null);
+    this.resetDocumentForm();
+    this.showToast('Documento guardado correctamente.');
+  }
+
+  protected selectDocument(id: string): void {
+    this.selectedDocumentId.set(id);
+  }
+
+  protected deleteDocument(id: string): void {
+    const current = this.documents().find((item) => item.id === id);
+    if (current?.previewUrl) {
+      URL.revokeObjectURL(current.previewUrl);
+    }
+    this.documents.update((items) => items.filter((item) => item.id !== id));
+    if (this.selectedDocumentId() === id) {
+      this.selectedDocumentId.set(null);
+    }
+    this.showToast('Documento eliminado.');
+  }
+
+  protected downloadDocument(id: string): void {
+    const doc = this.documents().find((item) => item.id === id);
+    if (!doc) {
+      return;
+    }
+    const content = `Documento: ${doc.nombre}\nTipo: ${doc.tipoArchivo}\nFecha: ${doc.fecha} ${doc.hora}\nResumen: ${doc.resumen}\nObservaciones: ${doc.observaciones}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${doc.nombre.replace(/\s+/g, '_')}.txt`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   protected selectDoctor(doctor: DoctorOption): void {
@@ -527,6 +689,28 @@ export class PanelPacienteComponent {
       fin: 'Indefinido',
       frecuencia: '2 veces/día',
       hora: '',
+    };
+  }
+
+  private prepareFile(file: File): void {
+    const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|png|jpe?g|webp|gif)$/i)) {
+      this.showToast('Formato no permitido. Usa PDF o imagen.');
+      return;
+    }
+    this.pendingFile.set(file);
+    this.uploadProgress.set(15);
+    setTimeout(() => this.uploadProgress.set(48), 120);
+    setTimeout(() => this.uploadProgress.set(82), 250);
+    setTimeout(() => this.uploadProgress.set(100), 380);
+  }
+
+  private resetDocumentForm(): void {
+    this.documentForm = {
+      nombre: '',
+      fecha: '',
+      hora: '',
+      observaciones: '',
     };
   }
 
