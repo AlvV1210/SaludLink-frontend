@@ -335,6 +335,8 @@ export class PanelPacienteComponent {
     return this.chatMessagesByDoctor()[doctor.id] ?? [];
   });
 
+  protected readonly onlineChatDoctors = computed(() => this.chatDoctors().filter((doctor) => doctor.online).length);
+
   protected readonly selectedDocument = computed(() => {
     const id = this.selectedDocumentId();
     if (!id) {

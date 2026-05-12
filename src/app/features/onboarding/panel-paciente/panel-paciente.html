@@ -209,6 +209,7 @@
         <section class="module">
           <h3>CHAT</h3>
           <p class="subtitle">Escribe a médicos disponibles en horario.</p>
+          <div class="chat-online-indicator">{{ onlineChatDoctors() }} médicos en línea ahora</div>
           <div class="chat-layout">
             <aside class="chat-doctors">
               @for (doctor of chatDoctors(); track doctor.id) {
