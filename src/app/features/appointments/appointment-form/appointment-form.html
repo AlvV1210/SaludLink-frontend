@@ -29,7 +29,7 @@
         <mat-label>Médico</mat-label>
         <mat-select formControlName="doctorId" required>
           @for (d of doctors(); track d.id) {
-            <mat-option [value]="d.id">{{ d.name }}</mat-option>
+            <mat-option [value]="d.id">{{ d.name || (d.firstName + ' ' + d.lastName) }}</mat-option>
           }
         </mat-select>
         @if (form.get("specialty")?.value && doctors().length === 0) {

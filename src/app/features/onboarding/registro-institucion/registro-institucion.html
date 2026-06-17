@@ -1,8 +1,13 @@
 <section class="flow-shell institucion">
   <aside class="left-pane">
-    <div class="brand"><span class="plus">+</span> SaludLink</div>
+    <div class="brand">
+      <span class="plus">+</span>
+      SaludLink
+    </div>
+
     <h1>Registra tu institución de salud</h1>
     <p>Centraliza la gestión de médicos, pacientes y reportes desde un solo panel.</p>
+
     <ul>
       <li>Gestión de médicos afiliados</li>
       <li>Reportes de no-shows</li>
@@ -12,25 +17,207 @@
 
   <div class="form-pane">
     <div class="steps">
-      <span class="active">1. Datos</span>
-      <span>2. RUC</span>
-      <span>3. Admin</span>
+      <span [class.active]="currentStep() === 1">1. Datos</span>
+      <span [class.active]="currentStep() === 2">2. Admin</span>
     </div>
-    <h2>Datos institucionales</h2>
-    <div class="grid one">
-      <label>Razón social<input placeholder="Clínica San Pablo S.A.C." /></label>
-    </div>
-    <div class="grid two">
-      <label>Tipo de establecimiento<input placeholder="Clínica privada" /></label>
-      <label>N° de RUC<input placeholder="20100123456" /></label>
-    </div>
-    <div class="grid one">
-      <label>Dirección principal<input placeholder="Av. Salaverry 1850, Jesús María, Lima" /></label>
-    </div>
-    <div class="grid two">
-      <label>Teléfono<input placeholder="+51 1 6105500" /></label>
-      <label>Sedes<input placeholder="3 sedes" /></label>
-    </div>
-    <button type="button" class="submit" (click)="continue()">Continuar →</button>
+
+    <form [formGroup]="form" novalidate>
+      @if (currentStep() === 1) {
+        <h2>Datos institucionales</h2>
+
+        <div class="grid one">
+          <label>
+            Razón social
+            <input
+              type="text"
+              formControlName="businessName"
+              placeholder="Clínica San Pablo S.A.C."
+            />
+          </label>
+        </div>
+
+        @if (form.controls.businessName.invalid && (form.controls.businessName.touched || stepOneSubmitted())) {
+          <p class="error">Ingresa la razón social.</p>
+        }
+
+        <div class="grid two">
+          <label>
+            Tipo de establecimiento
+            <input
+              type="text"
+              formControlName="establishmentType"
+              placeholder="Clínica privada"
+            />
+          </label>
+
+          <label>
+            N° de RUC
+            <input
+              type="text"
+              formControlName="ruc"
+              placeholder="20100123456"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.establishmentType.invalid && (form.controls.establishmentType.touched || stepOneSubmitted())) {
+          <p class="error">Ingresa el tipo de establecimiento.</p>
+        }
+
+        @if (form.controls.ruc.invalid && (form.controls.ruc.touched || stepOneSubmitted())) {
+          <p class="error">El RUC debe tener 11 dígitos.</p>
+        }
+
+        <div class="grid one">
+          <label>
+            Dirección principal
+            <input
+              type="text"
+              formControlName="address"
+              placeholder="Av. Salaverry 1850, Jesús María, Lima"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.address.invalid && (form.controls.address.touched || stepOneSubmitted())) {
+          <p class="error">Ingresa la dirección principal.</p>
+        }
+
+        <div class="grid two">
+          <label>
+            Teléfono
+            <input
+              type="text"
+              formControlName="phone"
+              placeholder="+51 1 6105500"
+            />
+          </label>
+
+          <label>
+            Sedes
+            <input
+              type="text"
+              formControlName="branches"
+              placeholder="3 sedes"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.phone.invalid && (form.controls.phone.touched || stepOneSubmitted())) {
+          <p class="error">Ingresa un teléfono válido.</p>
+        }
+
+        @if (form.controls.branches.invalid && (form.controls.branches.touched || stepOneSubmitted())) {
+          <p class="error">Ingresa la cantidad de sedes.</p>
+        }
+
+        <button type="button" class="submit" (click)="continue()">
+          Continuar →
+        </button>
+      }
+
+      @if (currentStep() === 2) {
+        <h2>Cuenta administradora</h2>
+
+        <div class="grid two">
+          <label>
+            Nombre del administrador
+            <input
+              type="text"
+              formControlName="adminFirstName"
+              placeholder="Ana"
+            />
+          </label>
+
+          <label>
+            Apellido del administrador
+            <input
+              type="text"
+              formControlName="adminLastName"
+              placeholder="Torres"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.adminFirstName.invalid && (form.controls.adminFirstName.touched || stepTwoSubmitted())) {
+          <p class="error">Ingresa el nombre del administrador.</p>
+        }
+
+        @if (form.controls.adminLastName.invalid && (form.controls.adminLastName.touched || stepTwoSubmitted())) {
+          <p class="error">Ingresa el apellido del administrador.</p>
+        }
+
+        <div class="grid one">
+          <label>
+            Correo administrador
+            <input
+              type="email"
+              formControlName="adminEmail"
+              placeholder="admin@clinica.pe"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.adminEmail.invalid && (form.controls.adminEmail.touched || stepTwoSubmitted())) {
+          <p class="error">Ingresa un correo válido.</p>
+        }
+
+        <div class="grid two">
+          <label>
+            Contraseña
+            <input
+              type="password"
+              formControlName="password"
+              placeholder="••••••••"
+            />
+          </label>
+
+          <label>
+            Confirmar
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="••••••••"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.password.invalid && (form.controls.password.touched || stepTwoSubmitted())) {
+          <p class="error">La contraseña debe tener al menos 6 caracteres.</p>
+        }
+
+        @if (form.controls.confirmPassword.invalid && (form.controls.confirmPassword.touched || stepTwoSubmitted())) {
+          <p class="error">Confirma tu contraseña.</p>
+        }
+
+        <label class="check">
+          <input type="checkbox" formControlName="terms" />
+          Acepto los términos y condiciones institucionales
+        </label>
+
+        @if (form.controls.terms.invalid && (form.controls.terms.touched || stepTwoSubmitted())) {
+          <p class="error">Debes aceptar los términos para continuar.</p>
+        }
+
+        @if (errorMessage()) {
+          <p class="error">{{ errorMessage() }}</p>
+        }
+
+        <div class="actions">
+          <button type="button" class="submit secondary" (click)="backToStepOne()">
+            ← Volver
+          </button>
+
+          <button type="button" class="submit" [disabled]="loading()" (click)="submit()">
+            {{ loading() ? 'Creando cuenta...' : 'Crear institución' }}
+          </button>
+        </div>
+
+        <p class="login-link">
+          ¿Ya tienes cuenta?
+          <button type="button" (click)="goLogin()">Inicia sesión</button>
+        </p>
+      }
+    </form>
   </div>
 </section>

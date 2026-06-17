@@ -2,7 +2,18 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import { AuthService } from '../../../core/services/auth.service';
+import { AppointmentService } from '../../../core/services/appointment.service';
+import { PatientService } from '../../../core/services/patient.service';
+import { ChatMessageResponse, ChatService } from '../../../core/services/chat.service';
+
+import {
+  Appointment as BackendAppointment,
+  AppointmentModality,
+} from '../../../core/models/appointment.model';
+import { PatientProfile as BackendPatientProfile } from '../../../core/models/patient.model';
+import { Doctor as BackendDoctor } from '../../../core/models/doctor.model';
 
 type PatientSection =
   | 'dashboard'
@@ -138,12 +149,16 @@ interface PostconsultaDoctor {
 export class PanelPacienteComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly appointmentService = inject(AppointmentService);
+  private readonly patientService = inject(PatientService);
+  private readonly chatService = inject(ChatService);
   @ViewChild('postconsultaMessagesContainer') private postconsultaMessagesContainer?: ElementRef<HTMLDivElement>;
   protected readonly activeSection = signal<PatientSection>('dashboard');
   protected readonly toastMessage = signal('');
   protected readonly bookingStep = signal<'doctores' | 'horarios' | 'resumen' | 'pago' | 'exito'>('doctores');
   protected readonly selectedDoctor = signal<DoctorOption | null>(null);
   protected readonly selectedHorarioId = signal<string | null>(null);
+  protected readonly reprogrammingAppointmentId = signal<string | null>(null);
   protected readonly selectedPayment = signal<PaymentMethod>('Tarjeta');
   protected readonly paymentMethods: PaymentMethod[] = ['Tarjeta', 'Yape', 'Plin', 'Transferencia', 'Pago presencial'];
   protected readonly showBookingFlow = signal(false);
@@ -171,32 +186,9 @@ export class PanelPacienteComponent {
   protected editingReminderId: string | null = null;
   protected editingProfile = false;
 
-  protected readonly appointments = signal<PatientAppointment[]>([
-    {
-      id: 'SL-PT-10421',
-      doctor: 'Dr. Juan Perez',
-      especialidad: 'Cardiología',
-      fecha: '2026-05-04',
-      hora: '15:30',
-      modalidad: 'Presencial',
-      sede: 'Sede Central',
-      estado: 'Completada',
-      tipo: 'Presencial',
-    },
-    {
-      id: 'SL-PT-10612',
-      doctor: 'Dra. Maria Rios',
-      especialidad: 'Psicología',
-      fecha: '2026-05-20',
-      hora: '18:00',
-      modalidad: 'Virtual',
-      sede: 'Sala Telemedicina',
-      estado: 'Programada',
-      tipo: 'Virtual',
-    },
-  ]);
+  protected readonly appointments = signal<PatientAppointment[]>([]);
 
-  protected readonly doctors = signal<DoctorOption[]>(this.getDoctorCatalog());
+  protected readonly doctors = signal<DoctorOption[]>([]);
   protected readonly reminders = signal<ReminderItem[]>([
     {
       id: 'REM-501',
@@ -211,18 +203,7 @@ export class PanelPacienteComponent {
       activo: true,
     },
   ]);
-  protected readonly chatDoctors = signal<ChatDoctor[]>([
-    { id: 1, nombre: 'Dr. Juan Perez', especialidad: 'Cardiología', online: true, horario: '08:00 - 17:00' },
-    { id: 2, nombre: 'Dra. Maria Rios', especialidad: 'Psicología', online: true, horario: '10:00 - 19:00' },
-    { id: 3, nombre: 'Dr. Luis Mejia', especialidad: 'Medicina General', online: false, horario: '09:00 - 13:00' },
-  ]);
-  protected readonly chatMessagesByDoctor = signal<Record<number, ChatMessage[]>>({
-    1: [
-      { from: 'doctor', text: 'Hola, recuerda conectarte 10 minutos antes.', time: '09:15' },
-      { from: 'me', text: 'Gracias doctor, estaré puntual.', time: '09:16' },
-    ],
-    2: [{ from: 'doctor', text: '¿Cómo te sentiste esta semana?', time: '18:20' }],
-  });
+  protected readonly chatMessagesByDoctor = signal<Record<number, ChatMessage[]>>({});
   protected readonly documents = signal<MedicalDocumentItem[]>([
     {
       id: 'DOC-301',
@@ -301,6 +282,11 @@ export class PanelPacienteComponent {
     hora: '',
     observaciones: '',
   };
+
+  constructor() {
+    this.loadInitialPatientData();
+    this.loadDoctorsFromBackend();
+  }
 
   protected readonly quickSummary = computed(() => {
     const citas = this.appointments();
@@ -383,10 +369,28 @@ export class PanelPacienteComponent {
   });
 
   protected readonly virtualAppointments = computed(() =>
-    this.appointments().filter(
-      (item) => item.modalidad === 'Virtual' && item.estado !== 'Cancelada' && item.estado !== 'Completada',
-    ),
+    this.appointments().filter((item) => item.modalidad === 'Virtual' && item.estado === 'Confirmada'),
   );
+
+  protected readonly chatDoctors = computed<ChatDoctor[]>(() => {
+    return this.virtualAppointments()
+      .map((cita) => {
+        const appointmentId = Number(cita.id);
+
+        if (!Number.isFinite(appointmentId)) {
+          return null;
+        }
+
+        return {
+          id: appointmentId,
+          nombre: cita.doctor,
+          especialidad: cita.especialidad,
+          online: true,
+          horario: `${cita.fecha} · ${cita.hora}`,
+        };
+      })
+      .filter((doctor): doctor is ChatDoctor => doctor !== null);
+  });
 
   protected readonly selectedVirtualAppointment = computed(() => {
     const id = this.selectedVirtualAppointmentId();
@@ -595,6 +599,7 @@ export class PanelPacienteComponent {
     this.bookingSpecialtyFilter.set(specialtyFilter);
     this.selectedDoctor.set(null);
     this.selectedHorarioId.set(null);
+    this.reprogrammingAppointmentId.set(null);
   }
 
   protected openUploadDocumentModal(): void {
@@ -741,27 +746,76 @@ export class PanelPacienteComponent {
   protected confirmPaymentAndReserve(): void {
     const doctor = this.selectedDoctor();
     const horario = this.selectedHorario();
+
     if (!doctor || !horario) {
       return;
     }
 
-    const appointmentId = `SL-PT-${Math.floor(10000 + Math.random() * 89999)}`;
-    this.appointments.update((items) => [
-      {
-        id: appointmentId,
-        doctor: doctor.nombreCompleto,
-        especialidad: doctor.especialidad,
-        fecha: horario.fecha,
-        hora: horario.hora,
-        modalidad: horario.modalidad,
-        sede: horario.sede,
-        estado: 'Confirmada',
-        tipo: horario.modalidad,
+    const appointmentDateTime = `${horario.fecha}T${
+      horario.hora.length === 5 ? `${horario.hora}:00` : horario.hora
+    }`;
+
+    const payload = {
+      doctorId: doctor.id,
+      appointmentDate: appointmentDateTime,
+      modality: horario.modalidad === 'Virtual'
+        ? AppointmentModality.virtual
+        : AppointmentModality.presencial,
+      notes: `Consulta de ${doctor.especialidad} | Sede: ${horario.sede}`,
+    };
+
+    const reprogrammingId = this.reprogrammingAppointmentId();
+
+    if (reprogrammingId) {
+      const numericId = Number(reprogrammingId);
+
+      if (Number.isNaN(numericId)) {
+        this.showToast('ID de cita inválido.');
+        return;
+      }
+
+      this.appointmentService.updateAppointment(numericId, payload).subscribe({
+        next: (updated) => {
+          const mapped = this.mapBackendAppointment(
+            updated as BackendAppointment & Record<string, unknown>
+          );
+
+          this.appointments.update((items) =>
+            items.map((item) => (item.id === reprogrammingId ? mapped : item))
+          );
+
+          this.reprogrammingAppointmentId.set(null);
+          this.bookingStep.set('exito');
+          this.showToast('Cita reprogramada correctamente. Quedó pendiente de confirmación.');
+        },
+        error: (error) => {
+          console.error('ERROR AL REPROGRAMAR CITA:', error);
+          this.showToast(
+            error?.error?.message || 'No se pudo reprogramar la cita.'
+          );
+        },
+      });
+
+      return;
+    }
+
+    this.appointmentService.createAppointment(payload).subscribe({
+      next: (created) => {
+        const mapped = this.mapBackendAppointment(
+          created as BackendAppointment & Record<string, unknown>
+        );
+
+        this.appointments.update((items) => [mapped, ...items]);
+        this.bookingStep.set('exito');
+        this.showToast(`Cita confirmada correctamente (${mapped.id}).`);
       },
-      ...items,
-    ]);
-    this.bookingStep.set('exito');
-    this.showToast(`Cita confirmada correctamente (${appointmentId}).`);
+      error: (error) => {
+        console.error('ERROR AL CREAR CITA:', error);
+        this.showToast(
+          error?.error?.message || 'No se pudo registrar la cita en el backend.'
+        );
+      },
+    });
   }
 
   protected closeBookingFlow(): void {
@@ -770,20 +824,46 @@ export class PanelPacienteComponent {
     this.bookingSpecialtyFilter.set('');
     this.selectedDoctor.set(null);
     this.selectedHorarioId.set(null);
+    this.reprogrammingAppointmentId.set(null);
   }
 
   protected openVirtualRoom(citaId: string): void {
     this.selectedVirtualAppointmentId.set(citaId);
+
+    const appointmentId = Number(citaId);
+
+    if (Number.isFinite(appointmentId)) {
+      this.selectChatDoctor(appointmentId);
+    }
   }
 
   protected getVirtualLink(cita: PatientAppointment): string {
-    return `https://meet.google.com/${cita.id.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 3)}-${Math.floor(
-      Math.random() * 900 + 100,
-    )}-saludlink`;
+    const code = cita.id.toLowerCase().replace(/[^a-z0-9]/g, '').padEnd(9, 'x').slice(0, 9);
+
+    return `https://meet.google.com/${code.slice(0, 3)}-${code.slice(3, 6)}-${code.slice(6, 9)}`;
   }
 
-  protected getRemainingText(_cita: PatientAppointment): string {
-    return 'Faltan 15 minutos';
+  protected getRemainingText(cita: PatientAppointment): string {
+    const start = new Date(`${cita.fecha}T${cita.hora}:00`);
+
+    if (Number.isNaN(start.getTime())) {
+      return 'Horario por confirmar';
+    }
+
+    const diffMinutes = Math.ceil((start.getTime() - Date.now()) / 60000);
+
+    if (diffMinutes > 60) {
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+
+      return minutes > 0 ? `Faltan ${hours} h ${minutes} min` : `Faltan ${hours} h`;
+    }
+
+    if (diffMinutes > 0) {
+      return `Faltan ${diffMinutes} min`;
+    }
+
+    return 'La sala ya está disponible';
   }
 
   protected toggleSosModal(): void {
@@ -793,6 +873,7 @@ export class PanelPacienteComponent {
   protected selectChatDoctor(doctorId: number): void {
     this.selectedChatDoctorId.set(doctorId);
     this.chatInput.set('');
+    this.loadChatMessages(doctorId);
   }
 
   protected updateChatInput(value: string): void {
@@ -802,21 +883,61 @@ export class PanelPacienteComponent {
   protected sendChatMessage(): void {
     const doctor = this.selectedChatDoctor();
     const text = this.chatInput().trim();
+
     if (!doctor || !text) {
       return;
     }
+
     if (!doctor.online) {
       this.showToast('Este médico está fuera de horario en este momento.');
       return;
     }
 
-    const now = new Date();
-    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    this.chatMessagesByDoctor.update((all) => ({
-      ...all,
-      [doctor.id]: [...(all[doctor.id] ?? []), { from: 'me', text, time }],
-    }));
-    this.chatInput.set('');
+    this.chatService.sendMessage(doctor.id, text).subscribe({
+      next: (message) => {
+        const mapped = this.mapBackendChatMessage(message);
+
+        this.chatMessagesByDoctor.update((all) => ({
+          ...all,
+          [doctor.id]: [...(all[doctor.id] ?? []), mapped],
+        }));
+
+        this.chatInput.set('');
+      },
+      error: (error) => {
+        console.error('ERROR AL ENVIAR MENSAJE:', error);
+        this.showToast(error?.error?.message || 'No se pudo enviar el mensaje.');
+      },
+    });
+  }
+
+
+  private loadChatMessages(appointmentId: number): void {
+    this.chatService.getMessagesByAppointment(appointmentId).subscribe({
+      next: (messages) => {
+        this.chatMessagesByDoctor.update((all) => ({
+          ...all,
+          [appointmentId]: messages.map((message) => this.mapBackendChatMessage(message)),
+        }));
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR MENSAJES DEL CHAT:', error);
+        this.showToast(error?.error?.message || 'No se pudieron cargar los mensajes del chat.');
+      },
+    });
+  }
+
+  private mapBackendChatMessage(message: ChatMessageResponse): ChatMessage {
+    const date = new Date(message.sentAt);
+    const time = Number.isNaN(date.getTime())
+      ? ''
+      : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+    return {
+      from: message.senderRole === 'PATIENT' ? 'me' : 'doctor',
+      text: message.message,
+      time,
+    };
   }
 
   protected openReminderForm(): void {
@@ -907,17 +1028,49 @@ export class PanelPacienteComponent {
   }
 
   protected reprogramAppointment(id: string): void {
-    this.appointments.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, estado: 'Reprogramada' } : item)),
-    );
-    this.showToast('Cita reprogramada.');
+    const cita = this.appointments().find((item) => item.id === id);
+
+    if (!cita) {
+      this.showToast('No se encontró la cita seleccionada.');
+      return;
+    }
+
+    this.activeSection.set('citas');
+    this.showBookingFlow.set(true);
+    this.bookingStep.set('doctores');
+    this.bookingSpecialtyFilter.set(cita.especialidad);
+    this.selectedDoctor.set(null);
+    this.selectedHorarioId.set(null);
+    this.reprogrammingAppointmentId.set(id);
+
+    this.showToast('Selecciona nuevo médico y horario para reprogramar la cita.');
   }
 
   protected cancelAppointment(id: string): void {
-    this.appointments.update((items) =>
-      items.map((item) => (item.id === id ? { ...item, estado: 'Cancelada' } : item)),
-    );
-    this.showToast('Cita cancelada.');
+    const numericId = Number(id);
+
+    if (Number.isNaN(numericId)) {
+      this.showToast('ID de cita inválido.');
+      return;
+    }
+
+    this.appointmentService.cancelAppointment(numericId).subscribe({
+      next: () => {
+        this.appointments.update((items) =>
+          items.map((item) =>
+            item.id === id ? { ...item, estado: 'Cancelada' as EstadoCita } : item
+          )
+        );
+
+        this.showToast('Cita cancelada correctamente.');
+      },
+      error: (error) => {
+        console.error('ERROR AL CANCELAR CITA:', error);
+        this.showToast(
+          error?.error?.message || 'No se pudo cancelar la cita.'
+        );
+      },
+    });
   }
 
   protected finalizeAppointment(id: string): void {
@@ -1084,72 +1237,248 @@ export class PanelPacienteComponent {
     }, 30);
   }
 
-  private getDoctorCatalog(): DoctorOption[] {
-    const defaultDoctors: DoctorOption[] = [
-      {
-        id: 1,
-        nombreCompleto: 'Dr. Juan Perez',
-        especialidad: 'Cardiología',
-        sede: 'Sede Central',
-        foto: 'https://i.pravatar.cc/180?img=12',
-        modalidades: ['Virtual', 'Presencial'],
-        horarios: [
-          { id: 'd1-h1', fecha: '2026-05-18', hora: '14:30', modalidad: 'Virtual', sede: 'Sede Central', link: 'https://meet.google.com/abc-defg-hij' },
-          { id: 'd1-h2', fecha: '2026-05-19', hora: '09:00', modalidad: 'Presencial', sede: 'Sede Central' },
-        ],
+  private loadInitialPatientData(): void {
+    this.patientService.getMyProfile().subscribe({
+      next: (profile) => {
+        this.applyPatientProfile(profile);
+        this.loadAppointments();
       },
-      {
-        id: 2,
-        nombreCompleto: 'Dra. Maria Rios',
-        especialidad: 'Pediatría',
-        sede: 'Sede Norte',
-        foto: 'https://i.pravatar.cc/180?img=47',
-        modalidades: ['Virtual', 'Presencial'],
-        horarios: [
-          { id: 'd2-h1', fecha: '2026-05-20', hora: '11:30', modalidad: 'Virtual', sede: 'Sede Norte', link: 'https://meet.google.com/rst-uvwx-yza' },
-          { id: 'd2-h2', fecha: '2026-05-21', hora: '15:00', modalidad: 'Presencial', sede: 'Sede Norte' },
-        ],
+      error: (error) => {
+        console.error('ERROR AL CARGAR PERFIL PACIENTE:', error);
+        this.showToast('No se pudo cargar el perfil del paciente.');
+        this.loadAppointments();
       },
-    ];
+    });
+  }
 
-    const rawMedicos = localStorage.getItem('saludlink_admin_medicos');
-    const rawSedes = localStorage.getItem('saludlink_admin_sedes');
-    if (!rawMedicos || !rawSedes) {
-      return defaultDoctors;
-    }
+  private loadAppointments(): void {
+    this.appointmentService.getAppointmentsByPatient().subscribe({
+      next: (appointments) => {
+        this.appointments.set(
+          appointments.map((appointment) =>
+            this.mapBackendAppointment(
+              appointment as BackendAppointment & Record<string, unknown>
+            )
+          )
+        );
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR CITAS:', error);
+        this.appointments.set([]);
+        this.showToast('No se pudieron cargar tus citas.');
+      },
+    });
+  }
 
-    try {
-      const medicos = JSON.parse(rawMedicos) as Array<{ id: number; nombre: string; apellido: string; sedeId: number }>;
-      const sedes = JSON.parse(rawSedes) as Array<{ id: number; nombre: string }>;
-      if (!Array.isArray(medicos) || medicos.length === 0) {
-        return defaultDoctors;
-      }
+  private loadDoctorsFromBackend(): void {
+    this.appointmentService.getDoctors().subscribe({
+      next: (doctors) => {
+        this.doctors.set(
+          doctors.map((doctor, index) =>
+            this.mapBackendDoctorToOption(doctor, index)
+          )
+        );
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR MÉDICOS:', error);
+        this.doctors.set([]);
+        this.showToast('No se pudieron cargar los médicos disponibles.');
+      },
+    });
+  }
 
-      return medicos.map((medico, index) => {
-        const sede = sedes.find((item) => item.id === medico.sedeId)?.nombre ?? 'Sede institucional';
-        return {
-          id: medico.id,
-          nombreCompleto: `Dr. ${medico.nombre} ${medico.apellido}`,
-          especialidad: 'Medicina General',
+  private applyPatientProfile(profile: Partial<BackendPatientProfile> & { dni?: unknown }): void {
+    const current = this.patientProfile();
+    const fullName = `${profile['firstName'] ?? ''} ${profile['lastName'] ?? ''}`.trim();
+
+    this.patientProfile.set({
+      ...current,
+      nombreCompleto: fullName || current.nombreCompleto,
+      correo: String(profile['email'] ?? current.correo),
+      telefono: String(profile['phone'] ?? current.telefono),
+      dni: String(profile['documentNumber'] ?? profile['dni'] ?? current.dni),
+      direccion: String(profile['address'] ?? current.direccion),
+      fechaNacimiento: String(profile['birthDate'] ?? current.fechaNacimiento),
+      genero: String(profile['gender'] ?? current.genero),
+    });
+
+    this.profileDraft = { ...this.patientProfile() };
+  }
+
+  private mapBackendDoctorToOption(doctor: BackendDoctor, index: number): DoctorOption {
+    const nombreCompleto =
+      doctor.name ||
+      `${doctor.firstName ?? ''} ${doctor.lastName ?? ''}`.trim() ||
+      `Médico ${doctor.id}`;
+
+    const sede =
+      doctor.branchName ||
+      doctor.branchAddress ||
+      doctor.clinicName ||
+      'Sede por confirmar';
+
+    const firstDate = this.getFutureDate(1);
+    const secondDate = this.getFutureDate(2);
+
+    return {
+      id: doctor.id,
+      nombreCompleto,
+      especialidad: doctor.specialty || 'Medicina General',
+      sede,
+      foto: `https://i.pravatar.cc/180?img=${(index % 20) + 10}`,
+      modalidades: ['Virtual', 'Presencial'],
+      horarios: [
+        {
+          id: `doctor-${doctor.id}-virtual`,
+          fecha: firstDate,
+          hora: '10:00',
+          modalidad: 'Virtual',
+          sede: 'Sala Telemedicina',
+          link: 'https://meet.google.com/saludlink-virtual',
+        },
+        {
+          id: `doctor-${doctor.id}-presencial`,
+          fecha: secondDate,
+          hora: '16:00',
+          modalidad: 'Presencial',
           sede,
-          foto: `https://i.pravatar.cc/180?img=${(index % 20) + 10}`,
-          modalidades: ['Virtual', 'Presencial'],
-          horarios: [
-            {
-              id: `m-${medico.id}-1`,
-              fecha: '2026-05-22',
-              hora: '10:00',
-              modalidad: 'Virtual',
-              sede,
-              link: 'https://meet.google.com/med-virtual-room',
-            },
-            { id: `m-${medico.id}-2`, fecha: '2026-05-23', hora: '16:00', modalidad: 'Presencial', sede },
-          ],
-        };
-      });
-    } catch {
-      return defaultDoctors;
+        },
+      ],
+    };
+  }
+
+  private mapBackendAppointment(
+    appointment: Partial<BackendAppointment> & Record<string, unknown>
+  ): PatientAppointment {
+    const doctorFromAppointment = appointment['doctor'] as BackendDoctor | undefined;
+
+    const rawDate = String(
+      appointment['appointmentDate'] ??
+        appointment['scheduledAt'] ??
+        appointment['date'] ??
+        ''
+    );
+
+    const rawTime = String(
+      appointment['startTime'] ??
+        appointment['time'] ??
+        appointment['appointmentTime'] ??
+        ''
+    );
+
+    const dateTime = this.splitAppointmentDate(rawDate);
+
+    const fecha = dateTime.fecha;
+    const hora = rawTime ? rawTime.slice(0, 5) : dateTime.hora;
+
+    const modalidad = this.mapAppointmentModality(
+      String(appointment['modality'] ?? appointment['type'] ?? 'Presencial')
+    );
+
+    const doctorName =
+      String(
+        appointment['doctorName'] ??
+          appointment['doctorFullName'] ??
+          ''
+      ) ||
+      `${doctorFromAppointment?.firstName ?? ''} ${doctorFromAppointment?.lastName ?? ''}`.trim() ||
+      doctorFromAppointment?.name ||
+      'Médico asignado';
+
+    const especialidad =
+      String(
+        appointment['specialty'] ??
+          appointment['specialtyName'] ??
+          appointment['especialidad'] ??
+          ''
+      ) ||
+      doctorFromAppointment?.specialty ||
+      'Especialidad';
+
+    const sede =
+      String(
+        appointment['location'] ??
+          appointment['branchName'] ??
+          appointment['sede'] ??
+          ''
+      ) ||
+      doctorFromAppointment?.branchName ||
+      doctorFromAppointment?.branchAddress ||
+      (modalidad === 'Virtual' ? 'Sala Telemedicina' : 'Sede por confirmar');
+
+    return {
+      id: String(appointment['id'] ?? `SL-${Date.now()}`),
+      doctor: doctorName,
+      especialidad,
+      fecha,
+      hora,
+      modalidad,
+      sede,
+      estado: this.mapAppointmentStatus(String(appointment['status'] ?? 'Programada')),
+      tipo: modalidad,
+    };
+  }
+
+  private splitAppointmentDate(value: string): { fecha: string; hora: string } {
+    if (!value) {
+      return {
+        fecha: '-',
+        hora: '-',
+      };
     }
+
+    if (value.includes('T')) {
+      const [fecha, time] = value.split('T');
+
+      return {
+        fecha,
+        hora: time?.slice(0, 5) || '-',
+      };
+    }
+
+    return {
+      fecha: value.slice(0, 10),
+      hora: '-',
+    };
+  }
+
+  private mapAppointmentModality(value: string): Modalidad {
+    const normalized = value.toUpperCase();
+
+    if (normalized.includes('VIRTUAL')) {
+      return 'Virtual';
+    }
+
+    return 'Presencial';
+  }
+
+  private mapAppointmentStatus(value: string): EstadoCita {
+    const normalized = value.toUpperCase();
+
+    if (normalized.includes('CONFIRM')) {
+      return 'Confirmada';
+    }
+
+    if (normalized.includes('CANCEL')) {
+      return 'Cancelada';
+    }
+
+    if (normalized.includes('COMPLETE') || normalized.includes('COMPLET')) {
+      return 'Completada';
+    }
+
+    if (normalized.includes('REPROGRAM')) {
+      return 'Reprogramada';
+    }
+
+    return 'Programada';
+  }
+
+  private getFutureDate(daysFromToday: number): string {
+    const date = new Date();
+    date.setDate(date.getDate() + daysFromToday);
+
+    return date.toISOString().slice(0, 10);
   }
 
   private showToast(message: string): void {

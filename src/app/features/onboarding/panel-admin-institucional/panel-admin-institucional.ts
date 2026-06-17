@@ -2,7 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
 import { AuthService } from '../../../core/services/auth.service';
+import { ClinicService } from '../../../core/services/clinic.service';
+import { AdminDoctorService } from '../../../core/services/admin-doctor.service';
+import { AdminAppointmentService } from '../../../core/services/admin-appointment.service';
+
+import { ClinicBranch } from '../../../core/models/clinic.model';
+import { Doctor } from '../../../core/models/doctor.model';
+import { Appointment, AppointmentModality } from '../../../core/models/appointment.model';
 
 type AdminSection = 'dashboard' | 'sedes' | 'medicos' | 'reportes' | 'citas';
 type SedeStatus = 'Activa' | 'Inactiva';
@@ -20,6 +28,9 @@ interface Medico {
   id: number;
   nombre: string;
   apellido: string;
+  email: string;
+  especialidad: string;
+  cmp: string;
   sedeId: number;
   estado: SedeStatus;
 }
@@ -32,6 +43,8 @@ interface Cita {
   hora: string;
   medicoId: number;
   estado: CitaStatus;
+  modalidad: AppointmentModality | string;
+  notes?: string;
 }
 
 @Component({
@@ -43,24 +56,50 @@ interface Cita {
 export class PanelAdminInstitucionalComponent {
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
+  private readonly clinicService = inject(ClinicService);
+  private readonly adminDoctorService = inject(AdminDoctorService);
+  private readonly adminAppointmentService = inject(AdminAppointmentService);
+
   protected readonly activeSection = signal<AdminSection>('dashboard');
   protected readonly toastMessage = signal('');
-  protected readonly sedes = signal<Sede[]>([
-    { id: 1, nombre: 'Sede Central', direccion: 'Av. San Borja 1200, Lima', ruc: '20123456789', estado: 'Activa' },
-    { id: 2, nombre: 'Sede Norte', direccion: 'Av. Tomas Valle 450, Lima', ruc: '20987654321', estado: 'Activa' },
-  ]);
-  protected readonly medicos = signal<Medico[]>([
-    { id: 1, nombre: 'Juan', apellido: 'Perez', sedeId: 1, estado: 'Activa' },
-    { id: 2, nombre: 'Maria', apellido: 'Rios', sedeId: 2, estado: 'Activa' },
-  ]);
-  protected readonly citas = signal<Cita[]>([
-    { id: 1, paciente: 'Lupe Cunyas', dia: 'Lunes', fecha: '2026-05-18', hora: '14:30', medicoId: 1, estado: 'Confirmada' },
-    { id: 2, paciente: 'Carlos Mena', dia: 'Martes', fecha: '2026-05-19', hora: '09:00', medicoId: 2, estado: 'Programada' },
-  ]);
+  protected readonly loadingSedes = signal(false);
+  protected readonly loadingMedicos = signal(false);
+  protected readonly loadingClinic = signal(false);
+  protected readonly loadingCitas = signal(false);
 
-  protected sedeForm = { nombre: '', direccion: '', ruc: '' };
-  protected medicoForm = { nombre: '', apellido: '', sedeId: 0 };
-  protected citaForm = { paciente: '', dia: 'Lunes', fecha: '', hora: '', medicoId: 0 };
+  protected readonly clinicName = signal('Clínica');
+  protected readonly clinicId = signal<number | null>(null);
+
+  protected readonly sedes = signal<Sede[]>([]);
+  protected readonly medicos = signal<Medico[]>([]);
+  protected readonly citas = signal<Cita[]>([]);
+
+  protected sedeForm = {
+    nombre: '',
+    direccion: '',
+    ruc: '',
+  };
+
+  protected medicoForm = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    phone: '',
+    especialidad: '',
+    cmp: '',
+    sedeId: 0,
+    biography: '',
+    consultationFee: '',
+  };
+
+  protected citaForm = {
+    paciente: '',
+    dia: 'Lunes',
+    fecha: '',
+    hora: '',
+    medicoId: 0,
+  };
 
   protected editingSedeId: number | null = null;
   protected editingMedicoId: number | null = null;
@@ -70,26 +109,34 @@ export class PanelAdminInstitucionalComponent {
   protected medicoAttempted = false;
   protected citaAttempted = false;
 
-  private nextSedeId = 3;
-  private nextMedicoId = 3;
-  private nextCitaId = 3;
-
   constructor() {
-    this.restoreCatalogFromStorage();
-    this.persistCatalog();
+    this.loadClinicData();
+    this.loadSedes();
+    this.loadMedicos();
   }
 
   protected readonly totalSedes = computed(() => this.sedes().length);
   protected readonly totalMedicos = computed(() => this.medicos().length);
   protected readonly totalCitas = computed(() => this.citas().length);
-  protected readonly citasConfirmadas = computed(() => this.citas().filter((cita) => cita.estado === 'Confirmada').length);
-  protected readonly citasCanceladas = computed(() => this.citas().filter((cita) => cita.estado === 'Cancelada').length);
-  protected readonly citasProgramadas = computed(() => this.citas().filter((cita) => cita.estado === 'Programada').length);
+
+  protected readonly citasConfirmadas = computed(
+    () => this.citas().filter((cita) => cita.estado === 'Confirmada').length
+  );
+
+  protected readonly citasCanceladas = computed(
+    () => this.citas().filter((cita) => cita.estado === 'Cancelada').length
+  );
+
+  protected readonly citasProgramadas = computed(
+    () => this.citas().filter((cita) => cita.estado === 'Programada').length
+  );
 
   protected readonly citasPorMedico = computed(() => {
     const total = this.citas().length || 1;
+
     return this.medicos().map((medico) => {
       const cantidad = this.citas().filter((cita) => cita.medicoId === medico.id).length;
+
       return {
         medicoId: medico.id,
         nombreCompleto: `${medico.nombre} ${medico.apellido}`,
@@ -109,140 +156,193 @@ export class PanelAdminInstitucionalComponent {
       this.goDashboard();
       return;
     }
+
     this.activeSection.set(section);
+
+    if (section === 'sedes') {
+      this.loadSedes();
+    }
+
+    if (section === 'medicos') {
+      this.loadSedes();
+      this.loadMedicos();
+    }
+
+    if (section === 'citas') {
+      this.loadMedicos();
+      this.loadCitas();
+    }
+
+    if (section === 'reportes') {
+      this.loadMedicos();
+      this.loadCitas();
+    }
   }
 
   protected registerSede(): void {
     this.sedeAttempted = true;
+
     if (!this.isSedeFormValid()) {
       return;
     }
 
-    const data = { ...this.sedeForm };
     if (this.editingSedeId) {
-      this.sedes.update((items) =>
-        items.map((sede) =>
-          sede.id === this.editingSedeId ? { ...sede, nombre: data.nombre, direccion: data.direccion, ruc: data.ruc } : sede,
-        ),
-      );
-      this.showToast('Sede actualizada correctamente.');
-    } else {
-      this.sedes.update((items) => [
-        ...items,
-        { id: this.nextSedeId++, nombre: data.nombre, direccion: data.direccion, ruc: data.ruc, estado: 'Activa' },
-      ]);
-      this.showToast('Sede registrada correctamente.');
+      this.showToast('La edición de sedes todavía no está conectada al backend.');
+      return;
     }
-    this.resetSedeForm();
-    this.persistCatalog();
+
+    this.loadingSedes.set(true);
+
+    this.clinicService
+      .createMyBranch({
+        name: this.sedeForm.nombre.trim(),
+        address: this.sedeForm.direccion.trim(),
+        ruc: this.sedeForm.ruc.trim(),
+      })
+      .subscribe({
+        next: () => {
+          this.loadingSedes.set(false);
+          this.showToast('Sede registrada correctamente.');
+          this.resetSedeForm();
+          this.loadSedes();
+        },
+        error: (error) => {
+          console.error('ERROR AL REGISTRAR SEDE:', error);
+          this.loadingSedes.set(false);
+          this.showToast(error?.error?.message || 'No se pudo registrar la sede.');
+        },
+      });
   }
 
   protected editSede(sede: Sede): void {
-    this.sedeForm = { nombre: sede.nombre, direccion: sede.direccion, ruc: sede.ruc };
+    this.sedeForm = {
+      nombre: sede.nombre,
+      direccion: sede.direccion,
+      ruc: sede.ruc,
+    };
+
     this.editingSedeId = sede.id;
+    this.showToast('Por ahora solo está conectado el registro de sedes nuevas.');
   }
 
   protected deleteSede(sedeId: number): void {
-    this.sedes.update((items) => items.filter((sede) => sede.id !== sedeId));
-    this.medicos.update((items) => items.filter((medico) => medico.sedeId !== sedeId));
-    this.citas.update((items) =>
-      items.filter((cita) => this.medicos().some((medico) => medico.id === cita.medicoId)),
-    );
-    this.showToast('Sede eliminada.');
-    if (this.editingSedeId === sedeId) {
-      this.resetSedeForm();
-    }
-    this.persistCatalog();
+    console.warn('Eliminar sede pendiente de endpoint backend:', sedeId);
+    this.showToast('Eliminar sede todavía no está conectado al backend.');
   }
 
   protected registerMedico(): void {
     this.medicoAttempted = true;
+
     if (!this.isMedicoFormValid()) {
       return;
     }
 
-    const data = { ...this.medicoForm };
     if (this.editingMedicoId) {
-      this.medicos.update((items) =>
-        items.map((medico) =>
-          medico.id === this.editingMedicoId
-            ? { ...medico, nombre: data.nombre, apellido: data.apellido, sedeId: data.sedeId }
-            : medico,
-        ),
-      );
-      this.showToast('Medico actualizado en tiempo real.');
-    } else {
-      this.medicos.update((items) => [
-        ...items,
-        { id: this.nextMedicoId++, nombre: data.nombre, apellido: data.apellido, sedeId: data.sedeId, estado: 'Activa' },
-      ]);
-      this.showToast('Medico registrado correctamente.');
+      this.showToast('La edición de médicos todavía no está conectada al backend.');
+      return;
     }
-    this.resetMedicoForm();
-    this.persistCatalog();
+
+    this.loadingMedicos.set(true);
+
+    this.adminDoctorService
+      .createDoctor({
+        firstName: this.medicoForm.nombre.trim(),
+        lastName: this.medicoForm.apellido.trim(),
+        email: this.medicoForm.email.trim(),
+        password: this.medicoForm.password,
+        phone: this.medicoForm.phone.trim(),
+        specialty: this.medicoForm.especialidad.trim(),
+        licenseNumber: this.medicoForm.cmp.trim(),
+        branchId: Number(this.medicoForm.sedeId),
+        biography: this.medicoForm.biography.trim() || undefined,
+        consultationFee: this.medicoForm.consultationFee
+          ? Number(this.medicoForm.consultationFee)
+          : undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.loadingMedicos.set(false);
+          this.showToast('Médico registrado correctamente.');
+          this.resetMedicoForm();
+          this.loadMedicos();
+        },
+        error: (error) => {
+          console.error('ERROR AL REGISTRAR MÉDICO:', error);
+          this.loadingMedicos.set(false);
+          this.showToast(error?.error?.message || 'No se pudo registrar el médico.');
+        },
+      });
   }
 
   protected editMedico(medico: Medico): void {
-    this.medicoForm = { nombre: medico.nombre, apellido: medico.apellido, sedeId: medico.sedeId };
+    this.medicoForm = {
+      nombre: medico.nombre,
+      apellido: medico.apellido,
+      email: medico.email,
+      password: '',
+      phone: '',
+      especialidad: medico.especialidad,
+      cmp: medico.cmp,
+      sedeId: medico.sedeId,
+      biography: '',
+      consultationFee: '',
+    };
+
     this.editingMedicoId = medico.id;
+    this.showToast('Por ahora solo está conectado el registro de médicos nuevos.');
   }
 
   protected deleteMedico(medicoId: number): void {
-    this.medicos.update((items) => items.filter((medico) => medico.id !== medicoId));
-    this.citas.update((items) => items.filter((cita) => cita.medicoId !== medicoId));
-    this.showToast('Medico eliminado.');
-    if (this.editingMedicoId === medicoId) {
-      this.resetMedicoForm();
-    }
-    this.persistCatalog();
+    console.warn('Eliminar médico pendiente de backend:', medicoId);
+    this.showToast('Eliminar médico todavía no está conectado al backend.');
   }
 
   protected deleteCurrentMedico(): void {
     if (!this.editingMedicoId) {
       return;
     }
+
     this.deleteMedico(this.editingMedicoId);
   }
 
   protected scheduleCita(): void {
     this.citaAttempted = true;
+
+    if (!this.editingCitaId) {
+      this.showToast('Las citas nuevas se registran desde el panel del paciente.');
+      return;
+    }
+
     if (!this.isCitaFormValid()) {
       return;
     }
 
-    const data = { ...this.citaForm };
-    if (this.editingCitaId) {
-      this.citas.update((items) =>
-        items.map((cita) =>
-          cita.id === this.editingCitaId
-            ? {
-                ...cita,
-                paciente: data.paciente,
-                dia: data.dia,
-                fecha: data.fecha,
-                hora: data.hora,
-                medicoId: data.medicoId,
-              }
-            : cita,
-        ),
-      );
-      this.showToast('Cita editada correctamente.');
-    } else {
-      this.citas.update((items) => [
-        ...items,
-        {
-          id: this.nextCitaId++,
-          paciente: data.paciente,
-          dia: data.dia,
-          fecha: data.fecha,
-          hora: data.hora,
-          medicoId: data.medicoId,
-          estado: 'Programada',
+    const appointmentDate = `${this.citaForm.fecha}T${
+      this.citaForm.hora.length === 5 ? `${this.citaForm.hora}:00` : this.citaForm.hora
+    }`;
+
+    this.loadingCitas.set(true);
+
+    this.adminAppointmentService
+      .updateAppointment(this.editingCitaId, {
+        doctorId: Number(this.citaForm.medicoId),
+        appointmentDate,
+        modality: AppointmentModality.presencial,
+        notes: 'Cita actualizada por administrador institucional',
+      })
+      .subscribe({
+        next: () => {
+          this.loadingCitas.set(false);
+          this.showToast('Cita actualizada correctamente.');
+          this.resetCitaForm();
+          this.loadCitas();
         },
-      ]);
-      this.showToast('Cita programada con exito.');
-    }
-    this.resetCitaForm();
+        error: (error) => {
+          console.error('ERROR AL EDITAR CITA:', error);
+          this.loadingCitas.set(false);
+          this.showToast(error?.error?.message || 'No se pudo editar la cita.');
+        },
+      });
   }
 
   protected editCita(cita: Cita): void {
@@ -253,17 +353,44 @@ export class PanelAdminInstitucionalComponent {
       hora: cita.hora,
       medicoId: cita.medicoId,
     };
+
     this.editingCitaId = cita.id;
+    this.citaAttempted = false;
+    this.showToast('Editando cita. Cambia fecha, hora o médico y guarda los cambios.');
   }
 
   protected confirmCita(citaId: number): void {
-    this.citas.update((items) => items.map((cita) => (cita.id === citaId ? { ...cita, estado: 'Confirmada' } : cita)));
-    this.showToast('Cita confirmada.');
+    this.loadingCitas.set(true);
+
+    this.adminAppointmentService.confirmAppointment(citaId).subscribe({
+      next: () => {
+        this.loadingCitas.set(false);
+        this.showToast('Cita confirmada correctamente.');
+        this.loadCitas();
+      },
+      error: (error) => {
+        console.error('ERROR AL CONFIRMAR CITA:', error);
+        this.loadingCitas.set(false);
+        this.showToast(error?.error?.message || 'No se pudo confirmar la cita.');
+      },
+    });
   }
 
   protected cancelCita(citaId: number): void {
-    this.citas.update((items) => items.map((cita) => (cita.id === citaId ? { ...cita, estado: 'Cancelada' } : cita)));
-    this.showToast('Cita cancelada.');
+    this.loadingCitas.set(true);
+
+    this.adminAppointmentService.cancelAppointment(citaId).subscribe({
+      next: () => {
+        this.loadingCitas.set(false);
+        this.showToast('Cita cancelada correctamente.');
+        this.loadCitas();
+      },
+      error: (error) => {
+        console.error('ERROR AL CANCELAR CITA:', error);
+        this.loadingCitas.set(false);
+        this.showToast(error?.error?.message || 'No se pudo cancelar la cita.');
+      },
+    });
   }
 
   protected getSedeName(sedeId: number): string {
@@ -272,16 +399,18 @@ export class PanelAdminInstitucionalComponent {
 
   protected getMedicoName(medicoId: number): string {
     const medico = this.medicos().find((item) => item.id === medicoId);
-    return medico ? `${medico.nombre} ${medico.apellido}` : 'Sin medico';
+    return medico ? `${medico.nombre} ${medico.apellido}` : 'Médico asignado';
   }
 
   protected getCitaStatusClass(status: CitaStatus): string {
     if (status === 'Confirmada') {
       return 'status ok';
     }
+
     if (status === 'Cancelada') {
       return 'status off';
     }
+
     return 'status pending';
   }
 
@@ -292,6 +421,164 @@ export class PanelAdminInstitucionalComponent {
   protected logout(): void {
     this.auth.logout();
     void this.router.navigate(['/bienvenidacuenta']);
+  }
+
+  private loadClinicData(): void {
+    this.loadingClinic.set(true);
+
+    this.clinicService.getMyClinic().subscribe({
+      next: (clinic) => {
+        this.loadingClinic.set(false);
+        this.clinicId.set(clinic.id);
+        this.clinicName.set(clinic.businessName);
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR CLÍNICA:', error);
+        this.loadingClinic.set(false);
+        this.showToast('No se pudo cargar la información de la clínica.');
+      },
+    });
+  }
+
+  private loadSedes(): void {
+    this.loadingSedes.set(true);
+
+    this.clinicService.getMyBranches().subscribe({
+      next: (branches) => {
+        this.loadingSedes.set(false);
+        this.sedes.set(branches.map((branch) => this.mapBranchToSede(branch)));
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR SEDES:', error);
+        this.loadingSedes.set(false);
+        this.sedes.set([]);
+        this.showToast('No se pudieron cargar las sedes.');
+      },
+    });
+  }
+
+  private loadMedicos(): void {
+    this.loadingMedicos.set(true);
+
+    this.adminDoctorService.listMyDoctors().subscribe({
+      next: (doctors) => {
+        this.loadingMedicos.set(false);
+        this.medicos.set(doctors.map((doctor) => this.mapDoctorToMedico(doctor)));
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR MÉDICOS:', error);
+        this.loadingMedicos.set(false);
+        this.medicos.set([]);
+        this.showToast('No se pudieron cargar los médicos.');
+      },
+    });
+  }
+
+  private loadCitas(): void {
+    this.loadingCitas.set(true);
+
+    this.adminAppointmentService.listMyClinicAppointments().subscribe({
+      next: (appointments) => {
+        this.loadingCitas.set(false);
+        this.citas.set(
+          appointments.map((appointment) => this.mapBackendAppointmentToCita(appointment))
+        );
+      },
+      error: (error) => {
+        console.error('ERROR AL CARGAR CITAS ADMIN:', error);
+        this.loadingCitas.set(false);
+        this.citas.set([]);
+        this.showToast('No se pudieron cargar las citas de la clínica.');
+      },
+    });
+  }
+
+  private mapBranchToSede(branch: ClinicBranch): Sede {
+    return {
+      id: branch.id,
+      nombre: branch.name,
+      direccion: branch.address,
+      ruc: branch.ruc || '',
+      estado: branch.active ? 'Activa' : 'Inactiva',
+    };
+  }
+
+  private mapDoctorToMedico(doctor: Doctor): Medico {
+    return {
+      id: doctor.id,
+      nombre: doctor.firstName,
+      apellido: doctor.lastName,
+      email: doctor.email,
+      especialidad: doctor.specialty,
+      cmp: doctor.licenseNumber,
+      sedeId: doctor.branchId ?? 0,
+      estado: doctor.verified ? 'Activa' : 'Inactiva',
+    };
+  }
+
+  private mapBackendAppointmentToCita(appointment: Appointment): Cita {
+    const rawDate = appointment.appointmentDate ?? appointment.scheduledAt ?? '';
+    const dateTime = this.splitDateTime(rawDate);
+
+    return {
+      id: appointment.id,
+      paciente: appointment.patientName ?? 'Paciente',
+      dia: this.getDayName(dateTime.fecha),
+      fecha: dateTime.fecha,
+      hora: dateTime.hora,
+      medicoId: appointment.doctorId ?? 0,
+      estado: this.mapBackendStatusToAdminStatus(String(appointment.status)),
+      modalidad: appointment.modality ?? AppointmentModality.presencial,
+      notes: appointment.notes,
+    };
+  }
+
+  private splitDateTime(value: string): { fecha: string; hora: string } {
+    if (!value) {
+      return {
+        fecha: '-',
+        hora: '-',
+      };
+    }
+
+    if (value.includes('T')) {
+      const [fecha, time] = value.split('T');
+
+      return {
+        fecha,
+        hora: time?.slice(0, 5) || '-',
+      };
+    }
+
+    return {
+      fecha: value.slice(0, 10),
+      hora: '-',
+    };
+  }
+
+  private getDayName(dateValue: string): string {
+    if (!dateValue || dateValue === '-') {
+      return '-';
+    }
+
+    const date = new Date(`${dateValue}T00:00:00`);
+    const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    return days[date.getDay()] ?? '-';
+  }
+
+  private mapBackendStatusToAdminStatus(status: string): CitaStatus {
+    const normalized = status.toUpperCase();
+
+    if (normalized.includes('CONFIRM')) {
+      return 'Confirmada';
+    }
+
+    if (normalized.includes('CANCEL')) {
+      return 'Cancelada';
+    }
+
+    return 'Programada';
   }
 
   private isSedeFormValid(): boolean {
@@ -306,7 +593,11 @@ export class PanelAdminInstitucionalComponent {
     return (
       this.medicoForm.nombre.trim().length >= 2 &&
       this.medicoForm.apellido.trim().length >= 2 &&
-      this.medicoForm.sedeId > 0
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.medicoForm.email.trim()) &&
+      this.medicoForm.password.trim().length >= 6 &&
+      this.medicoForm.especialidad.trim().length >= 2 &&
+      this.medicoForm.cmp.trim().length >= 4 &&
+      Number(this.medicoForm.sedeId) > 0
     );
   }
 
@@ -320,57 +611,54 @@ export class PanelAdminInstitucionalComponent {
   }
 
   private resetSedeForm(): void {
-    this.sedeForm = { nombre: '', direccion: '', ruc: '' };
+    this.sedeForm = {
+      nombre: '',
+      direccion: '',
+      ruc: '',
+    };
+
     this.editingSedeId = null;
     this.sedeAttempted = false;
   }
 
   private resetMedicoForm(): void {
-    this.medicoForm = { nombre: '', apellido: '', sedeId: 0 };
+    this.medicoForm = {
+      nombre: '',
+      apellido: '',
+      email: '',
+      password: '',
+      phone: '',
+      especialidad: '',
+      cmp: '',
+      sedeId: 0,
+      biography: '',
+      consultationFee: '',
+    };
+
     this.editingMedicoId = null;
     this.medicoAttempted = false;
   }
 
   private resetCitaForm(): void {
-    this.citaForm = { paciente: '', dia: 'Lunes', fecha: '', hora: '', medicoId: 0 };
+    this.citaForm = {
+      paciente: '',
+      dia: 'Lunes',
+      fecha: '',
+      hora: '',
+      medicoId: 0,
+    };
+
     this.editingCitaId = null;
     this.citaAttempted = false;
   }
 
   private showToast(message: string): void {
     this.toastMessage.set(message);
+
     setTimeout(() => {
       if (this.toastMessage() === message) {
         this.toastMessage.set('');
       }
     }, 2200);
-  }
-
-  private restoreCatalogFromStorage(): void {
-    const rawSedes = localStorage.getItem('saludlink_admin_sedes');
-    const rawMedicos = localStorage.getItem('saludlink_admin_medicos');
-    if (!rawSedes || !rawMedicos) {
-      return;
-    }
-
-    try {
-      const sedes = JSON.parse(rawSedes) as Sede[];
-      const medicos = JSON.parse(rawMedicos) as Medico[];
-      if (Array.isArray(sedes) && sedes.length > 0) {
-        this.sedes.set(sedes);
-        this.nextSedeId = Math.max(...sedes.map((item) => item.id), 0) + 1;
-      }
-      if (Array.isArray(medicos) && medicos.length > 0) {
-        this.medicos.set(medicos);
-        this.nextMedicoId = Math.max(...medicos.map((item) => item.id), 0) + 1;
-      }
-    } catch {
-      // ignore malformed cache
-    }
-  }
-
-  private persistCatalog(): void {
-    localStorage.setItem('saludlink_admin_sedes', JSON.stringify(this.sedes()));
-    localStorage.setItem('saludlink_admin_medicos', JSON.stringify(this.medicos()));
   }
 }

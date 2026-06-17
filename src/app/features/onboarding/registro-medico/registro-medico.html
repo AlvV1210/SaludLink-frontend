@@ -1,8 +1,13 @@
 <section class="flow-shell medico">
   <aside class="left-pane">
-    <div class="brand"><span class="plus">+</span> SaludLink</div>
+    <div class="brand">
+      <span class="plus">+</span>
+      SaludLink
+    </div>
+
     <h1>Registro de profesionales de salud</h1>
     <p>Conecta con tus pacientes y optimiza tu consulta.</p>
+
     <ul>
       <li>Gestión de agenda inteligente</li>
       <li>Tablero de adherencia</li>
@@ -12,22 +17,161 @@
 
   <div class="form-pane">
     <h2>Datos profesionales</h2>
-    <div class="grid two">
-      <label>Nombres<input placeholder="Juan Carlos" /></label>
-      <label>Apellidos<input placeholder="Pérez Salazar" /></label>
-    </div>
-    <div class="grid two">
-      <label>Especialidad<input placeholder="Cardiología" /></label>
-      <label>N° CMP<input placeholder="CMP 045678" /></label>
-    </div>
-    <div class="grid one">
-      <label>Correo profesional<input placeholder="dr.jperez@saludlink.pe" /></label>
-    </div>
-    <div class="grid two">
-      <label>Contraseña<input type="password" placeholder="••••••••" /></label>
-      <label>Confirmar<input type="password" placeholder="••••••••" /></label>
-    </div>
-    <label class="check"><input type="checkbox" checked /> Acepto Código de Ética y Privacidad</label>
-    <button type="button" class="submit" (click)="finish()">Crear cuenta profesional</button>
+
+    <form [formGroup]="form" (ngSubmit)="finish()" novalidate>
+      <div class="grid two">
+        <label>
+          Nombres
+          <input type="text" formControlName="firstName" placeholder="Juan Carlos" />
+        </label>
+
+        <label>
+          Apellidos
+          <input type="text" formControlName="lastName" placeholder="Pérez Salazar" />
+        </label>
+      </div>
+
+      @if (form.controls.firstName.invalid && form.controls.firstName.touched) {
+        <p class="error">Ingresa tus nombres.</p>
+      }
+
+      @if (form.controls.lastName.invalid && form.controls.lastName.touched) {
+        <p class="error">Ingresa tus apellidos.</p>
+      }
+
+      <div class="grid two">
+        <label>
+          Especialidad
+          <input type="text" formControlName="specialty" placeholder="Cardiología" />
+        </label>
+
+        <label>
+          N° CMP
+          <input type="text" formControlName="licenseNumber" placeholder="CMP045678" />
+        </label>
+      </div>
+
+      @if (form.controls.specialty.invalid && form.controls.specialty.touched) {
+        <p class="error">Ingresa tu especialidad.</p>
+      }
+
+      @if (form.controls.licenseNumber.invalid && form.controls.licenseNumber.touched) {
+        <p class="error">Ingresa tu número de colegiatura.</p>
+      }
+
+      <div class="grid one">
+        <label>
+          Correo profesional
+          <input type="email" formControlName="email" placeholder="dr.jperez@saludlink.pe" />
+        </label>
+      </div>
+
+      @if (form.controls.email.invalid && form.controls.email.touched) {
+        <p class="error">Ingresa un correo válido.</p>
+      }
+
+      <div class="grid one">
+        <label>
+          Teléfono
+          <input type="text" formControlName="phone" placeholder="987654321" />
+        </label>
+      </div>
+
+      @if (form.controls.phone.invalid && form.controls.phone.touched) {
+        <p class="error">Ingresa un teléfono válido.</p>
+      }
+
+      <div class="grid two">
+        <label>
+          Clínica donde laboras
+          <select formControlName="clinicId">
+            <option [ngValue]="0">
+              {{ loadingClinics() ? 'Cargando clínicas...' : 'Seleccione una clínica' }}
+            </option>
+
+            @for (clinic of clinics(); track clinic.id) {
+              <option [ngValue]="clinic.id">
+                {{ clinic.businessName }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <label>
+          Sede donde laboras
+          <select formControlName="branchId">
+            <option [ngValue]="0">
+              {{ loadingBranches() ? 'Cargando sedes...' : 'Seleccione una sede' }}
+            </option>
+
+            @for (branch of branches(); track branch.id) {
+              <option [ngValue]="branch.id">
+                {{ branch.name }}
+              </option>
+            }
+          </select>
+        </label>
+      </div>
+
+      @if (form.controls.clinicId.invalid && form.controls.clinicId.touched) {
+        <p class="error">Selecciona la clínica donde laboras.</p>
+      }
+
+      @if (form.controls.branchId.invalid && form.controls.branchId.touched) {
+        <p class="error">Selecciona la sede donde laboras.</p>
+      }
+
+      @if (!loadingClinics() && clinics().length === 0) {
+        <p class="error">
+          No hay clínicas registradas en SaludLink. Primero debe registrarse una institución.
+        </p>
+      }
+
+      <div class="grid two">
+        <label>
+          Contraseña
+          <input type="password" formControlName="password" placeholder="••••••••" />
+        </label>
+
+        <label>
+          Confirmar
+          <input type="password" formControlName="confirmPassword" placeholder="••••••••" />
+        </label>
+      </div>
+
+      @if (form.controls.password.invalid && form.controls.password.touched) {
+        <p class="error">La contraseña debe tener al menos 6 caracteres.</p>
+      }
+
+      @if (form.controls.confirmPassword.invalid && form.controls.confirmPassword.touched) {
+        <p class="error">Confirma tu contraseña.</p>
+      }
+
+      <label class="check">
+        <input type="checkbox" formControlName="terms" />
+        Acepto Código de Ética y Privacidad
+      </label>
+
+      @if (form.controls.terms.invalid && form.controls.terms.touched) {
+        <p class="error">Debes aceptar los términos para continuar.</p>
+      }
+
+      @if (errorMessage()) {
+        <p class="error">{{ errorMessage() }}</p>
+      }
+
+      <button
+        type="submit"
+        class="submit"
+        [disabled]="loading() || loadingClinics() || clinics().length === 0"
+      >
+        {{ loading() ? 'Creando cuenta...' : 'Crear cuenta profesional' }}
+      </button>
+
+      <p class="login-link">
+        ¿Ya tienes cuenta?
+        <button type="button" (click)="goLogin()">Inicia sesión</button>
+      </p>
+    </form>
   </div>
 </section>

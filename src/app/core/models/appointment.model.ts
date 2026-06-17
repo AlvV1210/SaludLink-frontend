@@ -1,3 +1,7 @@
+import { Doctor } from './doctor.model';
+
+export type { Doctor };
+
 export enum AppointmentStatus {
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
@@ -5,33 +9,54 @@ export enum AppointmentStatus {
   COMPLETED = 'COMPLETED',
 }
 
-export const AppointmentModality = {
-  inPerson: 'PRESENCIAL',
-  virtual: 'VIRTUAL',
-} as const;
-
-export type AppointmentModalityValue =
-  (typeof AppointmentModality)[keyof typeof AppointmentModality];
-
-export interface Doctor {
-  id: number;
-  name: string;
-  specialty: string;
+export enum AppointmentModality {
+  inPerson = 'PRESENTIAL',
+  presencial = 'PRESENTIAL',
+  virtual = 'VIRTUAL',
 }
 
 export interface Appointment {
   id: number;
-  doctorName: string;
-  specialty: string;
-  appointmentDate: string;
-  modality: string;
+
+  patientId?: number;
+  patientName?: string;
+
+  doctorId?: number;
+  doctorName?: string;
+  doctorFullName?: string;
+  doctorFirstName?: string;
+  doctorLastName?: string;
+
+  doctor?: Doctor;
+
+  specialty?: string;
+
+  clinicId?: number;
+  clinicName?: string;
+
+  branchId?: number;
+  branchName?: string;
+  branchAddress?: string;
+
+  date?: string;
+  time?: string;
+  startTime?: string;
+  endTime?: string;
+  appointmentDate?: string;
+  scheduledAt?: string;
+
+  modality: AppointmentModality;
   status: AppointmentStatus;
+
+  reason?: string;
   notes?: string;
+  meetingUrl?: string;
+  location?: string;
 }
 
 export interface AppointmentRequest {
   doctorId: number;
   appointmentDate: string;
-  modality: string;
+  modality: AppointmentModality | string;
   notes?: string;
 }

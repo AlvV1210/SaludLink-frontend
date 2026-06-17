@@ -98,8 +98,18 @@
             <span [class]="getStatusClass(cita.estado)">{{ cita.estado }}</span>
           </div>
           <div class="actions">
-            <button type="button" class="btn ghost" (click)="reprogramAppointment(cita.id)">Reprogramar cita</button>
-            <button type="button" class="btn danger" (click)="cancelAppointment(cita.id)">Cancelar cita</button>
+            @if (cita.estado === 'Programada' || cita.estado === 'Confirmada') {
+              <button type="button" class="btn ghost" (click)="reprogramAppointment(cita.id)">Reprogramar cita</button>
+              <button type="button" class="btn danger" (click)="cancelAppointment(cita.id)">Cancelar cita</button>
+            }
+
+            @if (cita.estado === 'Completada') {
+              <button type="button" class="btn primary" (click)="openSection('chat-postconsulta')">Chat postconsulta</button>
+            }
+
+            @if (cita.estado === 'Cancelada') {
+              <span class="status off">Sin acciones</span>
+            }
           </div>
         </article>
       }
@@ -169,9 +179,22 @@
                   <td>{{ item.sede }}</td>
                   <td><span [class]="getStatusClass(item.estado)">{{ item.estado }}</span></td>
                   <td class="actions">
-                    <button type="button" class="btn ghost" (click)="reprogramAppointment(item.id)">Reprogramar cita</button>
-                    <button type="button" class="btn ghost" (click)="finalizeAppointment(item.id)">Finalizar consulta</button>
-                    <button type="button" class="btn danger" (click)="cancelAppointment(item.id)">Cancelar cita</button>
+                    @if (item.estado === 'Programada' || item.estado === 'Confirmada') {
+                      <button type="button" class="btn ghost" (click)="reprogramAppointment(item.id)">Reprogramar cita</button>
+                      <button type="button" class="btn danger" (click)="cancelAppointment(item.id)">Cancelar cita</button>
+                    }
+
+                    @if (item.estado === 'Confirmada') {
+                      <button type="button" class="btn ghost" (click)="finalizeAppointment(item.id)">Finalizar consulta</button>
+                    }
+
+                    @if (item.estado === 'Completada') {
+                      <button type="button" class="btn primary" (click)="openSection('chat-postconsulta')">Chat postconsulta</button>
+                    }
+
+                    @if (item.estado === 'Cancelada') {
+                      <span class="status off">Sin acciones</span>
+                    }
                   </td>
                 </tr>
               }
@@ -277,7 +300,7 @@
         <div class="module-header">
           <div>
             <h2>SALAS DE ESPERA</h2>
-            <p class="subtitle">Citas virtuales activas para teleconsulta.</p>
+            <p class="subtitle">Citas virtuales confirmadas del paciente logueado.</p>
           </div>
           <button type="button" class="btn danger" (click)="toggleSosModal()">SOS</button>
         </div>
@@ -288,8 +311,15 @@
               <strong>{{ virtual.doctor }}</strong>
               <span>{{ virtual.especialidad }}</span>
               <small>{{ virtual.fecha }} · {{ virtual.hora }}</small>
+              <small>Modalidad: {{ virtual.modalidad }}</small>
               <small>Estado: {{ virtual.estado }}</small>
               <button type="button" class="btn primary" (click)="openVirtualRoom(virtual.id)">Unirse</button>
+            </article>
+          } @empty {
+            <article class="doctor-card waiting">
+              <strong>No tienes salas virtuales disponibles</strong>
+              <span>Solo aparecerán aquí las citas virtuales confirmadas.</span>
+              <small>Agenda una cita virtual y espera la confirmación del médico o administrador.</small>
             </article>
           }
         </section>
@@ -307,8 +337,8 @@
         }
 
         <section class="module">
-          <h3>CHAT</h3>
-          <p class="subtitle">Escribe a médicos disponibles en horario.</p>
+          <h3>CHAT DE SALA</h3>
+          <p class="subtitle">Médicos asociados a tus citas virtuales confirmadas.</p>
           <div class="chat-online-indicator">{{ onlineChatDoctors() }} médicos en línea ahora</div>
           <div class="chat-layout">
             <aside class="chat-doctors">
@@ -318,12 +348,14 @@
                   <small>{{ doctor.especialidad }} · {{ doctor.horario }}</small>
                   <i [class.online]="doctor.online">{{ doctor.online ? 'Online' : 'Offline' }}</i>
                 </button>
+              } @empty {
+                <p class="empty-chat">No hay médicos disponibles porque no tienes citas virtuales confirmadas.</p>
               }
             </aside>
 
             <div class="chat-window">
               @if (!selectedChatDoctor()) {
-                <p class="empty-chat">Selecciona un médico para iniciar conversación.</p>
+                <p class="empty-chat">Selecciona un médico de una sala virtual confirmada para iniciar conversación.</p>
               } @else {
                 <div class="messages">
                   @for (msg of activeChatMessages(); track msg.time + msg.text) {
@@ -331,6 +363,8 @@
                       <p>{{ msg.text }}</p>
                       <small>{{ msg.time }}</small>
                     </article>
+                  } @empty {
+                    <p class="empty-chat">Aún no hay mensajes en esta sala.</p>
                   }
                 </div>
                 <div class="chat-input">

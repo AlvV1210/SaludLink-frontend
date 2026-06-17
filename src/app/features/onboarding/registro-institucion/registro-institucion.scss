@@ -166,3 +166,43 @@ input:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.error {
+  color: #dc2626 !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.2rem 0 0.65rem;
+  max-width: 100%;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.submit.secondary {
+  background: #ffffff;
+  color: #0f766e;
+  border: 1px solid #99d8cf;
+}
+
+.submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.login-link {
+  margin-top: 0.8rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.login-link button {
+  border: 0;
+  background: transparent;
+  color: #0f766e;
+  font-weight: 700;
+  cursor: pointer;
+}

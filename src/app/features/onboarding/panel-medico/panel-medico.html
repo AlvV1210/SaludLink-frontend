@@ -84,50 +84,56 @@
     @if (activeSection() === 'agenda') {
       <section class="module">
         <h2>Mi Agenda</h2>
-        <p class="subtitle">Gestión de citas virtuales del médico.</p>
-        <form class="form-card" (ngSubmit)="createVirtualCita()">
-          <div class="field-grid">
-            <label>Nombre de la paciente
-              <input [(ngModel)]="agendaForm.paciente" name="agendaPaciente" [class.invalid]="agendaAttempted && agendaForm.paciente.trim().length < 3" placeholder="Lupe Cunyas" />
-            </label>
-            <label>Día
-              <select [(ngModel)]="agendaForm.dia" name="agendaDia">
-                <option>Lunes</option><option>Martes</option><option>Miércoles</option><option>Jueves</option><option>Viernes</option><option>Sábado</option>
-              </select>
-            </label>
-            <label>Semana
-              <select [(ngModel)]="agendaForm.semana" name="agendaSemana">
-                <option>Semana 1</option><option>Semana 2</option><option>Semana 3</option><option>Semana 4</option>
-              </select>
-            </label>
-            <label>Mes
-              <select [(ngModel)]="agendaForm.mes" name="agendaMes">
-                <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-              </select>
-            </label>
-            <label>Tipo de cita
-              <input [value]="agendaForm.tipo" readonly />
-            </label>
-          </div>
-          <button type="submit" class="btn primary">Crear cita virtual</button>
-        </form>
+        <p class="subtitle">Citas reales asignadas al médico logueado.</p>
 
         <div class="table-card">
           <table>
-            <thead><tr><th>Nombre de la paciente</th><th>Día</th><th>Semana</th><th>Mes</th><th>Estado de la cita</th><th>Tipo de cita</th><th>Acciones</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Modalidad</th>
+                <th>Estado de la cita</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
             <tbody>
               @for (item of agendaItems(); track item.id) {
                 <tr>
                   <td>{{ item.paciente }}</td>
-                  <td>{{ item.dia }}</td>
-                  <td>{{ item.semana }}</td>
-                  <td>{{ item.mes }}</td>
-                  <td><span class="status" [class.reprog]="item.estado === 'Reprogramada'">{{ item.estado }}</span></td>
-                  <td>{{ item.tipo }}</td>
-                  <td class="actions">
-                    <button type="button" class="btn ghost" (click)="reprogramCita(item.id)">Reprogramar cita</button>
-                    <button type="button" class="btn danger" (click)="removeCita(item.id)">Eliminar cita</button>
+                  <td>{{ item.dia }} · {{ item.fecha }}</td>
+                  <td>{{ item.hora }}</td>
+                  <td>{{ item.modalidad }}</td>
+                  <td>
+                    <span
+                      class="status"
+                      [class.ok]="item.estado === 'Confirmada' || item.estado === 'Completada'"
+                      [class.off]="item.estado === 'Cancelada'"
+                      [class.reprog]="item.estado === 'Reprogramada'"
+                    >
+                      {{ item.estado }}
+                    </span>
                   </td>
+                  <td class="actions">
+                    @if (item.estado === 'Programada' || item.estado === 'Reprogramada') {
+                      <button type="button" class="btn success" (click)="confirmCita(item.id)">Confirmar cita</button>
+                      <button type="button" class="btn danger" (click)="removeCita(item.id)">Cancelar cita</button>
+                    }
+
+                    @if (item.estado === 'Confirmada') {
+                      <button type="button" class="btn ghost" (click)="completeCita(item.id)">Completar cita</button>
+                      <button type="button" class="btn danger" (click)="removeCita(item.id)">Cancelar cita</button>
+                    }
+
+                    @if (item.estado === 'Cancelada' || item.estado === 'Completada') {
+                      <span class="status off">Sin acciones</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6">Todavía no tienes citas asignadas.</td>
                 </tr>
               }
             </tbody>
@@ -423,6 +429,8 @@
                     <p>{{ msg.text }}</p>
                     <small>{{ msg.time }}</small>
                   </article>
+                } @empty {
+                  <p class="empty">Aún no hay mensajes en este chat.</p>
                 }
                 @if (pacienteTyping()) {
                   <div class="typing">escribiendo...</div>
