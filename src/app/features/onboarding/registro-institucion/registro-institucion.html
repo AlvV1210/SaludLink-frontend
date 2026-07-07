@@ -83,7 +83,7 @@
           <p class="error">Ingresa la dirección principal.</p>
         }
 
-        <div class="grid two">
+        <div class="grid one">
           <label>
             Teléfono
             <input
@@ -92,32 +92,26 @@
               placeholder="+51 1 6105500"
             />
           </label>
-
-          <label>
-            Sedes
-            <input
-              type="text"
-              formControlName="branches"
-              placeholder="3 sedes"
-            />
-          </label>
         </div>
 
         @if (form.controls.phone.invalid && (form.controls.phone.touched || stepOneSubmitted())) {
           <p class="error">Ingresa un teléfono válido.</p>
         }
 
-        @if (form.controls.branches.invalid && (form.controls.branches.touched || stepOneSubmitted())) {
-          <p class="error">Ingresa la cantidad de sedes.</p>
-        }
-
         <button type="button" class="submit" (click)="continue()">
-          Continuar →
+          Continuar
         </button>
       }
 
       @if (currentStep() === 2) {
-        <h2>Cuenta administradora</h2>
+        <div class="ruc-summary">
+          RUC verificado en SUNAT · {{ form.controls.businessName.value }} · Activo
+        </div>
+
+        <h2>Administrador principal</h2>
+        <p class="step-note">
+          Esta persona será responsable legal y tendrá acceso total al panel institucional.
+        </p>
 
         <div class="grid two">
           <label>
@@ -147,9 +141,37 @@
           <p class="error">Ingresa el apellido del administrador.</p>
         }
 
+        <div class="grid two">
+          <label>
+            Cargo
+            <input
+              type="text"
+              formControlName="adminJobTitle"
+              placeholder="Director Médico"
+            />
+          </label>
+
+          <label>
+            DNI
+            <input
+              type="text"
+              formControlName="adminDni"
+              placeholder="45678912"
+            />
+          </label>
+        </div>
+
+        @if (form.controls.adminJobTitle.invalid && (form.controls.adminJobTitle.touched || stepTwoSubmitted())) {
+          <p class="error">Ingresa el cargo del administrador.</p>
+        }
+
+        @if (form.controls.adminDni.invalid && (form.controls.adminDni.touched || stepTwoSubmitted())) {
+          <p class="error">El DNI debe tener 8 dígitos.</p>
+        }
+
         <div class="grid one">
           <label>
-            Correo administrador
+            Correo institucional
             <input
               type="email"
               formControlName="adminEmail"

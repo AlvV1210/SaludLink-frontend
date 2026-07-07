@@ -1,21 +1,105 @@
 <app-patient-dashboard-shell
   activeItem="citas"
-  (dashboard)="goDashboard()"
-  (citas)="goCitas()"
-  (recordatorios)="goRecordatorios()"
-  (historial)="goHistorial()"
-  (mental)="goMental()"
-  (perfil)="goPerfil()"
-  (planes)="goPlanes()"
-  (config)="goConfig()"
-  (logout)="logout()"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
 >
-  <h1>Reprogramar tu cita</h1>
-  <p class="subtitle">Selecciona un nuevo horario disponible</p>
-  <section class="card" style="background:#fef2f2;border-color:#fecaca"><strong>Cita actual</strong><div class="subtitle">Mié 7 may · 10:00 · Dr. Juan Pérez</div><div class="subtitle">Esta cita se liberará al confirmar la nueva</div></section>
-  <h3>Nuevos horarios disponibles</h3>
-  <div class="grid-3"><button class="btn ghost" type="button">6</button><button class="btn primary" type="button">8</button><button class="btn ghost" type="button">9</button></div>
-  <div class="grid-3"><button class="btn ghost" type="button">9:00</button><button class="btn primary" type="button">11:00</button><button class="btn ghost" type="button">17:00</button></div>
-  <p class="subtitle">Sin costo adicional · Reprogramación gratuita hasta 4h antes</p>
-  <div class="row"><button type="button" class="btn ghost" (click)="cancel()">Cancelar</button><button type="button" class="btn primary" (click)="confirm()">Confirmar nueva fecha</button></div>
+  <header class="page-head">
+    <div>
+      <h1>Reprogramar cita</h1>
+      <p class="subtitle">Selecciona una nueva fecha y horario disponible</p>
+    </div>
+  </header>
+
+  @if (errorMessage()) {
+    <p class="form-error">{{ errorMessage() }}</p>
+  }
+
+  @if (list().length > 1) {
+    <label class="field">
+      <span>Cita a reprogramar</span>
+      <select
+        class="input-select"
+        [value]="selectedAppointment()?.id ?? ''"
+        (change)="selectAppointment(+$any($event.target).value)"
+      >
+        @for (c of list(); track c.id) {
+          <option [value]="c.id">{{ c.doctorName }} — {{ c.appointmentDate || c.date }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  @if (currentBanner(); as current) {
+    <article class="current-banner">
+      <span class="banner-label">Cita actual</span>
+      <strong>{{ current.doctor }} · {{ current.specialty }}</strong>
+      <p>{{ current.date }} · {{ current.modality }}</p>
+    </article>
+  }
+
+  <div class="calendar-head">
+    <h2>{{ monthLabel() }}</h2>
+    <div class="calendar-nav">
+      <button type="button" class="nav-btn" (click)="prevMonth()" aria-label="Mes anterior">‹</button>
+      <button type="button" class="nav-btn" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+    </div>
+  </div>
+
+  <div class="calendar-grid">
+    @for (header of weekdayHeaders; track header) {
+      <span class="calendar-weekday">{{ header }}</span>
+    }
+    @for (cell of calendarCells(); track cell.date.getTime()) {
+      <button
+        type="button"
+        class="calendar-day"
+        [class.muted]="!cell.inCurrentMonth || cell.isPast"
+        [class.available]="cell.inCurrentMonth && !cell.isPast"
+        [class.selected]="cell.isSelected"
+        [disabled]="!cell.inCurrentMonth || cell.isPast"
+        (click)="selectDate(cell)"
+      >
+        {{ cell.day }}
+      </button>
+    }
+  </div>
+
+  <h3 class="slots-heading">{{ slotsHeading() }}</h3>
+
+  @if (!selectedDate()) {
+    <p class="slots-note">Selecciona un dia en el calendario para ver horarios.</p>
+  } @else {
+    <div class="slot-grid">
+      @for (slot of timeSlots; track slot) {
+        <button
+          type="button"
+          class="slot-btn"
+          [class.selected]="selectedTime() === slot"
+          (click)="selectTimeSlot(slot)"
+        >
+          {{ slot }}
+        </button>
+      }
+    </div>
+  }
+
+  <div class="actions-stack">
+    <button type="button" class="btn-ghost back-btn" (click)="back()">Volver</button>
+    <button
+      type="button"
+      class="btn-primary confirm-btn"
+      [disabled]="!canConfirm() || loading()"
+      (click)="reschedule()"
+    >
+      {{ confirmLabel() }}
+    </button>
+  </div>
 </app-patient-dashboard-shell>

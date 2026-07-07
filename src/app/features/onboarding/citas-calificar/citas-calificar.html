@@ -10,13 +10,60 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <h1>&iquest;C&oacute;mo fue tu cita?</h1>
-  <p class="subtitle">Tu opini&oacute;n ayuda a otros pacientes</p>
-  <section class="card item" style="background:#ecfdf5;border-color:#a7f3d0"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a - Mi&eacute; 7 may - Completada</div></div></section>
-  <div style="text-align:center"><h3>Calificaci&oacute;n general</h3><div class="row" style="justify-content:center">@for (star of [1,2,3,4,5]; track star) {<button type="button" class="btn ghost" [class.primary]="star <= stars()" (click)="setStars(star)">{{ star }}</button>}</div><p style="color:#059669;font-weight:700">&iexcl;Excelente!</p></div>
-  <div class="row"><div>Puntualidad 5/5<br />Claridad 5/5</div><div>Trato 5/5<br />Limpieza 5/5</div></div>
-  <label for="resena"><strong>Tu rese&ntilde;a (opcional)</strong></label>
-  <textarea id="resena" class="input" rows="4">Excelente atenci&oacute;n, muy claro al explicar...</textarea>
-  <p class="subtitle">Tu rese&ntilde;a ser&aacute; p&uacute;blica en el perfil del m&eacute;dico</p>
-  <button type="button" class="btn primary" (click)="publish()">Publicar rese&ntilde;a</button>
+  <section class="rate-page">
+    <header class="page-head">
+      <h1>Calificar atencion</h1>
+      <p class="subtitle">Tu opinion ayuda a mejorar la calidad de SaludLink</p>
+    </header>
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
+
+    @if (selectedAppointment(); as appt) {
+      <article class="doctor-card">
+        <div class="avatar">{{ doctorLabel().slice(0, 2).toUpperCase() }}</div>
+        <div>
+          <strong>{{ doctorLabel() }}</strong>
+          <p>{{ appt.specialty || 'Consulta medica' }} · {{ appt.appointmentDate || appt.date || '—' }}</p>
+        </div>
+      </article>
+    } @else {
+      <label class="field">
+        Cita completada
+        <select class="input" [value]="appointmentId() ?? ''" (change)="appointmentId.set(+$any($event.target).value)">
+          @for (c of completed(); track c.id) {
+            <option [value]="c.id">{{ c.doctorName }} — {{ c.appointmentDate }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    <div class="stars" role="group" aria-label="Calificacion general">
+      @for (star of [1, 2, 3, 4, 5]; track star) {
+        <button type="button" class="star-btn" [class.active]="rating() >= star" (click)="setRating(star)">
+          ★
+        </button>
+      }
+    </div>
+
+    <div class="tags">
+      <span>Puntualidad</span>
+      <span>Trato</span>
+      <span>Claridad</span>
+      <span>Limpieza</span>
+    </div>
+
+    <label class="field">
+      Comentario (opcional)
+      <textarea class="input" rows="4" [value]="comment()" (input)="comment.set($any($event.target).value)"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" (click)="back()">Volver</button>
+      <button type="button" class="btn primary" (click)="submit()" [disabled]="loading() || !appointmentId()">
+        Publicar resena
+      </button>
+    </div>
+  </section>
 </app-patient-dashboard-shell>

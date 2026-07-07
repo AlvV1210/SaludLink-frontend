@@ -2,31 +2,22 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { API_BASE_URL } from '../constants/api.constants';
+import { environment } from '../../../environments/environment';
 import {
   MedicationIntake,
   MedicationIntakeRequest,
-} from '../models/medication-intake.model';
+} from '../../shared/models/medication-intake.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class MedicationIntakeService {
   private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/medications`;
 
   list(medicationId: number): Observable<MedicationIntake[]> {
-    return this.http.get<MedicationIntake[]>(
-      `${API_BASE_URL}/medications/${medicationId}/intakes`
-    );
+    return this.http.get<MedicationIntake[]>(`${this.base}/${medicationId}/intakes`);
   }
 
-  record(
-    medicationId: number,
-    body: MedicationIntakeRequest = {}
-  ): Observable<MedicationIntake> {
-    return this.http.post<MedicationIntake>(
-      `${API_BASE_URL}/medications/${medicationId}/intakes`,
-      body
-    );
+  create(medicationId: number, body: MedicationIntakeRequest): Observable<MedicationIntake> {
+    return this.http.post<MedicationIntake>(`${this.base}/${medicationId}/intakes`, body);
   }
 }

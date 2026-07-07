@@ -6,17 +6,22 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { PatientService } from '../../../core/services/patient.service';
-import { ChatMessageResponse, ChatService } from '../../../core/services/chat.service';
+import { ChatMessageResponse, ChatService } from '../../../core/services/telemedicine.service';
+import { PatientDependentsSectionComponent } from '../../patient/sections/patient-dependents-section';
+import { PatientDocumentsSectionComponent } from '../../patient/sections/patient-documents-section';
+import { PatientMentalHealthSectionComponent } from '../../patient/sections/patient-mental-health-section';
+import { PatientDashboardHomeComponent } from '../../patient/pages/patient-dashboard-home/patient-dashboard-home';
+import { PatientDashboardShellComponent } from '../../../shared/components/patient-dashboard-shell/patient-dashboard-shell';
 
 import {
   Appointment as BackendAppointment,
   AppointmentModality,
-} from '../../../core/models/appointment.model';
-import { PatientProfile as BackendPatientProfile } from '../../../core/models/patient.model';
-import { Doctor as BackendDoctor } from '../../../core/models/doctor.model';
+} from '../../../shared/models/appointment.model';
+import { PatientProfile as BackendPatientProfile } from '../../../shared/models/patient.model';
+import { Doctor as BackendDoctor } from '../../../shared/models/doctor.model';
 
 type PatientSection =
-  | 'dashboard'
+  | 'salud-home'
   | 'citas'
   | 'salas'
   | 'recordatorios'
@@ -142,9 +147,17 @@ interface PostconsultaDoctor {
 
 @Component({
   selector: 'app-panel-paciente',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PatientDependentsSectionComponent,
+    PatientDocumentsSectionComponent,
+    PatientMentalHealthSectionComponent,
+    PatientDashboardHomeComponent,
+    PatientDashboardShellComponent,
+  ],
   templateUrl: './panel-paciente.html',
-  styleUrl: './panel-paciente.scss',
+  styleUrls: ['./panel-paciente.scss', '../../patient/patient-dashboard.shared.scss'],
 })
 export class PanelPacienteComponent {
   private readonly router = inject(Router);
@@ -153,7 +166,7 @@ export class PanelPacienteComponent {
   private readonly patientService = inject(PatientService);
   private readonly chatService = inject(ChatService);
   @ViewChild('postconsultaMessagesContainer') private postconsultaMessagesContainer?: ElementRef<HTMLDivElement>;
-  protected readonly activeSection = signal<PatientSection>('dashboard');
+  protected readonly activeSection = signal<PatientSection>('salud-home');
   protected readonly toastMessage = signal('');
   protected readonly bookingStep = signal<'doctores' | 'horarios' | 'resumen' | 'pago' | 'exito'>('doctores');
   protected readonly selectedDoctor = signal<DoctorOption | null>(null);
@@ -287,6 +300,31 @@ export class PanelPacienteComponent {
     this.loadInitialPatientData();
     this.loadDoctorsFromBackend();
   }
+
+  protected readonly patientFirstName = computed(() => {
+    const full = this.patientProfile().nombreCompleto.trim();
+    if (!full) {
+      return this.auth.getCurrentUser()?.firstName?.trim() || 'Paciente';
+    }
+    return full.split(/\s+/)[0];
+  });
+
+  protected readonly shellActiveItem = computed(() => {
+    switch (this.activeSection()) {
+      case 'citas':
+        return 'citas' as const;
+      case 'recordatorios':
+        return 'recordatorios' as const;
+      case 'historial':
+        return 'historial' as const;
+      case 'salud-mental':
+        return 'mental' as const;
+      case 'perfil':
+        return 'perfil' as const;
+      default:
+        return '' as const;
+    }
+  });
 
   protected readonly quickSummary = computed(() => {
     const citas = this.appointments();
@@ -472,8 +510,36 @@ export class PanelPacienteComponent {
   protected readonly activeMentalResult = computed(() => this.mentalResults()[0] ?? null);
 
   protected goDashboard(): void {
-    this.activeSection.set('dashboard');
     void this.router.navigate(['/paciente/dashboard']);
+  }
+
+  protected goShellCitas(): void {
+    void this.router.navigate(['/paciente/citas']);
+  }
+
+  protected goShellRecordatorios(): void {
+    void this.router.navigate(['/paciente/recordatorios']);
+  }
+
+  protected goShellHistorial(): void {
+    void this.router.navigate(['/paciente/historial']);
+  }
+
+  protected goShellMental(): void {
+    void this.router.navigate(['/paciente/salud-mental']);
+  }
+
+  protected goShellPerfil(): void {
+    this.openSection('perfil');
+    void this.router.navigate(['/paciente/dashboard/salud']);
+  }
+
+  protected goShellPlanes(): void {
+    void this.router.navigate(['/paciente/planes']);
+  }
+
+  protected goShellConfig(): void {
+    void this.router.navigate(['/contact']);
   }
 
   protected selectMentalMood(moodId: string): void {
@@ -759,8 +825,8 @@ export class PanelPacienteComponent {
       doctorId: doctor.id,
       appointmentDate: appointmentDateTime,
       modality: horario.modalidad === 'Virtual'
-        ? AppointmentModality.virtual
-        : AppointmentModality.presencial,
+        ? AppointmentModality.TELEMEDICINE
+        : AppointmentModality.IN_PERSON,
       notes: `Consulta de ${doctor.especialidad} | Sede: ${horario.sede}`,
     };
 
@@ -774,7 +840,7 @@ export class PanelPacienteComponent {
         return;
       }
 
-      this.appointmentService.updateAppointment(numericId, payload).subscribe({
+      this.appointmentService.rescheduleAppointment(numericId, { appointmentDate: appointmentDateTime }).subscribe({
         next: (updated) => {
           const mapped = this.mapBackendAppointment(
             updated as BackendAppointment & Record<string, unknown>
@@ -884,16 +950,11 @@ export class PanelPacienteComponent {
     const doctor = this.selectedChatDoctor();
     const text = this.chatInput().trim();
 
-    if (!doctor || !text) {
+    if (!doctor || !text || !this.selectedChatDoctorId()) {
       return;
     }
 
-    if (!doctor.online) {
-      this.showToast('Este médico está fuera de horario en este momento.');
-      return;
-    }
-
-    this.chatService.sendMessage(doctor.id, text).subscribe({
+    this.chatService.sendMessage(this.selectedChatDoctorId()!, text).subscribe({
       next: (message) => {
         const mapped = this.mapBackendChatMessage(message);
 
@@ -934,7 +995,7 @@ export class PanelPacienteComponent {
       : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
     return {
-      from: message.senderRole === 'PATIENT' ? 'me' : 'doctor',
+      from: message.senderName ? (message.senderName.includes('Paciente') ? 'me' : 'doctor') : 'doctor',
       text: message.message,
       time,
     };

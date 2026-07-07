@@ -1,0 +1,99 @@
+<app-patient-dashboard-shell
+  activeItem="perfil"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  <section class="clinical-form">
+    <header class="page-head">
+      <div>
+        <h1>Datos clinicos</h1>
+        <p class="subtitle">Completa tu perfil de salud para personalizar tu atencion</p>
+      </div>
+      <span class="step-pill">Paso {{ step() }} de 2</span>
+    </header>
+
+    <div class="progress-bar" aria-hidden="true">
+      <i [style.width.%]="step() === 1 ? 50 : 100"></i>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    @if (step() === 1) {
+      <div class="form-grid">
+        <label class="field">
+          <span>Fecha de nacimiento</span>
+          <input type="date" [(ngModel)]="form.birthDate" />
+        </label>
+
+        <label class="field">
+          <span>Sexo</span>
+          <select [(ngModel)]="form.gender">
+            <option value="">Seleccionar</option>
+            @for (gender of genders; track gender) {
+              <option [value]="gender">{{ gender }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span>DNI</span>
+          <input type="text" maxlength="8" placeholder="74261358" [(ngModel)]="form.documentNumber" />
+        </label>
+
+        <label class="field">
+          <span>Tipo de sangre</span>
+          <select [(ngModel)]="form.bloodType">
+            <option value="">Seleccionar</option>
+            @for (type of bloodTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="btn-ghost" (click)="skip()">Omitir</button>
+        <button type="button" class="btn-primary" (click)="continueStep1()">Guardar y continuar</button>
+      </div>
+    } @else {
+      <div class="form-grid">
+        <label class="field full">
+          <span>Antecedentes / alergias</span>
+          <textarea
+            rows="4"
+            placeholder="Ej. Hipertension, alergia a penicilina..."
+            [(ngModel)]="form.chronicConditions"
+          ></textarea>
+        </label>
+
+        <label class="field">
+          <span>Contacto de emergencia</span>
+          <input type="text" placeholder="Nombre completo" [(ngModel)]="form.emergencyContactName" />
+        </label>
+
+        <label class="field">
+          <span>Telefono de emergencia</span>
+          <input type="tel" placeholder="+51 999 000 000" [(ngModel)]="form.emergencyContactPhone" />
+        </label>
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="btn-ghost" (click)="backToStep1()">← Anterior</button>
+        <button type="button" class="btn-ghost" (click)="skip()">Omitir</button>
+        <button type="button" class="btn-primary" (click)="saveAndContinue()" [disabled]="saving()">
+          Guardar y continuar
+        </button>
+      </div>
+    }
+  </section>
+</app-patient-dashboard-shell>

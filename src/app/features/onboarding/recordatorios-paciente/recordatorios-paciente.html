@@ -1,5 +1,6 @@
 <app-patient-dashboard-shell
   activeItem="recordatorios"
+  [userFirstName]="userFirstName()"
   (dashboard)="goDashboard()"
   (citas)="goCitas()"
   (recordatorios)="goRecordatorios()"
@@ -10,45 +11,430 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <section class="page">
-    <h1>!Hola, Lupe!</h1>
-    <p class="subtitle">Tienes una cita virtual hoy</p>
-
-    <article class="meeting-highlight">
-      <div>
-        <strong>Cita virtual en 15 minutos</strong>
-        <p>Dr. Juan Perez - 14:30 - Cardiologia</p>
+  @if (loading()) {
+    <p class="status-note">Cargando recordatorios...</p>
+  } @else if (viewMode() === 'alerts') {
+    <section class="subview-screen">
+      <header class="page-head">
+        <div>
+          <h1>Personalizar alertas</h1>
+          <p class="subtitle">Sonidos, horarios y avisos de medicacion</p>
+        </div>
+      </header>
+      <article class="sub-card">
+        <h2>Sonido de alerta</h2>
+        <div class="chip-row">
+          @for (sound of alertSounds; track sound) {
+            <button
+              type="button"
+              class="chip"
+              [class.active]="alertSettings.sound === sound"
+              (click)="alertSettings.sound = sound"
+            >
+              {{ sound }}
+            </button>
+          }
+        </div>
+        <label class="field">
+          <span>Volumen ({{ alertSettings.volume }}%)</span>
+          <input type="range" min="0" max="100" [(ngModel)]="alertSettings.volume" />
+        </label>
+      </article>
+      <article class="sub-card">
+        <label class="toggle-row">
+          <span>No molestar (22:00 - 07:00)</span>
+          <input type="checkbox" [(ngModel)]="alertSettings.doNotDisturb" />
+        </label>
+        <label class="toggle-row">
+          <span>Vibracion en movil</span>
+          <input type="checkbox" [(ngModel)]="alertSettings.vibration" />
+        </label>
+      </article>
+      <div class="actions-row">
+        <button type="button" class="btn-ghost" (click)="closeSubView()">Volver</button>
+        <button type="button" class="btn-primary" (click)="saveAlertSettings()">Guardar</button>
       </div>
-      <button type="button" class="join-btn" (click)="joinConsultation()">Unirse</button>
-    </article>
-
-    <section class="kpis">
-      <article>
-        <span>Proxima virtual</span>
-        <strong>Hoy 14:30</strong>
-        <small>Dr. Perez</small>
-      </article>
-      <article>
-        <span>Recordat.</span>
-        <strong>3</strong>
-        <small>2 tomados</small>
-      </article>
-      <article>
-        <span>Adherencia</span>
-        <strong>92%</strong>
-        <small>16%</small>
-      </article>
     </section>
-
-    <section class="quick-actions">
-      <button type="button" class="mood-btn">
-        <span>Como te sientes?</span>
-        <small>Test rapido salud mental</small>
-      </button>
-      <button type="button" class="sos-btn" (click)="goEmergency()">
-        <span>SOS</span>
-        <small>Emergencia</small>
-      </button>
+  } @else if (viewMode() === 'missed') {
+    <section class="subview-screen">
+      <header class="page-head">
+        <div>
+          <h1>Dosis omitidas</h1>
+          <p class="subtitle">Historial de tomas perdidas o pendientes</p>
+        </div>
+      </header>
+      <div class="missed-list">
+        @for (item of missedDoses(); track item.id) {
+          <article class="missed-card">
+            <strong>{{ item.medication }}</strong>
+            <span>{{ item.scheduledAt }}</span>
+            <span class="status-pill">{{ item.status }}</span>
+          </article>
+        }
+      </div>
+      <button type="button" class="btn-ghost" (click)="closeSubView()">Volver a recordatorios</button>
     </section>
-  </section>
+  } @else if (viewMode() === 'notify-preview') {
+    <section class="subview-screen">
+      <header class="page-head">
+        <div>
+          <h1>Vista previa de alerta</h1>
+          <p class="subtitle">Asi se vera tu proxima notificacion</p>
+        </div>
+      </header>
+      <article class="notify-preview-card">
+        <span class="alert-dot" aria-hidden="true"></span>
+        <div>
+          <strong>Hora de tu medicamento</strong>
+          <p>Metformina 850mg · 1 tableta · {{ nextNotification().headline }}</p>
+        </div>
+      </article>
+      <button type="button" class="btn-primary" (click)="closeSubView()">Entendido</button>
+    </section>
+  } @else if (viewMode() === 'form') {
+    <section class="form-screen">
+      @if (formStep() === 1) {
+        <div class="page-head form-head">
+          <div>
+            <h1>Nuevo recordatorio</h1>
+            <p class="subtitle">Datos del medicamento</p>
+          </div>
+          <span class="step-pill">Paso 1 de 2</span>
+        </div>
+
+        <label class="field">
+          <span>Nombre del medicamento</span>
+          <input
+            type="text"
+            placeholder="Ej. Metformina 850mg"
+            [ngModel]="form().name"
+            (ngModelChange)="updateFormField('name', $event)"
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Dosis</span>
+            <input
+              type="text"
+              placeholder="Ej. 1 tableta"
+              [ngModel]="form().dosage"
+              (ngModelChange)="updateFormField('dosage', $event)"
+            />
+          </label>
+          <label class="field">
+            <span>Via</span>
+            <select [ngModel]="form().route" (ngModelChange)="updateFormField('route', $event)">
+              @for (route of routeOptions; track route) {
+                <option [value]="route">{{ route }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Motivo del tratamiento</span>
+          <input
+            type="text"
+            placeholder="Ej. Diabetes tipo 2"
+            [ngModel]="form().treatmentReason"
+            (ngModelChange)="updateFormField('treatmentReason', $event)"
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Inicia</span>
+            <input
+              type="date"
+              [ngModel]="form().startDate"
+              (ngModelChange)="updateFormField('startDate', $event)"
+            />
+          </label>
+          <label class="field">
+            <span>Termina</span>
+            <select [ngModel]="form().endType" (ngModelChange)="updateEndType($event)">
+              <option value="indefinido">Indefinido</option>
+              <option value="fecha">Fecha especifica</option>
+            </select>
+          </label>
+        </div>
+
+        @if (form().endType === 'fecha') {
+          <label class="field">
+            <span>Fecha de fin</span>
+            <input
+              type="date"
+              [ngModel]="form().endDate"
+              (ngModelChange)="updateFormField('endDate', $event)"
+            />
+          </label>
+        }
+
+        <div class="form-info-banner">
+          <span class="info-icon" aria-hidden="true">i</span>
+          <div>
+            <strong>Vincular con tu medico</strong>
+            <p>Puedes asociar este medicamento con tu medico para compartir adherencia.</p>
+          </div>
+        </div>
+      } @else {
+        <div class="page-head form-head">
+          <div>
+            <h1>Frecuencia y horarios</h1>
+            <p class="subtitle">{{ stepTwoSubtitle() }}</p>
+          </div>
+          <span class="step-pill">Paso 2 de 2</span>
+        </div>
+
+        <div class="form-section">
+          <span class="section-label">Frecuencia</span>
+          <div class="frequency-row">
+            @for (option of frequencyOptions; track option.value) {
+              <button
+                type="button"
+                class="frequency-chip"
+                [class.active]="form().frequencyPerDay === option.value"
+                (click)="selectFrequencyPerDay(option.value)"
+              >
+                {{ option.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="form-section">
+          <span class="section-label">Dias de la semana</span>
+          <div class="day-row">
+            @for (label of weekdayShort; track $index) {
+              <button
+                type="button"
+                class="day-pill"
+                [class.active]="form().weekDays[$index]"
+                (click)="toggleWeekDay($index)"
+                [attr.aria-label]="'Dia ' + label"
+              >
+                {{ label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="form-section">
+          <span class="section-label">Horarios</span>
+          <div class="time-slot-list">
+            @for (slot of form().timeSlots; track $index) {
+              <div class="time-slot-row">
+                <label class="time-pill-label">
+                  <span class="time-preview">{{ formatTimePreview(slot.time) }}</span>
+                  <input
+                    type="time"
+                    class="time-input-overlay"
+                    [ngModel]="slot.time"
+                    (ngModelChange)="updateTimeSlot($index, 'time', $event)"
+                  />
+                </label>
+                <input
+                  type="text"
+                  class="time-note"
+                  placeholder="Nota opcional"
+                  [ngModel]="slot.note"
+                  (ngModelChange)="updateTimeSlot($index, 'note', $event)"
+                />
+                @if (form().timeSlots.length > 1) {
+                  <button
+                    type="button"
+                    class="remove-slot-btn"
+                    (click)="removeTimeSlot($index)"
+                    aria-label="Quitar horario"
+                  >
+                    x
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <button type="button" class="add-slot-link" (click)="addTimeSlot()">
+            + Agregar otro horario
+          </button>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <p class="form-error">{{ errorMessage() }}</p>
+      }
+
+      <div class="form-actions">
+        @if (formStep() === 1) {
+          <button type="button" class="btn-ghost form-cancel" (click)="cancelForm()" [disabled]="saving()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary form-continue" (click)="continueFromStep1()" [disabled]="saving()">
+            Continuar ->
+          </button>
+        } @else {
+          <button type="button" class="btn-ghost form-cancel" (click)="backToStep1()" [disabled]="saving()">
+            <- Atras
+          </button>
+          <button type="button" class="btn-primary form-continue" (click)="saveReminder()" [disabled]="saving()">
+            {{ saving() ? 'Guardando...' : 'Crear recordatorio' }}
+          </button>
+        }
+      </div>
+    </section>
+  } @else if (viewMode() === 'list') {
+    <section class="list-screen">
+      <div class="page-head list-head">
+        <div>
+          <h1>Mis Recordatorios</h1>
+          <p class="subtitle">{{ listHeaderSubtitle() }}</p>
+        </div>
+        <button type="button" class="btn-primary btn-new" (click)="openForm()">+ Nuevo</button>
+      </div>
+
+      <div class="tabs-row">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="listTab() === 'pending'"
+          (click)="selectListTab('pending')"
+        >
+          Pendiente ({{ tabCounts().pending }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="listTab() === 'taken'"
+          (click)="selectListTab('taken')"
+        >
+          Tomado ({{ tabCounts().taken }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="listTab() === 'skipped'"
+          (click)="selectListTab('skipped')"
+        >
+          Omitido ({{ tabCounts().skipped }})
+        </button>
+      </div>
+
+      @if (filteredListItems().length === 0) {
+        <p class="status-note empty-list-note">No hay recordatorios en esta categoria.</p>
+      } @else {
+        <div class="reminder-list">
+          @for (item of filteredListItems(); track item.medication.id + item.reminder.scheduledTime + item.reminder.reminderDate) {
+            <article
+              class="reminder-list-card"
+              [class.taken]="item.status === 'taken'"
+              [class.pending]="item.status === 'pending'"
+              [class.skipped]="item.status === 'skipped'"
+            >
+              <span
+                class="med-status-icon"
+                [class.med-status-icon--pending]="item.status === 'pending'"
+                [class.med-status-icon--taken]="item.status === 'taken'"
+                [class.med-status-icon--skipped]="item.status === 'skipped'"
+                aria-hidden="true"
+              ></span>
+              <div class="reminder-list-copy">
+                <strong>{{ item.medication.name }}</strong>
+                <span>{{ item.subtitle }}</span>
+              </div>
+              <span class="status-pill" [class.taken-pill]="item.status === 'taken'">
+                @if (item.status === 'taken') {
+                  <span class="mini-check" aria-hidden="true"></span>
+                }
+                {{ item.statusLabel }}
+              </span>
+              @if (item.status === 'pending') {
+                <button
+                  type="button"
+                  class="mark-taken-btn"
+                  (click)="markTaken(item)"
+                  aria-label="Marcar como tomado"
+                >
+                  Tomar
+                </button>
+              }
+            </article>
+          }
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <p class="form-error">{{ errorMessage() }}</p>
+      }
+
+      <button type="button" class="settings-link" (click)="personalizeAlerts()">
+        Personalizar alertas y horarios
+      </button>
+      <button type="button" class="settings-link" (click)="openMissedDoses()">Ver dosis omitidas</button>
+      <button type="button" class="settings-link" (click)="openNotifyPreview()">Vista previa de alerta</button>
+
+      <div class="actions-row list-back-row">
+        <button type="button" class="btn-ghost" (click)="showActivated()">Volver</button>
+      </div>
+    </section>
+  } @else if (viewMode() === 'empty') {
+    <section class="empty-screen">
+      <div class="success-icon" aria-hidden="true">
+        <span class="med-status-icon med-status-icon--pill med-status-icon--lg"></span>
+      </div>
+      <h1 class="success-title">Sin recordatorios activos</h1>
+      <p class="success-subtitle">Crea tu primer recordatorio de medicacion</p>
+      @if (errorMessage()) {
+        <p class="form-error">{{ errorMessage() }}</p>
+      }
+      <button type="button" class="btn-primary wide-btn" (click)="openForm()">+ Crear recordatorio</button>
+    </section>
+  } @else {
+    <section class="activated-screen">
+      <div class="success-icon" aria-hidden="true">
+        <span class="check-mark"></span>
+      </div>
+
+      <h1 class="success-title">Recordatorio activado!</h1>
+      <p class="success-subtitle">Recibiras notificaciones automaticas en tu celular</p>
+
+      @if (featured(); as current) {
+        <div class="reminder-card">
+          <div class="reminder-head">
+            <span class="med-status-icon med-status-icon--pill" aria-hidden="true"></span>
+            <div>
+              <strong>{{ current.medication.name }}</strong>
+              <span>{{ medicationSubtitle() }}</span>
+            </div>
+          </div>
+          @if (scheduleChips().length > 0) {
+            <div class="chip-row">
+              @for (chip of scheduleChips(); track chip) {
+                <span class="schedule-chip">{{ chip }}</span>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <div class="next-alert">
+        <span class="alert-dot" aria-hidden="true"></span>
+        <div>
+          <strong>{{ nextNotification().headline }}</strong>
+          @if (nextNotification().detail) {
+            <span>{{ nextNotification().detail }}</span>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="form-error">{{ errorMessage() }}</p>
+      }
+
+      <div class="actions-row">
+        <button type="button" class="btn-ghost action-btn" (click)="openForm()">+ Otro recordatorio</button>
+        <button type="button" class="btn-ghost action-btn" (click)="openMissedDoses()">Dosis omitidas</button>
+        <button type="button" class="btn-primary action-btn" (click)="showList()">Ver mi lista</button>
+      </div>
+    </section>
+  }
 </app-patient-dashboard-shell>

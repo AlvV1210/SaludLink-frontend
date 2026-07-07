@@ -1,0 +1,70 @@
+<nav class="config-nav">
+  <a routerLink="/admin/config" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">General</a>
+  <a routerLink="/admin/config/actividad" routerLinkActive="active">Actividad</a>
+  <a routerLink="/admin/config/mi-clinica" routerLinkActive="active">Mi clínica</a>
+</nav>
+
+@if ((loading() || pageLoading()) && !profile()) {
+  <p class="loading-note">Cargando datos institucionales...</p>
+} @else if (!profile()) {
+  <section class="empty-card">
+    <p>No se encontraron datos de la institución.</p>
+  </section>
+} @else {
+  <div class="page-head">
+    <div>
+      <h1>{{ pageTitle() }}</h1>
+      <p class="subtitle">Datos institucionales registrados</p>
+    </div>
+    <span class="status-pill">✓ Verificada</span>
+  </div>
+
+  <article class="hero-card">
+    <div class="hero-icon">🏥</div>
+    <div class="hero-info">
+      <strong>{{ display(profile()!.name) }}</strong>
+      <p>{{ display(profile()!.ruc) }} · {{ establishmentLabel() }}</p>
+      <span class="affiliation">📅 Afiliada desde {{ createdLabel() }}</span>
+    </div>
+  </article>
+
+  <section class="detail-card">
+    <div class="detail-row">
+      <span>Razón social</span>
+      <strong>{{ display(profile()!.name) }}</strong>
+    </div>
+    <div class="detail-row">
+      <span>RUC</span>
+      <strong>{{ display(profile()!.ruc) }}</strong>
+    </div>
+    <div class="detail-row">
+      <span>Tipo</span>
+      <strong>{{ establishmentLabel() }}</strong>
+    </div>
+    <div class="detail-row">
+      <span>Dirección</span>
+      <strong>{{ display(profile()!.address) }}</strong>
+    </div>
+    <div class="detail-row">
+      <span>Correo del administrador</span>
+      <strong>{{ display(adminEmail()) }}</strong>
+    </div>
+  </section>
+
+  <article class="verify-card">
+    <span class="verify-icon">🔒</span>
+    <div>
+      <strong>RUC verificado en SUNAT</strong>
+      <p>{{ verificationLabel() }}</p>
+    </div>
+  </article>
+
+  @if (uiMessage()) {
+    <p class="ui-message">{{ uiMessage() }}</p>
+  }
+
+  <div class="actions">
+    <button type="button" class="btn-secondary" (click)="viewContract()">📄 Ver contrato</button>
+    <button type="button" class="btn-primary" (click)="editData()">✎ Editar datos</button>
+  </div>
+}

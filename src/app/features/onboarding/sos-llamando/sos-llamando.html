@@ -1,0 +1,8 @@
+<section class="calling-page">
+  <div class="pulse-ring" aria-hidden="true"></div>
+  <p class="label">Llamando a {{ serviceName() }}...</p>
+  <strong class="phone">{{ phone() }}</strong>
+  <p class="timer">{{ elapsedLabel() }}</p>
+  <p class="hint">Mantente en linea. Si no conecta, intenta de nuevo o usa otro contacto.</p>
+  <button type="button" class="cancel-btn" (click)="cancel()">Cancelar llamada</button>
+</section>

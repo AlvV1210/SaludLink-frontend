@@ -1,0 +1,86 @@
+<app-patient-dashboard-shell
+  activeItem="historial"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  @if (step() === 'config') {
+    <section class="export-page">
+      <header class="page-head">
+        <div>
+          <h1>Exportar historial</h1>
+          <p class="subtitle">Genera un PDF seguro con tus datos clinicos</p>
+        </div>
+      </header>
+
+      @if (errorMessage()) {
+        <p class="form-error">{{ errorMessage() }}</p>
+      }
+
+      <article class="card">
+        <h2>Rango de fechas</h2>
+        <div class="date-row">
+          <label class="field">
+            <span>Desde</span>
+            <input type="date" [(ngModel)]="fromDate" />
+          </label>
+          <label class="field">
+            <span>Hasta</span>
+            <input type="date" [(ngModel)]="toDate" />
+          </label>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Incluir secciones</h2>
+        <label class="toggle-row">
+          <span>Consultas y diagnosticos</span>
+          <input type="checkbox" [(ngModel)]="includeConsultas" />
+        </label>
+        <label class="toggle-row">
+          <span>Recetas y medicamentos</span>
+          <input type="checkbox" [(ngModel)]="includeRecetas" />
+        </label>
+        <label class="toggle-row">
+          <span>Resultados de laboratorio</span>
+          <input type="checkbox" [(ngModel)]="includeLaboratorio" />
+        </label>
+      </article>
+
+      <div class="actions-row">
+        <button type="button" class="btn-ghost" (click)="backToHistorial()">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="startExport()">Generar PDF</button>
+      </div>
+    </section>
+  } @else if (step() === 'generating') {
+    <section class="export-page center">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Generando tu historial...</h1>
+      <p class="subtitle">Estamos compilando consultas, recetas y documentos</p>
+      <div class="progress-bar"><i [style.width.%]="progress()"></i></div>
+      <small>{{ progress() }}%</small>
+    </section>
+  } @else {
+    <section class="export-page center">
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h1>Historial listo</h1>
+      <p class="subtitle">Tu exportacion esta disponible para descargar</p>
+      <article class="code-card">
+        <span>Codigo de acceso</span>
+        <strong>{{ accessCode() }}</strong>
+        <p>Valido por 24 horas · compartelo solo con profesionales de confianza</p>
+      </article>
+      <div class="actions-row center-actions">
+        <button type="button" class="btn-primary" (click)="downloadMock()">Descargar PDF</button>
+        <button type="button" class="btn-ghost" (click)="backToHistorial()">Volver al historial</button>
+      </div>
+    </section>
+  }
+</app-patient-dashboard-shell>

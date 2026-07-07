@@ -1,0 +1,75 @@
+<app-patient-dashboard-shell
+  activeItem="citas"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="chat-page">
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    } @else {
+      <header class="chat-header">
+        <div class="doctor-avatar">{{ doctorInitials() }}</div>
+        <div class="doctor-info">
+          <strong>Dr. {{ doctorName().replace(/^Dr\.?\s*/i, '') }}</strong>
+          <p><span class="online-dot"></span> En linea</p>
+        </div>
+        <button type="button" class="link-btn" (click)="goHistorial()">Ver historial</button>
+      </header>
+
+      <div class="chat-thread">
+        @if (loading()) {
+          <p class="hint">Cargando mensajes...</p>
+        } @else if (!messages().length) {
+          <p class="hint empty">Aun no hay mensajes en esta consulta.</p>
+        } @else {
+          @for (message of messages(); track message.id) {
+            <article class="message-row" [class.mine]="isPatientMessage(message)">
+              @if (!isPatientMessage(message)) {
+                <div class="bubble-avatar">{{ doctorInitials() }}</div>
+              }
+              <div class="bubble-wrap">
+                <div class="bubble">{{ message.message }}</div>
+                <time>{{ formatTime(message.sentAt) }}@if (isPatientMessage(message)) { ✓✓ }</time>
+              </div>
+            </article>
+          }
+        }
+
+        @if (conversationClosed()) {
+          <p class="closed-note">— Conversacion finalizada —</p>
+        }
+      </div>
+
+      @if (conversationClosed()) {
+        <footer class="rating-banner">
+          <span class="star" aria-hidden="true">★</span>
+          <div>
+            <strong>Te ayudo esta conversacion?</strong>
+            <p>Tu feedback mejora SaludLink</p>
+          </div>
+          <button type="button" class="rate-btn" (click)="goCalificar()">Calificar</button>
+        </footer>
+      } @else {
+        <footer class="composer">
+          <input
+            type="text"
+            placeholder="Escribe tu mensaje..."
+            [ngModel]="draft()"
+            (ngModelChange)="draft.set($event)"
+            (keydown.enter)="sendMessage()"
+          />
+          <button type="button" class="send-btn" [disabled]="sending() || !draft().trim()" (click)="sendMessage()">
+            Enviar
+          </button>
+        </footer>
+      }
+    }
+  </section>
+</app-patient-dashboard-shell>

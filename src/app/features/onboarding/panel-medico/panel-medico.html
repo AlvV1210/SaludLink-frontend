@@ -30,6 +30,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V8"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V11"/></svg>
         <span>Adherencia</span>
       </li>
+      <li (click)="goAsistente()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a9 9 0 0 1 8.5 6"/><path d="M12 11v2"/><circle cx="12" cy="12" r="9"/></svg>
+        <span>Asistente IA</span>
+      </li>
       <li [class.active]="activeSection() === 'chat'" (click)="openSection('chat')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
         <span>Chat</span>
@@ -54,6 +58,7 @@
       </div>
       <div class="topbar-actions">
         <span class="chip">Dr. {{ perfil().apellido }}</span>
+        <span class="chip muted">{{ consultationFeeLabel() }} consulta</span>
         <span class="chip muted">{{ totalCitas() }} citas</span>
       </div>
     </header>
@@ -63,12 +68,51 @@
     }
 
     @if (activeSection() === 'dashboard') {
-      <section class="stats-grid">
-        <article class="kpi"><span>Pacientes</span><strong>{{ totalPacientes() }}</strong><small>registrados</small></article>
-        <article class="kpi"><span>Citas</span><strong>{{ totalCitas() }}</strong><small>programadas</small></article>
-        <article class="kpi"><span>Virtuales</span><strong>{{ totalCitasVirtuales() }}</strong><small>activas</small></article>
-        <article class="kpi"><span>Horarios</span><strong>{{ totalHorarios() }}</strong><small>disponibles</small></article>
+      <section class="dashboard-hero">
+        <div>
+          <h2 class="greeting">{{ dashboardGreeting() }}</h2>
+          <p class="subtitle">Resumen de tu actividad clínica de hoy.</p>
+        </div>
+        <span class="chip">{{ perfil().especialidad }}</span>
       </section>
+
+      <section class="stats-grid dashboard-kpis">
+        @for (kpi of dashboardKpis(); track kpi.label) {
+          <article class="kpi kpi-trend">
+            <span>{{ kpi.label }}</span>
+            <strong>{{ kpi.value }}</strong>
+            <small [class.up]="kpi.trend >= 0" [class.down]="kpi.trend < 0">
+              {{ kpi.trend >= 0 ? '↑' : '↓' }} {{ kpi.trend >= 0 ? '+' : '' }}{{ kpi.trend }}% · {{ kpi.trendLabel }}
+            </small>
+          </article>
+        }
+      </section>
+
+      <section class="card proximas-citas">
+        <div class="module-header">
+          <h3>Próximas citas hoy</h3>
+          <span class="chip muted">{{ citasHoy().length }} programadas</span>
+        </div>
+        @if (citasHoy().length === 0) {
+          <p class="empty-inline">No tienes citas programadas para hoy.</p>
+        } @else {
+          <div class="citas-hoy-list">
+            @for (cita of citasHoy(); track cita.id) {
+              <article class="cita-hoy-item">
+                <div class="cita-time">{{ cita.hora }}</div>
+                <div>
+                  <strong>{{ cita.paciente }}</strong>
+                  <small>{{ cita.modalidad }} · {{ cita.estado }}</small>
+                </div>
+                <span class="status" [class.ok]="cita.estado === 'Confirmada' || cita.estado === 'Completada'" [class.off]="cita.estado === 'Cancelada'">
+                  {{ cita.estado }}
+                </span>
+              </article>
+            }
+          </div>
+        }
+      </section>
+
       <section class="card-grid">
         <article class="card">
           <h3>Resumen médico</h3>
@@ -84,7 +128,64 @@
     @if (activeSection() === 'agenda') {
       <section class="module">
         <h2>Mi Agenda</h2>
-        <p class="subtitle">Citas reales asignadas al médico logueado.</p>
+        <p class="subtitle">Vista semanal y listado de citas asignadas al médico logueado.</p>
+
+        <section class="agenda-calendar-layout">
+          <article class="card agenda-calendar">
+            <div class="calendar-toolbar">
+              <button type="button" class="btn ghost" (click)="shiftAgendaWeek(-1)">‹</button>
+              <strong>{{ weekRangeLabel() }}</strong>
+              <button type="button" class="btn ghost" (click)="shiftAgendaWeek(1)">›</button>
+            </div>
+            <div class="week-grid">
+              <div class="week-head time-col"></div>
+              @for (day of weekDays(); track day.key) {
+                <div class="week-head" [class.today]="day.isToday">
+                  <span>{{ day.label }}</span>
+                  <strong>{{ day.dayNum }}</strong>
+                </div>
+              }
+              @for (row of calendarRows(); track row.time) {
+                <div class="time-label">{{ row.time }}</div>
+                @for (cell of row.cells; track cell.trackKey) {
+                  @if (cell.slot; as slot) {
+                    <button
+                      type="button"
+                      class="calendar-slot booked"
+                      [class.active]="selectedAgendaSlotKey() === slot.key"
+                      (click)="selectAgendaSlot(slot.key)"
+                    >
+                      <strong>{{ slot.paciente }}</strong>
+                      <small>{{ slot.modalidad }}</small>
+                    </button>
+                  } @else {
+                    <div class="calendar-slot empty"></div>
+                  }
+                }
+              }
+            </div>
+          </article>
+
+          <aside class="card slot-panel">
+            <h3>Detalle del slot</h3>
+            @if (selectedAgendaSlot(); as slot) {
+              <p><strong>Paciente:</strong> {{ slot.paciente }}</p>
+              <p><strong>Hora:</strong> {{ slot.time }}</p>
+              <p><strong>Modalidad:</strong> {{ slot.modalidad }}</p>
+              <p><strong>Estado:</strong> {{ slot.estado }}</p>
+              <div class="actions">
+                @if (slot.estado === 'Programada' || slot.estado === 'Reprogramada') {
+                  <button type="button" class="btn success" (click)="confirmCita(slot.id)">Confirmar</button>
+                }
+                @if (slot.estado === 'Confirmada') {
+                  <button type="button" class="btn ghost" (click)="completeCita(slot.id)">Completar</button>
+                }
+              </div>
+            } @else {
+              <p class="empty-inline">Selecciona un slot en el calendario semanal.</p>
+            }
+          </aside>
+        </section>
 
         <div class="table-card">
           <table>
@@ -144,8 +245,33 @@
 
     @if (activeSection() === 'horarios') {
       <section class="module">
-        <h2>Mis Horarios</h2>
-        <p class="subtitle">Configura disponibilidad presencial y virtual.</p>
+        <h2>Configurar Disponibilidad</h2>
+        <p class="subtitle">Activa días, horarios y descansos. También puedes agregar slots puntuales.</p>
+
+        <section class="card day-schedules">
+          <h3>Horarios por día</h3>
+          @for (day of daySchedules(); track day.dia) {
+            <article class="day-row" [class.disabled]="!day.enabled">
+              <label class="day-toggle">
+                <input type="checkbox" [checked]="day.enabled" (change)="toggleDaySchedule(day.dia)" />
+                <strong>{{ day.dia }}</strong>
+              </label>
+              <label>Inicio
+                <input type="time" [ngModel]="day.inicio" (ngModelChange)="updateDayScheduleField(day.dia, 'inicio', $event)" [disabled]="!day.enabled" name="inicio-{{ day.dia }}" />
+              </label>
+              <label>Fin
+                <input type="time" [ngModel]="day.fin" (ngModelChange)="updateDayScheduleField(day.dia, 'fin', $event)" [disabled]="!day.enabled" name="fin-{{ day.dia }}" />
+              </label>
+              <label>Descanso inicio
+                <input type="time" [ngModel]="day.descansoInicio" (ngModelChange)="updateDayScheduleField(day.dia, 'descansoInicio', $event)" [disabled]="!day.enabled" name="descanso-inicio-{{ day.dia }}" />
+              </label>
+              <label>Descanso fin
+                <input type="time" [ngModel]="day.descansoFin" (ngModelChange)="updateDayScheduleField(day.dia, 'descansoFin', $event)" [disabled]="!day.enabled" name="descanso-fin-{{ day.dia }}" />
+              </label>
+            </article>
+          }
+        </section>
+
         <form class="form-card" (ngSubmit)="saveHorario()">
           <div class="field-grid">
             <label>Seleccionar día
@@ -242,139 +368,228 @@
         <h2>Adherencia</h2>
         <p class="subtitle">Seguimiento clínico integral de adherencia al tratamiento y asistencia.</p>
 
-        <section class="stats-grid">
-          <article class="kpi kpi-high">
-            <span>Adherencia alta</span>
-            <strong>{{ adherenciaResumen().alta }}</strong>
-            <small>{{ adherenciaResumen().altaPct }}%</small>
-          </article>
-          <article class="kpi kpi-medium">
-            <span>Adherencia media</span>
-            <strong>{{ adherenciaResumen().media }}</strong>
-            <small>{{ adherenciaResumen().mediaPct }}%</small>
-          </article>
-          <article class="kpi kpi-low">
-            <span>Adherencia baja</span>
-            <strong>{{ adherenciaResumen().baja }}</strong>
-            <small>{{ adherenciaResumen().bajaPct }}%</small>
-          </article>
-          <article class="kpi">
-            <span>Total pacientes activos</span>
-            <strong>{{ adherenciaResumen().total }}</strong>
-            <small>{{ adherenciaResumen().riesgoAlto }} en riesgo alto</small>
-          </article>
-        </section>
+        <nav class="sub-tabs">
+          <button type="button" [class.active]="adherenciaView() === 'tablero'" (click)="setAdherenciaView('tablero')">Tablero</button>
+          <button type="button" [class.active]="adherenciaView() === 'lista'" (click)="setAdherenciaView('lista')">Lista</button>
+          <button type="button" [class.active]="adherenciaView() === 'detalle'" (click)="setAdherenciaView('detalle')">Detalle</button>
+          <button type="button" [class.active]="adherenciaView() === 'alertas'" (click)="setAdherenciaView('alertas')">Alertas</button>
+          <button type="button" [class.active]="adherenciaView() === 'historico'" (click)="setAdherenciaView('historico')">Histórico</button>
+        </nav>
 
-        <section class="adherencia-analytics">
-          <article class="card analytics-main">
-            <h3>Adherencia promedio</h3>
-            <div class="donut" [style.--adherencePct.%]="adherenciaResumen().promedio">
-              <strong>{{ adherenciaResumen().promedio }}%</strong>
-              <span>General</span>
-            </div>
-          </article>
-          <article class="card analytics-bars">
-            <h3>Distribución por niveles</h3>
-            <div class="bar-row">
-              <span>Alta</span>
-              <div class="bar-track"><i class="high" [style.width.%]="adherenciaResumen().altaPct"></i></div>
-              <strong>{{ adherenciaResumen().altaPct }}%</strong>
-            </div>
-            <div class="bar-row">
-              <span>Media</span>
-              <div class="bar-track"><i class="medium" [style.width.%]="adherenciaResumen().mediaPct"></i></div>
-              <strong>{{ adherenciaResumen().mediaPct }}%</strong>
-            </div>
-            <div class="bar-row">
-              <span>Baja</span>
-              <div class="bar-track"><i class="low" [style.width.%]="adherenciaResumen().bajaPct"></i></div>
-              <strong>{{ adherenciaResumen().bajaPct }}%</strong>
-            </div>
-          </article>
-          <article class="card analytics-side">
-            <h3>Indicadores</h3>
-            <p><strong>{{ adherenciaResumen().promedio }}%</strong> de adherencia general</p>
-            <p><strong>{{ adherenciaResumen().riesgoAlto }}</strong> pacientes en riesgo</p>
-            <p><strong>{{ adherenciaResumen().total }}</strong> pacientes activos</p>
-          </article>
-        </section>
+        @if (adherenciaView() === 'tablero') {
+          <section class="stats-grid">
+            <article class="kpi kpi-high">
+              <span>Adherencia alta</span>
+              <strong>{{ adherenciaResumen().alta }}</strong>
+              <small>{{ adherenciaResumen().altaPct }}%</small>
+            </article>
+            <article class="kpi kpi-medium">
+              <span>Adherencia media</span>
+              <strong>{{ adherenciaResumen().media }}</strong>
+              <small>{{ adherenciaResumen().mediaPct }}%</small>
+            </article>
+            <article class="kpi kpi-low">
+              <span>Adherencia baja</span>
+              <strong>{{ adherenciaResumen().baja }}</strong>
+              <small>{{ adherenciaResumen().bajaPct }}%</small>
+            </article>
+            <article class="kpi">
+              <span>Total pacientes activos</span>
+              <strong>{{ adherenciaResumen().total }}</strong>
+              <small>{{ adherenciaResumen().riesgoAlto }} en riesgo alto</small>
+            </article>
+          </section>
 
-        <section class="card">
-          <div class="module-header">
-            <h3>Lista de pacientes</h3>
-          </div>
-          <div class="adherencia-list">
-            @for (paciente of adherenciaPacientes(); track paciente.id) {
-              <article class="adherencia-item" [class.active]="selectedAdherenciaPacienteId() === paciente.id" (click)="selectAdherenciaPaciente(paciente.id)">
+          <section class="adherencia-analytics">
+            <article class="card analytics-main">
+              <h3>Adherencia promedio</h3>
+              <div class="donut" [style.--adherencePct.%]="adherenciaResumen().promedio">
+                <strong>{{ adherenciaResumen().promedio }}%</strong>
+                <span>General</span>
+              </div>
+            </article>
+            <article class="card analytics-bars">
+              <h3>Distribución por niveles</h3>
+              <div class="bar-row">
+                <span>Alta</span>
+                <div class="bar-track"><i class="high" [style.width.%]="adherenciaResumen().altaPct"></i></div>
+                <strong>{{ adherenciaResumen().altaPct }}%</strong>
+              </div>
+              <div class="bar-row">
+                <span>Media</span>
+                <div class="bar-track"><i class="medium" [style.width.%]="adherenciaResumen().mediaPct"></i></div>
+                <strong>{{ adherenciaResumen().mediaPct }}%</strong>
+              </div>
+              <div class="bar-row">
+                <span>Baja</span>
+                <div class="bar-track"><i class="low" [style.width.%]="adherenciaResumen().bajaPct"></i></div>
+                <strong>{{ adherenciaResumen().bajaPct }}%</strong>
+              </div>
+            </article>
+            <article class="card analytics-side">
+              <h3>Indicadores</h3>
+              <p><strong>{{ adherenciaResumen().promedio }}%</strong> de adherencia general</p>
+              <p><strong>{{ adherenciaResumen().riesgoAlto }}</strong> pacientes en riesgo</p>
+              <p><strong>{{ adherenciaResumen().total }}</strong> pacientes activos</p>
+            </article>
+          </section>
+        }
+
+        @if (adherenciaView() === 'lista') {
+          <section class="card">
+            <div class="lista-toolbar">
+              <input
+                [ngModel]="adherenciaSearch()"
+                (ngModelChange)="setAdherenciaSearch($event)"
+                name="adherenciaSearch"
+                placeholder="Buscar paciente, diagnóstico o DNI..."
+              />
+              <div class="risk-tabs">
+                <button type="button" [class.active]="adherenciaRiskFilter() === 'todos'" (click)="setAdherenciaRiskFilter('todos')">Todos</button>
+                <button type="button" [class.active]="adherenciaRiskFilter() === 'Riesgo alto'" (click)="setAdherenciaRiskFilter('Riesgo alto')">Alto</button>
+                <button type="button" [class.active]="adherenciaRiskFilter() === 'Riesgo medio'" (click)="setAdherenciaRiskFilter('Riesgo medio')">Medio</button>
+                <button type="button" [class.active]="adherenciaRiskFilter() === 'Riesgo bajo'" (click)="setAdherenciaRiskFilter('Riesgo bajo')">Bajo</button>
+              </div>
+            </div>
+            <div class="adherencia-list semaforo-list">
+              @for (paciente of filteredAdherenciaPacientes(); track paciente.id) {
+                <article class="adherencia-item semaforo-item" (click)="openAdherenciaDetalle(paciente.id)">
+                  <span class="semaforo-dot" [class]="getSemaforoClass(paciente.riesgo)"></span>
+                  <div>
+                    <strong>{{ paciente.nombre }}</strong>
+                    <small>{{ paciente.edad }} años · {{ paciente.diagnostico }}</small>
+                  </div>
+                  <span class="risk-chip" [class.high]="paciente.riesgo === 'Riesgo alto'" [class.medium]="paciente.riesgo === 'Riesgo medio'" [class.low]="paciente.riesgo === 'Riesgo bajo'">
+                    {{ paciente.riesgo }}
+                  </span>
+                  <div class="progress-wrap">
+                    <i [style.width.%]="paciente.adherenciaPorcentaje" [class]="getAdherenciaClass(paciente.adherenciaPorcentaje)"></i>
+                  </div>
+                  <strong>{{ paciente.adherenciaPorcentaje }}%</strong>
+                </article>
+              } @empty {
+                <p class="empty-inline">No hay pacientes que coincidan con los filtros.</p>
+              }
+            </div>
+          </section>
+        }
+
+        @if (adherenciaView() === 'detalle') {
+          @if (selectedAdherenciaPaciente(); as detalle) {
+            <section class="card adherencia-detail">
+              <div class="module-header">
+                <h3>Detalle de Adherencia</h3>
+                <select [ngModel]="selectedAdherenciaPacienteId()" (ngModelChange)="selectAdherenciaPaciente($event)" name="adherenciaPacienteSelect">
+                  @for (paciente of adherenciaPacientes(); track paciente.id) {
+                    <option [ngValue]="paciente.id">{{ paciente.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <section class="detail-grid">
+                <article class="summary-card">
+                  <p><strong>Nombre:</strong> {{ detalle.nombre }}</p>
+                  <p><strong>Diagnóstico:</strong> {{ detalle.diagnostico }}</p>
+                  <p><strong>DNI:</strong> {{ detalle.dni }}</p>
+                  <p><strong>Adherencia:</strong> {{ detalle.adherenciaPorcentaje }}%</p>
+                </article>
+
+                <article class="summary-card ai-insight-card">
+                  <h4>Insight IA (adherencia)</h4>
+                  @if (adherenceAiLoading()) {
+                    <p class="empty-inline">Generando insight...</p>
+                  } @else if (adherenceAiError()) {
+                    <p class="empty-inline">{{ adherenceAiError() }}</p>
+                  } @else if (adherenceAiInsight()) {
+                    <p class="ai-insight-text">{{ adherenceAiInsight() }}</p>
+                  } @else {
+                    <p class="empty-inline">Selecciona un paciente para ver el análisis IA.</p>
+                  }
+                </article>
+
+                <article class="summary-card">
+                  <h4>Adherencia por medicamentos</h4>
+                  @for (med of detalle.medicamentos; track med.nombre) {
+                    <div class="med-row">
+                      <div>
+                        <strong>{{ med.nombre }}</strong>
+                        <small>{{ med.dosis }} · {{ med.horario }}</small>
+                      </div>
+                      <div class="progress-wrap">
+                        <i [style.width.%]="med.cumplimiento" [class]="getAdherenciaClass(med.cumplimiento)"></i>
+                      </div>
+                      <span>{{ med.cumplimiento }}%</span>
+                    </div>
+                  }
+                </article>
+              </section>
+
+              <section class="detail-grid">
+                <article class="summary-card">
+                  <h4>Análisis de patrones</h4>
+                  @for (alerta of detalle.alertas; track alerta) {
+                    <p class="alert-item" [class.high]="detalle.riesgo === 'Riesgo alto'" [class.medium]="detalle.riesgo === 'Riesgo medio'">
+                      {{ alerta }}
+                    </p>
+                  }
+                </article>
+
+                <article class="summary-card">
+                  <h4>Asistencia a consultas</h4>
+                  @for (asistencia of detalle.asistenciaConsultas; track asistencia.fecha + asistencia.modalidad) {
+                    <div class="attendance-row">
+                      <span>{{ asistencia.modalidad }} · {{ asistencia.fecha }}</span>
+                      <strong [class.ok]="asistencia.asistio" [class.off]="!asistencia.asistio">{{ asistencia.asistio ? 'Asistió' : 'No asistió' }}</strong>
+                    </div>
+                  }
+                </article>
+              </section>
+
+              <div class="actions">
+                <button type="button" class="btn primary" (click)="adjustTreatment()">Ajustar tratamiento</button>
+                <button type="button" class="btn ghost" (click)="messageFromAdherencia()">Enviar mensaje al paciente</button>
+              </div>
+            </section>
+          } @else {
+            <p class="empty-inline">No hay pacientes disponibles para mostrar el detalle.</p>
+          }
+        }
+
+        @if (adherenciaView() === 'alertas') {
+          <section class="card alert-feed">
+            <h3>Alertas de Adherencia</h3>
+            @for (alerta of adherenciaAlertasFeed(); track alerta.id) {
+              <article class="alert-feed-item" [class.high]="alerta.riesgo === 'Riesgo alto'" [class.medium]="alerta.riesgo === 'Riesgo medio'">
                 <div>
-                  <strong>{{ paciente.nombre }}</strong>
-                  <small>{{ paciente.edad }} años · {{ paciente.diagnostico }}</small>
+                  <strong>{{ alerta.paciente }}</strong>
+                  <p>{{ alerta.mensaje }}</p>
+                  <small>{{ alerta.fecha }} · {{ alerta.riesgo }}</small>
                 </div>
-                <span>{{ paciente.tiempoTratamiento }}</span>
-                <span class="risk-chip" [class.high]="paciente.riesgo === 'Riesgo alto'" [class.medium]="paciente.riesgo === 'Riesgo medio'" [class.low]="paciente.riesgo === 'Riesgo bajo'">
-                  {{ paciente.riesgo }}
-                </span>
-                <div class="progress-wrap">
-                  <i [style.width.%]="paciente.adherenciaPorcentaje" [class]="getAdherenciaClass(paciente.adherenciaPorcentaje)"></i>
-                </div>
-                <strong>{{ paciente.adherenciaPorcentaje }}%</strong>
+                <button type="button" class="btn ghost" (click)="openAdherenciaDetalle(alerta.pacienteId)">Ver detalle</button>
               </article>
+            } @empty {
+              <p class="empty-inline">No hay alertas activas de adherencia.</p>
             }
-          </div>
-        </section>
+          </section>
+        }
 
-        @if (selectedAdherenciaPaciente(); as detalle) {
-          <section class="card adherencia-detail">
-            <h3>Detalle de Adherencia</h3>
-            <section class="detail-grid">
-              <article class="summary-card">
-                <p><strong>Nombre:</strong> {{ detalle.nombre }}</p>
-                <p><strong>Diagnóstico:</strong> {{ detalle.diagnostico }}</p>
-                <p><strong>DNI:</strong> {{ detalle.dni }}</p>
-                <p><strong>Adherencia:</strong> {{ detalle.adherenciaPorcentaje }}%</p>
-              </article>
-
-              <article class="summary-card">
-                <h4>Adherencia por medicamentos</h4>
-                @for (med of detalle.medicamentos; track med.nombre) {
-                  <div class="med-row">
-                    <div>
-                      <strong>{{ med.nombre }}</strong>
-                      <small>{{ med.dosis }} · {{ med.horario }}</small>
-                    </div>
-                    <div class="progress-wrap">
-                      <i [style.width.%]="med.cumplimiento" [class]="getAdherenciaClass(med.cumplimiento)"></i>
-                    </div>
-                    <span>{{ med.cumplimiento }}%</span>
+        @if (adherenciaView() === 'historico') {
+          <section class="card historico-chart">
+            <h3>Histórico de Adherencia</h3>
+            <p class="subtitle">Tendencia mensual del promedio de adherencia de tus pacientes.</p>
+            <div class="historico-bars">
+              @for (point of adherenciaHistorico(); track point.mes) {
+                <div class="historico-row">
+                  <span>{{ point.mes }}</span>
+                  <div class="historico-track">
+                    <i [style.height.%]="point.width"></i>
                   </div>
-                }
-              </article>
-            </section>
-
-            <section class="detail-grid">
-              <article class="summary-card">
-                <h4>Análisis de patrones</h4>
-                @for (alerta of detalle.alertas; track alerta) {
-                  <p class="alert-item" [class.high]="detalle.riesgo === 'Riesgo alto'" [class.medium]="detalle.riesgo === 'Riesgo medio'">
-                    {{ alerta }}
-                  </p>
-                }
-              </article>
-
-              <article class="summary-card">
-                <h4>Asistencia a consultas</h4>
-                @for (asistencia of detalle.asistenciaConsultas; track asistencia.fecha + asistencia.modalidad) {
-                  <div class="attendance-row">
-                    <span>{{ asistencia.modalidad }} · {{ asistencia.fecha }}</span>
-                    <strong [class.ok]="asistencia.asistio" [class.off]="!asistencia.asistio">{{ asistencia.asistio ? 'Asistió' : 'No asistió' }}</strong>
-                  </div>
-                }
-              </article>
-            </section>
-
-            <div class="actions">
-              <button type="button" class="btn primary" (click)="adjustTreatment()">Ajustar tratamiento</button>
-              <button type="button" class="btn ghost" (click)="messageFromAdherencia()">Enviar mensaje al paciente</button>
+                  <strong>{{ point.promedio }}%</strong>
+                </div>
+              }
+            </div>
+            <div class="historico-summary">
+              <span>Promedio actual: <strong>{{ adherenciaResumen().promedio }}%</strong></span>
+              <span>Pacientes en riesgo: <strong>{{ adherenciaResumen().riesgoAlto }}</strong></span>
             </div>
           </section>
         }
@@ -449,27 +664,62 @@
 
     @if (activeSection() === 'perfil') {
       <section class="module">
-        <h2>Perfil</h2>
+        <h2>Mi Perfil</h2>
         <p class="subtitle">Información profesional del médico conectado.</p>
-        <article class="profile-card">
-          <img [src]="editingPerfil ? perfilDraft.foto : perfil().foto" alt="Foto de perfil" />
-          <div class="profile-fields">
-            <label>Nombre <input [(ngModel)]="perfilDraft.nombre" name="perfilNombre" [readonly]="!editingPerfil" /></label>
-            <label>Apellido <input [(ngModel)]="perfilDraft.apellido" name="perfilApellido" [readonly]="!editingPerfil" /></label>
-            <label>Correo <input [(ngModel)]="perfilDraft.correo" name="perfilCorreo" [readonly]="!editingPerfil" /></label>
-            <label>Especialidad <input [(ngModel)]="perfilDraft.especialidad" name="perfilEspecialidad" [readonly]="!editingPerfil" /></label>
-            <label>Sede <input [(ngModel)]="perfilDraft.sede" name="perfilSede" [readonly]="!editingPerfil" /></label>
-            <label>Estado <input [(ngModel)]="perfilDraft.estado" name="perfilEstado" [readonly]="!editingPerfil" /></label>
-          </div>
-          <div class="actions">
-            @if (!editingPerfil) {
-              <button type="button" class="btn primary" (click)="editPerfil()">Editar perfil</button>
-            } @else {
-              <button type="button" class="btn primary" (click)="savePerfil()">Guardar cambios</button>
-            }
-            <button type="button" class="btn ghost" (click)="changePassword()">Cambiar contraseña</button>
-          </div>
-        </article>
+
+        <nav class="sub-tabs">
+          <button type="button" [class.active]="perfilTab() === 'general'" (click)="setPerfilTab('general')">General</button>
+          <button type="button" [class.active]="perfilTab() === 'credenciales'" (click)="setPerfilTab('credenciales')">Credenciales</button>
+        </nav>
+
+        @if (perfilTab() === 'general') {
+          <article class="profile-card">
+            <img [src]="editingPerfil ? perfilDraft.foto : perfil().foto" alt="Foto de perfil" />
+            <div class="profile-fields">
+              <label>Nombre <input [(ngModel)]="perfilDraft.nombre" name="perfilNombre" [readonly]="!editingPerfil" /></label>
+              <label>Apellido <input [(ngModel)]="perfilDraft.apellido" name="perfilApellido" [readonly]="!editingPerfil" /></label>
+              <label>Correo <input [(ngModel)]="perfilDraft.correo" name="perfilCorreo" [readonly]="!editingPerfil" /></label>
+              <label>Especialidad <input [(ngModel)]="perfilDraft.especialidad" name="perfilEspecialidad" [readonly]="!editingPerfil" /></label>
+              <label>Tarifa consulta (S/) <input [value]="consultationFeeLabel()" name="perfilTarifa" readonly /></label>
+              <label>Sede <input [(ngModel)]="perfilDraft.sede" name="perfilSede" [readonly]="!editingPerfil" /></label>
+              <label>Estado <input [(ngModel)]="perfilDraft.estado" name="perfilEstado" [readonly]="!editingPerfil" /></label>
+            </div>
+            <div class="actions">
+              @if (!editingPerfil) {
+                <button type="button" class="btn primary" (click)="editPerfil()">Editar perfil</button>
+              } @else {
+                <button type="button" class="btn primary" (click)="savePerfil()">Guardar cambios</button>
+              }
+              <button type="button" class="btn ghost" (click)="changePassword()">Cambiar contraseña</button>
+            </div>
+          </article>
+        }
+
+        @if (perfilTab() === 'credenciales') {
+          <section class="credenciales-panel">
+            <article class="card credencial-header">
+              <div>
+                <h3>Credenciales profesionales</h3>
+                <p>{{ credencialesMedico().cmp }} · {{ perfil().especialidad }}</p>
+              </div>
+              @if (credencialesMedico().verificado) {
+                <span class="verified-badge">✓ Verificado</span>
+              } @else {
+                <span class="verified-badge pending">Pendiente</span>
+              }
+            </article>
+
+            <div class="credencial-docs">
+              @for (doc of credencialesMedico().documentos; track doc.id) {
+                <article class="credencial-doc" [class.verified]="doc.estado === 'Verificado'">
+                  <strong>{{ doc.titulo }}</strong>
+                  <span class="doc-status">{{ doc.estado }}</span>
+                  <small>Actualizado: {{ doc.fecha }}</small>
+                </article>
+              }
+            </div>
+          </section>
+        }
       </section>
     }
   </main>

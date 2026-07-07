@@ -1,15 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { AdherenceService } from '../../../core/services/adherence.service';
+import { AiService } from '../../../core/services/ai.service';
+import { apiErrorMessage } from '../../../core/services/api-error';
 import { AuthService } from '../../../core/services/auth.service';
 import { DoctorService } from '../../../core/services/doctor.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
-import { Doctor } from '../../../core/models/doctor.model';
-import { Appointment, AppointmentModality, AppointmentStatus } from '../../../core/models/appointment.model';
-import { ChatMessageResponse, ChatService } from '../../../core/services/chat.service';
+import { Doctor } from '../../../shared/models/doctor.model';
+import { Appointment, AppointmentModality, AppointmentStatus } from '../../../shared/models/appointment.model';
+import { ChatMessageResponse, ChatService } from '../../../core/services/telemedicine.service';
 
 type MedicoSection = 'dashboard' | 'agenda' | 'horarios' | 'pacientes' | 'reportes' | 'adherencia' | 'chat' | 'perfil';
+type AdherenciaView = 'tablero' | 'lista' | 'detalle' | 'alertas' | 'historico';
+type PerfilTab = 'general' | 'credenciales';
+type AdherenciaRiskFilter = 'todos' | RiesgoNivel;
 type AgendaStatus = 'Programada' | 'Reprogramada' | 'Confirmada' | 'Cancelada' | 'Completada';
 type HorarioModalidad = 'Presencial' | 'Virtual';
 type HorarioStatus = 'Disponible' | 'Reservado';
@@ -46,6 +52,7 @@ interface PerfilMedico {
   sede: string;
   foto: string;
   estado: 'Activo' | 'Inactivo';
+  tarifaConsulta: number | null;
 }
 
 interface PacienteReserva {
@@ -100,18 +107,88 @@ interface AdherenciaPaciente {
   asistenciaConsultas: AsistenciaConsulta[];
 }
 
+interface DashboardKpi {
+  label: string;
+  value: string;
+  trend: number;
+  trendLabel: string;
+}
+
+interface WeekDayColumn {
+  key: string;
+  label: string;
+  date: string;
+  dayNum: number;
+  isToday: boolean;
+}
+
+interface AgendaCalendarSlot {
+  key: string;
+  dayKey: string;
+  time: string;
+  paciente: string;
+  modalidad: HorarioModalidad;
+  estado: AgendaStatus;
+  id: number;
+}
+
+interface CalendarCell {
+  dayKey: string;
+  trackKey: string;
+  slot: AgendaCalendarSlot | null;
+}
+
+interface CalendarRow {
+  time: string;
+  cells: CalendarCell[];
+}
+
+interface DaySchedule {
+  dia: string;
+  enabled: boolean;
+  inicio: string;
+  fin: string;
+  descansoInicio: string;
+  descansoFin: string;
+}
+
+interface CredencialDocumento {
+  id: string;
+  titulo: string;
+  estado: 'Verificado' | 'Pendiente' | 'Rechazado';
+  fecha: string;
+}
+
+interface AdherenciaAlertaFeed {
+  id: string;
+  pacienteId: number;
+  paciente: string;
+  mensaje: string;
+  riesgo: RiesgoNivel;
+  fecha: string;
+}
+
+interface AdherenciaHistoricoPoint {
+  mes: string;
+  promedio: number;
+  width: number;
+}
+
 @Component({
   selector: 'app-panel-medico',
   imports: [CommonModule, FormsModule],
   templateUrl: './panel-medico.html',
   styleUrl: './panel-medico.scss',
 })
-export class PanelMedicoComponent {
+export class PanelMedicoComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly adherenceService = inject(AdherenceService);
   private readonly auth = inject(AuthService);
   private readonly doctorService = inject(DoctorService);
   private readonly appointmentService = inject(AppointmentService);
   private readonly chatService = inject(ChatService);
+  private readonly aiService = inject(AiService);
   @ViewChild('doctorChatMessagesContainer') private doctorChatMessagesContainer?: ElementRef<HTMLDivElement>;
   protected readonly activeSection = signal<MedicoSection>('dashboard');
   protected readonly toastMessage = signal('');
@@ -122,6 +199,16 @@ export class PanelMedicoComponent {
   protected readonly currentDoctorId = signal<number | null>(null);
   protected readonly loadingAppointments = signal(false);
   protected readonly selectedAdherenciaPacienteId = signal<number | null>(null);
+  protected readonly adherenceAiInsight = signal<string>('');
+  protected readonly adherenceAiLoading = signal(false);
+  protected readonly adherenceAiError = signal('');
+  protected readonly adherenciaView = signal<AdherenciaView>('tablero');
+  protected readonly perfilTab = signal<PerfilTab>('general');
+  protected readonly adherenciaSearch = signal('');
+  protected readonly adherenciaRiskFilter = signal<AdherenciaRiskFilter>('todos');
+  protected readonly selectedAgendaSlotKey = signal<string | null>(null);
+  protected readonly agendaWeekOffset = signal(0);
+  protected readonly daySchedules = signal<DaySchedule[]>(this.createDefaultDaySchedules());
   protected readonly agendaItems = signal<AgendaItem[]>([]);
   protected readonly horarios = signal<HorarioItem[]>([
     { id: 1, dia: 'Lunes', hora: '10:00', modalidad: 'Virtual', link: 'https://meet.google.com/abc-defg-hij', estado: 'Reservado' },
@@ -154,6 +241,27 @@ export class PanelMedicoComponent {
   private nextAgendaId = 3;
   private nextHorarioId = 3;
 
+  ngOnInit(): void {
+    this.loadAvailabilityFromApi();
+    const section = this.route.snapshot.queryParamMap.get('section');
+    if (section && this.isMedicoSection(section)) {
+      this.openSection(section);
+    }
+  }
+
+  private isMedicoSection(value: string): value is MedicoSection {
+    return (
+      value === 'dashboard' ||
+      value === 'agenda' ||
+      value === 'horarios' ||
+      value === 'pacientes' ||
+      value === 'reportes' ||
+      value === 'adherencia' ||
+      value === 'chat' ||
+      value === 'perfil'
+    );
+  }
+
   constructor() {
     this.loadCurrentDoctorAndAppointments();
   }
@@ -164,6 +272,134 @@ export class PanelMedicoComponent {
     () => this.agendaItems().filter((item) => item.tipo === 'Virtual').length,
   );
   protected readonly totalHorarios = computed(() => this.horarios().length);
+  protected readonly consultationFeeLabel = computed(() => this.formatConsultationFee(this.perfil().tarifaConsulta));
+
+  protected readonly dashboardGreeting = computed(() => {
+    const hour = new Date().getHours();
+    const saludo = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+    return `${saludo}, Dr. ${this.perfil().apellido}`;
+  });
+
+  protected readonly citasHoy = computed(() => {
+    const today = this.formatDateKey(new Date());
+    return this.agendaItems()
+      .filter((item) => item.fecha === today)
+      .sort((a, b) => a.hora.localeCompare(b.hora));
+  });
+
+  protected readonly weekDays = computed<WeekDayColumn[]>(() => {
+    const start = this.getWeekStart(new Date(), this.agendaWeekOffset());
+    const labels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const todayKey = this.formatDateKey(new Date());
+    return labels.map((label, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      const key = this.formatDateKey(date);
+      return {
+        key,
+        label,
+        date: key,
+        dayNum: date.getDate(),
+        isToday: key === todayKey,
+      };
+    });
+  });
+
+  protected readonly agendaTimeSlots = computed(() => ['08:00', '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00']);
+
+  protected readonly agendaCalendarSlots = computed<AgendaCalendarSlot[]>(() => {
+    return this.agendaItems()
+      .filter((item) => this.weekDays().some((day) => day.key === item.fecha))
+      .map((item) => ({
+        key: `${item.fecha}-${item.hora}`,
+        dayKey: item.fecha,
+        time: item.hora,
+        paciente: item.paciente,
+        modalidad: item.modalidad,
+        estado: item.estado,
+        id: item.id,
+      }));
+  });
+
+  protected readonly calendarRows = computed<CalendarRow[]>(() => {
+    const slots = this.agendaCalendarSlots();
+    return this.agendaTimeSlots().map((time) => ({
+      time,
+      cells: this.weekDays().map((day) => ({
+        dayKey: day.key,
+        trackKey: `${day.key}-${time}`,
+        slot: slots.find((item) => item.dayKey === day.key && item.time === time) ?? null,
+      })),
+    }));
+  });
+
+  protected readonly selectedAgendaSlot = computed(() => {
+    const key = this.selectedAgendaSlotKey();
+    if (!key) {
+      return null;
+    }
+    return this.agendaCalendarSlots().find((slot) => slot.key === key) ?? null;
+  });
+
+  protected readonly weekRangeLabel = computed(() => {
+    const days = this.weekDays();
+    if (days.length === 0) {
+      return '';
+    }
+    const first = days[0];
+    const last = days[days.length - 1];
+    return `${first.dayNum} – ${last.dayNum} ${this.getMonthName(first.date)}`;
+  });
+
+  protected readonly credencialesMedico = computed(() => ({
+    cmp: `CMP ${45000 + (this.currentDoctorId() ?? 12)}`,
+    verificado: this.perfil().estado === 'Activo',
+    documentos: [
+      { id: 'cmp', titulo: 'Carnet CMP', estado: 'Verificado' as const, fecha: '2026-01-15' },
+      { id: 'diploma', titulo: 'Diploma de especialidad', estado: 'Verificado' as const, fecha: '2026-01-16' },
+      { id: 'dni', titulo: 'Documento de identidad', estado: 'Verificado' as const, fecha: '2026-01-14' },
+    ] satisfies CredencialDocumento[],
+  }));
+
+  protected readonly filteredAdherenciaPacientes = computed(() => {
+    const term = this.adherenciaSearch().trim().toLowerCase();
+    const filter = this.adherenciaRiskFilter();
+    return this.adherenciaPacientes().filter((item) => {
+      const matchesSearch =
+        !term ||
+        item.nombre.toLowerCase().includes(term) ||
+        item.diagnostico.toLowerCase().includes(term) ||
+        item.dni.includes(term);
+      const matchesRisk = filter === 'todos' || item.riesgo === filter;
+      return matchesSearch && matchesRisk;
+    });
+  });
+
+  protected readonly adherenciaAlertasFeed = computed<AdherenciaAlertaFeed[]>(() => {
+    return this.adherenciaPacientes().flatMap((paciente) =>
+      paciente.alertas.map((alerta, index) => ({
+        id: `${paciente.id}-${index}`,
+        pacienteId: paciente.id,
+        paciente: paciente.nombre,
+        mensaje: alerta,
+        riesgo: paciente.riesgo,
+        fecha: '2026-06-28',
+      })),
+    );
+  });
+
+  protected readonly adherenciaHistorico = computed<AdherenciaHistoricoPoint[]>(() => {
+    const base = this.adherenciaResumen().promedio;
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'];
+    return months.map((mes, index) => {
+      const promedio = Math.max(45, Math.min(98, base - (months.length - index - 1) * 4 + (index % 2) * 3));
+      return {
+        mes,
+        promedio,
+        width: Math.max(12, Math.round((promedio / 100) * 100)),
+      };
+    });
+  });
 
   protected readonly pacientesReservados = computed<PacienteReserva[]>(() => {
     return this.agendaItems().map((agenda, index) => {
@@ -272,6 +508,17 @@ export class PanelMedicoComponent {
     return this.adherenciaPacientes().find((item) => item.id === id) ?? null;
   });
 
+  protected readonly dashboardKpis = computed<DashboardKpi[]>(() => {
+    const citasHoy = this.citasHoy().length;
+    const adherencia = this.adherenciaResumen().promedio;
+    return [
+      { label: 'Pacientes activos', value: String(this.totalPacientes()), trend: 8, trendLabel: 'vs mes anterior' },
+      { label: 'Citas hoy', value: String(citasHoy), trend: citasHoy > 0 ? 12 : -4, trendLabel: 'programadas hoy' },
+      { label: 'Adherencia promedio', value: `${adherencia}%`, trend: adherencia >= 75 ? 6 : -3, trendLabel: 'semana actual' },
+      { label: 'Citas virtuales', value: String(this.totalCitasVirtuales()), trend: 5, trendLabel: 'modalidad remota' },
+    ];
+  });
+
   protected goDashboard(): void {
     this.activeSection.set('dashboard');
     void this.router.navigate(['/medico/dashboard']);
@@ -292,12 +539,73 @@ export class PanelMedicoComponent {
         this.selectChatPaciente(first.id);
       }
     }
-    if (section === 'adherencia' && !this.selectedAdherenciaPacienteId()) {
+    if (section === 'adherencia') {
+      this.adherenciaView.set('tablero');
+      if (!this.selectedAdherenciaPacienteId()) {
+        const first = this.adherenciaPacientes()[0];
+        if (first) {
+          this.selectedAdherenciaPacienteId.set(first.id);
+        }
+      }
+    }
+  }
+
+  protected setAdherenciaView(view: AdherenciaView): void {
+    this.adherenciaView.set(view);
+    if (view === 'detalle' && !this.selectedAdherenciaPacienteId()) {
       const first = this.adherenciaPacientes()[0];
       if (first) {
         this.selectedAdherenciaPacienteId.set(first.id);
       }
     }
+  }
+
+  protected setPerfilTab(tab: PerfilTab): void {
+    this.perfilTab.set(tab);
+  }
+
+  protected setAdherenciaSearch(value: string): void {
+    this.adherenciaSearch.set(value);
+  }
+
+  protected setAdherenciaRiskFilter(filter: AdherenciaRiskFilter): void {
+    this.adherenciaRiskFilter.set(filter);
+  }
+
+  protected openAdherenciaDetalle(id: number): void {
+    this.selectAdherenciaPaciente(id);
+    this.adherenciaView.set('detalle');
+  }
+
+  protected selectAgendaSlot(key: string): void {
+    this.selectedAgendaSlotKey.set(key);
+  }
+
+  protected shiftAgendaWeek(delta: number): void {
+    this.agendaWeekOffset.update((value) => value + delta);
+    this.selectedAgendaSlotKey.set(null);
+  }
+
+  protected toggleDaySchedule(dia: string): void {
+    this.daySchedules.update((items) =>
+      items.map((item) => (item.dia === dia ? { ...item, enabled: !item.enabled } : item)),
+    );
+  }
+
+  protected updateDayScheduleField(dia: string, field: keyof DaySchedule, value: string | boolean): void {
+    this.daySchedules.update((items) =>
+      items.map((item) => (item.dia === dia ? { ...item, [field]: value } : item)),
+    );
+  }
+
+  protected getSemaforoClass(riesgo: RiesgoNivel): string {
+    if (riesgo === 'Riesgo alto') {
+      return 'red';
+    }
+    if (riesgo === 'Riesgo medio') {
+      return 'yellow';
+    }
+    return 'green';
   }
 
   protected createVirtualCita(): void {
@@ -332,41 +640,37 @@ export class PanelMedicoComponent {
 
   protected saveHorario(): void {
     this.horarioAttempted = true;
-    if (!this.horarioForm.hora || (this.horarioForm.modalidad === 'Virtual' && !this.horarioForm.link.trim())) {
+    if (!this.horarioForm.hora) {
       return;
     }
 
-    if (this.editingHorarioId) {
-      this.horarios.update((items) =>
-        items.map((item) =>
-          item.id === this.editingHorarioId
-            ? {
-                ...item,
-                dia: this.horarioForm.dia,
-                hora: this.horarioForm.hora,
-                modalidad: this.horarioForm.modalidad,
-                link: this.horarioForm.modalidad === 'Virtual' ? this.horarioForm.link.trim() : '-',
-              }
-            : item,
-        ),
-      );
-      this.showToast('Horario actualizado.');
-    } else {
-      this.horarios.update((items) => [
-        ...items,
-        {
-          id: this.nextHorarioId++,
-          dia: this.horarioForm.dia,
-          hora: this.horarioForm.hora,
-          modalidad: this.horarioForm.modalidad,
-          link: this.horarioForm.modalidad === 'Virtual' ? this.horarioForm.link.trim() : '-',
-          estado: 'Disponible',
-        },
-      ]);
-      this.showToast('Horario guardado correctamente.');
-    }
+    const dayMap: Record<string, string> = {
+      Lunes: 'MONDAY',
+      Martes: 'TUESDAY',
+      Miércoles: 'WEDNESDAY',
+      Jueves: 'THURSDAY',
+      Viernes: 'FRIDAY',
+      Sábado: 'SATURDAY',
+      Domingo: 'SUNDAY',
+    };
 
-    this.resetHorarioForm();
+    this.doctorService
+      .setAvailability({
+        dayOfWeek: dayMap[this.horarioForm.dia] ?? 'MONDAY',
+        startTime: `${this.horarioForm.hora}:00`.slice(0, 8),
+        endTime: `${this.horarioForm.hora.slice(0, 2)}:59:00`,
+        blocked: false,
+      })
+      .subscribe({
+        next: () => {
+          this.showToast('Horario guardado en el servidor.');
+          this.loadAvailabilityFromApi();
+          this.resetHorarioForm();
+        },
+        error: (error) => {
+          this.showToast(error?.error?.message || 'No se pudo guardar el horario.');
+        },
+      });
   }
 
   protected editHorario(item: HorarioItem): void {
@@ -438,6 +742,35 @@ export class PanelMedicoComponent {
 
   protected selectAdherenciaPaciente(id: number): void {
     this.selectedAdherenciaPacienteId.set(id);
+    this.loadAdherenceAiInsight(id);
+  }
+
+  protected goAsistente(): void {
+    void this.router.navigate(['/medico/asistente']);
+  }
+
+  private loadAdherenceAiInsight(patientId: number): void {
+    this.adherenceAiLoading.set(true);
+    this.adherenceAiError.set('');
+    this.adherenceAiInsight.set('');
+    this.aiService.adherenceReport(patientId).subscribe({
+      next: (res) => {
+        const text = [
+          res.insight.resumen,
+          `Patrón: ${res.insight.patronDetectado}`,
+          `Sugerencia: ${res.insight.sugerenciaSeguimiento}`,
+          `Datos reales: ${res.data.adherencePercent}% (${res.data.takenReminders}/${res.data.totalReminders} recordatorios)`,
+        ].join('\n');
+        this.adherenceAiInsight.set(text);
+        this.adherenceAiLoading.set(false);
+      },
+      error: (error) => {
+        this.adherenceAiError.set(
+          apiErrorMessage(error, 'No se pudo generar el insight de adherencia.'),
+        );
+        this.adherenceAiLoading.set(false);
+      },
+    });
   }
 
   protected adjustTreatment(): void {
@@ -550,10 +883,21 @@ export class PanelMedicoComponent {
       sede: doctor.branchName || doctor.clinicName || 'Sede por confirmar',
       foto: 'https://i.pravatar.cc/160?img=12',
       estado: doctor.verified ? 'Activo' : 'Inactivo',
+      tarifaConsulta:
+        doctor.consultationFee === undefined || doctor.consultationFee === null
+          ? null
+          : Number(doctor.consultationFee),
     };
 
     this.perfil.set(profile);
     this.perfilDraft = { ...profile };
+  }
+
+  private formatConsultationFee(fee: number | null): string {
+    if (fee === null || Number.isNaN(fee)) {
+      return 'N/A';
+    }
+    return `S/${fee}`;
   }
 
   private mapAppointmentToAgendaItem(appointment: Appointment): AgendaItem {
@@ -663,7 +1007,7 @@ export class PanelMedicoComponent {
   }
 
   private changeAppointmentStatus(id: number, status: AppointmentStatus, successMessage: string): void {
-    this.appointmentService.updateAppointmentStatus(id, status).subscribe({
+    this.appointmentService.updateAppointmentStatus(id, { status }).subscribe({
       next: () => {
         this.loadDoctorAppointments();
         this.showToast(successMessage);
@@ -684,6 +1028,34 @@ export class PanelMedicoComponent {
     this.editingHorarioId = null;
   }
 
+  private createDefaultDaySchedules(): DaySchedule[] {
+    return [
+      { dia: 'Lunes', enabled: true, inicio: '08:00', fin: '18:00', descansoInicio: '13:00', descansoFin: '14:00' },
+      { dia: 'Martes', enabled: true, inicio: '08:00', fin: '18:00', descansoInicio: '13:00', descansoFin: '14:00' },
+      { dia: 'Miércoles', enabled: true, inicio: '08:00', fin: '14:00', descansoInicio: '12:00', descansoFin: '12:30' },
+      { dia: 'Jueves', enabled: true, inicio: '09:00', fin: '17:00', descansoInicio: '13:00', descansoFin: '14:00' },
+      { dia: 'Viernes', enabled: true, inicio: '08:00', fin: '16:00', descansoInicio: '12:30', descansoFin: '13:30' },
+      { dia: 'Sábado', enabled: false, inicio: '09:00', fin: '13:00', descansoInicio: '', descansoFin: '' },
+      { dia: 'Domingo', enabled: false, inicio: '', fin: '', descansoInicio: '', descansoFin: '' },
+    ];
+  }
+
+  private formatDateKey(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private getWeekStart(reference: Date, weekOffset: number): Date {
+    const date = new Date(reference);
+    date.setHours(0, 0, 0, 0);
+    const day = date.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + diff + weekOffset * 7);
+    return date;
+  }
+
   private createInitialProfile(): PerfilMedico {
     const user = this.auth.getCurrentUser();
     return {
@@ -694,6 +1066,7 @@ export class PanelMedicoComponent {
       sede: 'Sede Central',
       foto: 'https://i.pravatar.cc/160?img=12',
       estado: 'Activo',
+      tarifaConsulta: null,
     };
   }
 
@@ -721,7 +1094,7 @@ export class PanelMedicoComponent {
       : `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 
     return {
-      from: message.senderRole === 'DOCTOR' ? 'medico' : 'paciente',
+      from: message.senderName?.toLowerCase().includes('doctor') ? 'medico' : 'paciente',
       text: message.message,
       time,
     };
@@ -785,6 +1158,33 @@ export class PanelMedicoComponent {
         { modalidad: item.modalidad, fecha: '2026-05-15', asistio: adherencia >= 65 },
       ],
     };
+  }
+
+  private loadAvailabilityFromApi(): void {
+    this.doctorService.getMyAvailability().subscribe({
+      next: (items) => {
+        const reverseDay: Record<string, string> = {
+          MONDAY: 'Lunes',
+          TUESDAY: 'Martes',
+          WEDNESDAY: 'Miércoles',
+          THURSDAY: 'Jueves',
+          FRIDAY: 'Viernes',
+          SATURDAY: 'Sábado',
+          SUNDAY: 'Domingo',
+        };
+        this.horarios.set(
+          items.map((item, index) => ({
+            id: item.id ?? index + 1,
+            dia: reverseDay[item.dayOfWeek] ?? item.dayOfWeek,
+            hora: item.startTime?.slice(0, 5) ?? '09:00',
+            modalidad: 'Presencial',
+            link: '-',
+            estado: item.blocked ? 'Reservado' : 'Disponible',
+          })),
+        );
+      },
+      error: () => undefined,
+    });
   }
 
   private scrollDoctorChatToBottom(): void {

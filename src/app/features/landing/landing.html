@@ -55,9 +55,9 @@
         <small>Mié 24 Abr · 10:30 AM</small>
       </div>
       <div class="quick-tabs">
-        <button type="button">Mis citas</button>
-        <button type="button">Medicación</button>
-        <button type="button">Historial</button>
+        <button type="button" (click)="goHeroTab('citas')">Mis citas</button>
+        <button type="button" (click)="goHeroTab('medicacion')">Medicacion</button>
+        <button type="button" (click)="goHeroTab('historial')">Historial</button>
       </div>
     </article>
   </section>
@@ -77,22 +77,22 @@
       <article class="info-card">
         <h3>Próximas citas</h3>
         <p>Consulta rápida y fácil de tus citas programadas, con recordatorios automáticos.</p>
-        <button type="button" (click)="goTo('planes', $event)">Ver todas</button>
+        <button type="button" (click)="goFeature('citas')">Ver todas</button>
       </article>
       <article class="info-card">
         <h3>Medicamentos hoy</h3>
         <p>Controla tus dosis y recibe recordatorios inteligentes para no olvidar tu tratamiento.</p>
-        <button type="button" (click)="goTo('planes', $event)">Gestionar</button>
+        <button type="button" (click)="goFeature('medicacion')">Gestionar</button>
       </article>
       <article class="info-card">
         <h3>Historial clínico</h3>
         <p>Accede a tus documentos médicos y pruebas en cualquier momento, desde cualquier lugar.</p>
-        <button type="button" (click)="goTo('contacto', $event)">Ver historial</button>
+        <button type="button" (click)="goFeature('historial')">Ver historial</button>
       </article>
       <article class="info-card">
         <h3>Salud mental</h3>
         <p>Apoyo emocional cuando más lo necesitas, con tests validados y recursos guiados.</p>
-        <button type="button" (click)="goTo('contacto', $event)">Empezar</button>
+        <button type="button" (click)="goFeature('mental')">Empezar</button>
       </article>
     </div>
   </section>
@@ -177,7 +177,7 @@
     <div>
       <h2>Tu información, protegida y segura</h2>
       <p>SaludLink cumple con los más altos estándares de seguridad y privacidad de datos en el Perú.</p>
-      <button type="button" class="btn primary" (click)="goTo('contacto', $event)">Conoce más sobre seguridad</button>
+      <button type="button" class="btn primary" (click)="goToContact('seguridad', $event)">Conoce más sobre seguridad</button>
     </div>
     <ul>
       <li><strong>Cifrado E2E</strong><span>Tus datos clínicos viajan cifrados de extremo a extremo.</span></li>
@@ -263,24 +263,95 @@
     <div class="contact-grid">
       <article class="contact-form">
         <h3>Envíanos un mensaje</h3>
-        <form>
-          <div class="input-grid">
-            <label>Nombre completo<input type="text" placeholder="Tu nombre" /></label>
-            <label>Correo electrónico<input type="email" placeholder="tu@correo.com" /></label>
-            <label>Teléfono<input type="text" placeholder="+51 999 999 999" /></label>
-            <label>Soy<input type="text" placeholder="Paciente" /></label>
+
+        @if (contactSuccess()) {
+          <div class="form-success" role="status">
+            <strong>Mensaje enviado</strong>
+            <p>Gracias por escribirnos. Te responderemos en menos de 24 horas.</p>
+            <button type="button" class="btn ghost" (click)="resetContactForm()">Enviar otro mensaje</button>
           </div>
-          <label>Mensaje<textarea rows="4" placeholder="Cuéntanos cómo podemos ayudarte..."></textarea></label>
-          <button type="button" class="btn primary full">Enviar mensaje</button>
-        </form>
+        } @else {
+          <form (ngSubmit)="submitContact($event)" novalidate>
+            @if (contactError()) {
+              <p class="form-error">{{ contactError() }}</p>
+            }
+
+            <div class="input-grid">
+              <label>
+                Nombre completo
+                <input
+                  type="text"
+                  name="fullName"
+                  [(ngModel)]="contactForm.fullName"
+                  placeholder="Tu nombre"
+                  required
+                />
+              </label>
+              <label>
+                Correo electronico
+                <input
+                  type="email"
+                  name="email"
+                  [(ngModel)]="contactForm.email"
+                  placeholder="tu@correo.com"
+                  required
+                />
+              </label>
+              <label>
+                Telefono
+                <input
+                  type="tel"
+                  name="phone"
+                  [(ngModel)]="contactForm.phone"
+                  placeholder="+51 999 999 999"
+                />
+              </label>
+              <label>
+                Soy
+                <select name="role" [(ngModel)]="contactForm.role">
+                  @for (role of roleOptions; track role) {
+                    <option [value]="role">{{ role }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+
+            <label>
+              Mensaje
+              <textarea
+                name="message"
+                rows="4"
+                [(ngModel)]="contactForm.message"
+                placeholder="Cuentanos como podemos ayudarte..."
+                required
+              ></textarea>
+            </label>
+
+            <button type="submit" class="btn primary full" [disabled]="contactSubmitting()">
+              {{ contactSubmitting() ? 'Enviando...' : 'Enviar mensaje' }}
+            </button>
+          </form>
+        }
       </article>
       <article class="contact-data">
         <h3>Contacto directo</h3>
         <ul>
-          <li><strong>Email</strong><span>contacto&#64;saludlink.pe</span></li>
-          <li><strong>Ubicación</strong><span>Lima, Perú</span></li>
-          <li><strong>Teléfono</strong><span>+51 999 888 777</span></li>
-          <li><strong>Línea de salud mental</strong><span>113 SaludMental MINSA · 24/7</span></li>
+          <li>
+            <strong>Email</strong>
+            <a class="contact-link" href="mailto:contacto@saludlink.pe">contacto&#64;saludlink.pe</a>
+          </li>
+          <li>
+            <strong>Ubicacion</strong>
+            <span>Lima, Peru</span>
+          </li>
+          <li>
+            <strong>Telefono</strong>
+            <a class="contact-link" href="tel:+51999888777">+51 999 888 777</a>
+          </li>
+          <li>
+            <strong>Linea de salud mental</strong>
+            <a class="contact-link" href="tel:113">113 SaludMental MINSA · 24/7</a>
+          </li>
         </ul>
       </article>
     </div>
@@ -296,7 +367,7 @@
         <h4>Producto</h4>
         <a href="#funcionalidades" (click)="goTo('funcionalidades', $event)">Funcionalidades</a>
         <a href="#planes" (click)="goTo('planes', $event)">Planes</a>
-        <a routerLink="/registro">Telemedicina</a>
+        <a href="#funcionalidades" (click)="goTo('funcionalidades', $event)">Telemedicina</a>
       </div>
       <div>
         <h4>Empresa</h4>
@@ -305,8 +376,8 @@
       </div>
       <div>
         <h4>Legal</h4>
-        <a href="#contacto" (click)="goTo('contacto', $event)">Términos y condiciones</a>
-        <a href="#contacto" (click)="goTo('contacto', $event)">Política de privacidad</a>
+        <a href="#contacto" (click)="goToContact('terminos', $event)">Terminos y condiciones</a>
+        <a href="#contacto" (click)="goToContact('privacidad', $event)">Politica de privacidad</a>
       </div>
     </div>
     <p class="footer-copy">© 2026 SaludLink · Todos los derechos reservados</p>

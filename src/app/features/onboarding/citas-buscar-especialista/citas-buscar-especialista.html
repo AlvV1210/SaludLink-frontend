@@ -1,5 +1,6 @@
 <app-patient-dashboard-shell
   activeItem="citas"
+  [userFirstName]="userFirstName()"
   (dashboard)="goDashboard()"
   (citas)="goCitas()"
   (recordatorios)="goRecordatorios()"
@@ -10,13 +11,116 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <h1>Buscar especialista</h1>
-  <p class="subtitle">Filtra por especialidad y disponibilidad</p>
-  <input class="input" value="cardiologia" />
-  <div class="row"><button type="button" class="btn primary">Cardiolog&iacute;a</button><button type="button" class="btn ghost">Pediatr&iacute;a</button><button type="button" class="btn ghost">Dermatolog&iacute;a</button></div>
-  <div class="row"><button type="button" class="btn ghost">Hoy</button><button type="button" class="btn primary">Esta semana</button><button type="button" class="btn ghost">Este mes</button></div>
-  <p class="subtitle">3 resultados encontrados</p>
-  <section class="card item" style="border-color:#10b981;background:#ecfdf5"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a · Cl&iacute;nica San Pablo · 4.9/5</div></div><strong style="color:#0f766e">S/120</strong></section>
-  <section class="card item"><div class="avatar" style="background:#0f7662">CR</div><div><strong>Dr. Carlos Ram&iacute;rez</strong><div class="subtitle">Cardiolog&iacute;a · Hospital Lima · 4.6/5</div></div><strong style="color:#0f766e">S/150</strong></section>
-  <div class="row" style="justify-content:flex-end"><button type="button" class="btn primary" (click)="next()">siguiente</button></div>
+  <div class="page-head">
+    <div>
+      <h1>Buscar especialista</h1>
+      <p class="subtitle">Filtra por especialidad y disponibilidad</p>
+    </div>
+  </div>
+
+  <label class="search-bar">
+    <span class="search-icon" aria-hidden="true"></span>
+    <input
+      type="search"
+      [ngModel]="searchQuery()"
+      (ngModelChange)="onSearchInput($event)"
+      placeholder="Buscar especialidad o medico"
+    />
+  </label>
+
+  <div class="chip-row">
+    @if (specialtyFilter()) {
+      <button type="button" class="filter-chip active" (click)="clearSpecialtyFilter()">
+        {{ specialtyFilter() }} x
+      </button>
+    }
+    @for (specialty of visibleSpecialties(); track specialty) {
+      @if (specialty !== specialtyFilter()) {
+        <button type="button" class="filter-chip" (click)="selectSpecialty(specialty)">
+          {{ specialty }}
+        </button>
+      }
+    }
+    @if (hasMoreSpecialties()) {
+      <button type="button" class="filter-chip" (click)="toggleMoreSpecialties()">
+        {{ showAllSpecialties() ? '- menos' : '+ mas' }}
+      </button>
+    }
+  </div>
+
+  <div class="chip-row">
+    <button
+      type="button"
+      class="filter-chip"
+      [class.active]="timeFilter() === 'hoy'"
+      (click)="selectTimeFilter('hoy')"
+    >
+      Hoy
+    </button>
+    <button
+      type="button"
+      class="filter-chip"
+      [class.active]="timeFilter() === 'semana'"
+      (click)="selectTimeFilter('semana')"
+    >
+      Esta semana
+    </button>
+    <button
+      type="button"
+      class="filter-chip"
+      [class.active]="timeFilter() === 'mes'"
+      (click)="selectTimeFilter('mes')"
+    >
+      Este mes
+    </button>
+  </div>
+
+  @if (errorMessage()) {
+    <p class="form-error">{{ errorMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="results-note">Cargando especialistas...</p>
+  } @else {
+    <p class="results-note">
+      {{ filteredDoctors().length }}
+      {{ filteredDoctors().length === 1 ? 'resultado encontrado' : 'resultados encontrados' }}
+    </p>
+
+    @if (filteredDoctors().length === 0) {
+      <p class="empty-note">No hay especialistas que coincidan con tu busqueda.</p>
+    } @else {
+      <div class="doctor-list">
+        @for (doctor of filteredDoctors(); track doctor.id) {
+          <button
+            type="button"
+            class="doctor-card"
+            [class.selected]="selectedDoctorId() === doctor.id"
+            (click)="selectDoctorCard(doctor)"
+          >
+            <div class="doctor-avatar" [class]="avatarTone(doctor)">{{ doctorInitials(doctor) }}</div>
+            <div class="doctor-info">
+              <strong>{{ doctorName(doctor) }}</strong>
+              <span>{{ doctor.specialty }} - {{ doctorLocation(doctor) }}</span>
+            </div>
+            <div class="doctor-meta">
+              <strong>{{ formatFee(doctor) }}</strong>
+            </div>
+          </button>
+        }
+      </div>
+    }
+  }
+
+  <div class="actions-row">
+    <button type="button" class="btn-ghost" (click)="back()">Volver</button>
+    <button
+      type="button"
+      class="btn-primary"
+      [disabled]="!selectedDoctor()"
+      (click)="continueBooking()"
+    >
+      Siguiente
+    </button>
+  </div>
 </app-patient-dashboard-shell>

@@ -1,5 +1,6 @@
 <app-patient-dashboard-shell
   activeItem="citas"
+  [userFirstName]="userFirstName()"
   (dashboard)="goDashboard()"
   (citas)="goCitas()"
   (recordatorios)="goRecordatorios()"
@@ -10,16 +11,69 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <h1>Resumen de tu cita</h1>
-  <p class="subtitle">Revisa los detalles antes de pagar</p>
-  <section class="card item" style="background:#ecfdf5;border-color:#a7f3d0"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez</strong><div class="subtitle">Cardiolog&iacute;a - Colegiatura CMP 045678</div></div></section>
-  <section class="card">
-    <div class="row" style="justify-content:space-between"><span>Fecha</span><strong>Mi&eacute;rcoles 7 de mayo, 2026</strong></div>
-    <div class="row" style="justify-content:space-between"><span>Hora</span><strong>10:00 AM (30 min)</strong></div>
-    <div class="row" style="justify-content:space-between"><span>Lugar</span><strong>Cl&iacute;nica San Pablo - Sede J. Mar&iacute;a</strong></div>
-    <div class="row" style="justify-content:space-between"><span>Para</span><strong>Lupe Ruben (titular)</strong></div>
-    <div class="row" style="justify-content:space-between"><span>Tipo</span><strong>Consulta presencial</strong></div>
+  <div class="page-head">
+    <div>
+      <h1>Resumen de tu cita</h1>
+      <p class="subtitle">Revisa los detalles antes de pagar</p>
+    </div>
+  </div>
+
+  @if (draft().doctor; as doctor) {
+    <div class="doctor-highlight">
+      <div class="doctor-avatar" [class]="avatarTone(doctor)">
+        {{ doctorInitials(doctor) }}
+      </div>
+      <div class="doctor-highlight-info">
+        <strong>{{ doctorName(doctor) }}</strong>
+        <span>{{ doctorSubtitle(doctor) }}</span>
+      </div>
+    </div>
+  }
+
+  <section class="summary-card">
+    <div class="summary-row">
+      <span class="summary-label">Fecha</span>
+      <strong>{{ dateLabel() }}</strong>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Hora</span>
+      <strong>{{ timeLabel() }}</strong>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Lugar</span>
+      <strong>{{ locationLabel() }}</strong>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Para</span>
+      <strong>{{ patientLabel() }}</strong>
+    </div>
+    <div class="summary-row summary-row-last">
+      <span class="summary-label">Tipo</span>
+      <strong>{{ modalityLabel() }}</strong>
+    </div>
   </section>
-  <section class="card"><div class="row" style="justify-content:space-between"><span>Consulta</span><strong>S/ 120.00</strong></div><div class="row" style="justify-content:space-between"><strong>Total a pagar</strong><strong style="color:#059669;font-size:1.5rem">S/ 120.00</strong></div></section>
-  <div class="row"><button type="button" class="btn ghost" (click)="back()">Modificar</button><button type="button" class="btn primary" (click)="pay()">Pagar S/120</button></div>
+
+  <section class="summary-card pricing-card">
+    <div class="summary-row">
+      <span class="summary-label">Consulta</span>
+      <strong>{{ feeLabel() }}</strong>
+    </div>
+    <div class="summary-row summary-row-total">
+      <span class="summary-label">Total a pagar</span>
+      <strong class="total-amount">{{ feeLabel() }}</strong>
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="form-error">{{ errorMessage() }}</p>
+  }
+
+  <div class="actions-row">
+    <button type="button" class="btn-ghost" (click)="back()" [disabled]="loading()">
+      Modificar
+    </button>
+    <button type="button" class="btn-primary pay-btn" (click)="pay()" [disabled]="loading()">
+      {{ loading() ? 'Procesando...' : payLabel() }}
+    </button>
+  </div>
 </app-patient-dashboard-shell>

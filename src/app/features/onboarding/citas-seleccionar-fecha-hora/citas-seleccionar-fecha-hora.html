@@ -1,5 +1,6 @@
 <app-patient-dashboard-shell
   activeItem="citas"
+  [userFirstName]="userFirstName()"
   (dashboard)="goDashboard()"
   (citas)="goCitas()"
   (recordatorios)="goRecordatorios()"
@@ -10,11 +11,73 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <h1>Seleccionar Fecha y Hora</h1>
-  <section class="card item"><div class="avatar">JP</div><div><strong>Dr. Juan P&eacute;rez - Cardiolog&iacute;a</strong><div class="subtitle">Cl&iacute;nica San Pablo - S/120</div></div></section>
-  <h3>Mayo 2026</h3>
-  <div class="grid-3"><button class="btn ghost" type="button">6</button><button class="btn primary" type="button">7</button><button class="btn ghost" type="button">8</button></div>
-  <h3>Horarios mi&eacute;rcoles 7</h3>
-  <div class="grid-3"><button class="btn ghost" type="button">8:00</button><button class="btn ghost" type="button">9:00</button><button class="btn primary" type="button">10:00</button><button class="btn ghost" type="button">11:00</button><button class="btn ghost" type="button">16:00</button><button class="btn ghost" type="button">18:00</button></div>
-  <div class="row"><button type="button" class="btn ghost" (click)="back()">Volver</button><button type="button" class="btn primary" (click)="confirm()">Confirmar 7 may - 10:00</button></div>
+  @if (doctor(); as selectedDoctor) {
+    <div class="doctor-summary">
+      <div class="doctor-avatar" [class]="avatarTone(selectedDoctor)">
+        {{ doctorInitials(selectedDoctor) }}
+      </div>
+      <div class="doctor-summary-info">
+        <strong>{{ doctorName(selectedDoctor) }} - {{ selectedDoctor.specialty }}</strong>
+        <span>{{ doctorLocation(selectedDoctor) }} - {{ formatFee(selectedDoctor) }}</span>
+      </div>
+    </div>
+  }
+
+  <div class="calendar-head">
+    <h2>{{ monthLabel() }}</h2>
+    <div class="calendar-nav">
+      <button type="button" class="nav-btn" (click)="prevMonth()" aria-label="Mes anterior">‹</button>
+      <button type="button" class="nav-btn" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+    </div>
+  </div>
+
+  <div class="calendar-grid">
+    @for (header of weekdayHeaders; track header) {
+      <span class="calendar-weekday">{{ header }}</span>
+    }
+    @for (cell of calendarCells(); track cell.date.getTime()) {
+      <button
+        type="button"
+        class="calendar-day"
+        [class.muted]="!cell.inCurrentMonth || cell.isPast"
+        [class.available]="cell.inCurrentMonth && !cell.isPast"
+        [class.selected]="cell.isSelected"
+        [disabled]="!cell.inCurrentMonth || cell.isPast"
+        (click)="selectDate(cell)"
+      >
+        {{ cell.day }}
+      </button>
+    }
+  </div>
+
+  <h3 class="slots-heading">{{ slotsHeading() }}</h3>
+
+  @if (!selectedDate()) {
+    <p class="slots-note">Selecciona un dia en el calendario para ver horarios.</p>
+  } @else {
+    <div class="slot-grid">
+      @for (slot of timeSlots; track slot) {
+        <button
+          type="button"
+          class="slot-btn"
+          [class.selected]="selectedTime() === slot"
+          (click)="selectTimeSlot(slot)"
+        >
+          {{ formatSlotLabel(slot) }}
+        </button>
+      }
+    </div>
+  }
+
+  <div class="actions-stack">
+    <button type="button" class="btn-ghost back-btn" (click)="back()">Volver</button>
+    <button
+      type="button"
+      class="btn-primary confirm-btn"
+      [disabled]="!canConfirm()"
+      (click)="confirm()"
+    >
+      {{ confirmLabel() }}
+    </button>
+  </div>
 </app-patient-dashboard-shell>

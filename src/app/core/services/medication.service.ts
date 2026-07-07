@@ -2,22 +2,37 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, switchMap, throwError } from 'rxjs';
 
-import { API_BASE_URL } from '../constants/api.constants';
-import { Medication, MedicationRequest } from '../models/medication.model';
+import { environment } from '../../../environments/environment';
+import { Medication, MedicationRequest } from '../../shared/models/medication.model';
 import { PatientService } from './patient.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface MedicationReminder {
+  id: number;
+  medicationId: number;
+  scheduledTime: string;
+  reminderDate: string;
+  taken: boolean;
+  takenAt?: string;
+  status?: string;
+}
+
+export interface CreateMedicationReminderRequest {
+  scheduledTime: string;
+  reminderDate: string;
+}
+
+@Injectable({ providedIn: 'root' })
 export class MedicationService {
   private readonly http = inject(HttpClient);
   private readonly patientService = inject(PatientService);
-
-  private readonly medicationApiUrl = `${API_BASE_URL}/medications`;
+  private readonly base = `${environment.apiUrl}/medications`;
 
   getMedicationsByPatient(patientId?: number): Observable<Medication[]> {
+    const load = (id: number) =>
+      this.http.get<Medication[]>(`${this.base}/patient/${id}`);
+
     if (patientId) {
-      return this.http.get<Medication[]>(`${this.medicationApiUrl}/patient/${patientId}`);
+      return load(patientId);
     }
 
     return this.patientService.getMyProfile().pipe(
@@ -26,15 +41,16 @@ export class MedicationService {
         if (!id) {
           return throwError(() => new Error('No se encontró el ID del paciente.'));
         }
-
-        return this.http.get<Medication[]>(`${this.medicationApiUrl}/patient/${id}`);
-      })
+        return load(id);
+      }),
     );
   }
 
   addMedication(body: MedicationRequest, patientId?: number): Observable<Medication> {
+    const create = (id: number) => this.http.post<Medication>(`${this.base}/${id}`, body);
+
     if (patientId) {
-      return this.http.post<Medication>(`${this.medicationApiUrl}/${patientId}`, body);
+      return create(patientId);
     }
 
     return this.patientService.getMyProfile().pipe(
@@ -43,13 +59,30 @@ export class MedicationService {
         if (!id) {
           return throwError(() => new Error('No se encontró el ID del paciente.'));
         }
-
-        return this.http.post<Medication>(`${this.medicationApiUrl}/${id}`, body);
-      })
+        return create(id);
+      }),
     );
   }
 
   deactivateMedication(id: number): Observable<Medication> {
-    return this.http.put<Medication>(`${this.medicationApiUrl}/${id}/deactivate`, {});
+    return this.http.put<Medication>(`${this.base}/${id}/deactivate`, {});
+  }
+
+  getReminders(medicationId: number): Observable<MedicationReminder[]> {
+    return this.http.get<MedicationReminder[]>(`${this.base}/${medicationId}/reminders`);
+  }
+
+  createReminder(
+    medicationId: number,
+    body: CreateMedicationReminderRequest,
+  ): Observable<MedicationReminder> {
+    return this.http.post<MedicationReminder>(`${this.base}/${medicationId}/reminders`, body);
+  }
+
+  markReminderTaken(reminderId: number): Observable<MedicationReminder> {
+    return this.http.patch<MedicationReminder>(
+      `${environment.apiUrl}/medication-reminders/${reminderId}/taken`,
+      {},
+    );
   }
 }

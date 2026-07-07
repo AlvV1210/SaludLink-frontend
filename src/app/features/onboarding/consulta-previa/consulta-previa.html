@@ -1,14 +1,14 @@
 <app-patient-dashboard-shell
-  activeItem="recordatorios"
-  (dashboard)="goDashboard()"
-  (citas)="goCitas()"
-  (recordatorios)="goRecordatorios()"
-  (historial)="goHistorial()"
-  (mental)="goMental()"
-  (perfil)="goPerfil()"
-  (planes)="goPlanes()"
-  (config)="goConfig()"
-  (logout)="logout()"
+  activeItem="citas"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
 >
   <section class="page">
     <header>

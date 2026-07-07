@@ -1,0 +1,157 @@
+:host {
+  display: block;
+}
+
+.export-page {
+  max-width: 560px;
+}
+
+.export-page.center {
+  text-align: center;
+  padding-top: 2rem;
+}
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+
+.card h2 {
+  margin: 0 0 0.65rem;
+  font-size: 0.88rem;
+  color: #1f2937;
+}
+
+.date-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.field input {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  font-size: 0.82rem;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.35rem 0;
+  font-size: 0.82rem;
+  color: #374151;
+}
+
+.form-error {
+  color: #dc2626;
+  font-size: 0.78rem;
+}
+
+.actions-row {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.center-actions {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  margin: 1rem auto;
+  max-width: 320px;
+  overflow: hidden;
+}
+
+.progress-bar i {
+  display: block;
+  height: 100%;
+  background: #10b981;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 1rem;
+  border: 3px solid #d1fae5;
+  border-top-color: #10b981;
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+.success-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 0.85rem;
+  border-radius: 999px;
+  background: #d1fae5;
+  color: #059669;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.code-card {
+  margin: 1rem auto;
+  max-width: 320px;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #ecfdf5;
+}
+
+.code-card span {
+  display: block;
+  font-size: 0.72rem;
+  color: #047857;
+}
+
+.code-card strong {
+  display: block;
+  margin: 0.25rem 0;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: #065f46;
+}
+
+.code-card p {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #047857;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 560px) {
+  .date-row {
+    grid-template-columns: 1fr;
+  }
+}

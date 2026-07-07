@@ -1,0 +1,46 @@
+<app-patient-dashboard-shell
+  activeItem="planes"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  <header class="page-head">
+    <div>
+      <h1>Planes SaludLink</h1>
+      <p class="subtitle">Elige el plan que mejor se adapte a tu cuidado</p>
+    </div>
+  </header>
+
+  @if (toast()) {
+    <p class="toast">{{ toast() }}</p>
+  }
+
+  <div class="plan-grid">
+    @for (plan of plans; track plan.id) {
+      <article class="plan-card" [class.highlighted]="plan.highlighted" [class.selected]="selectedPlanId() === plan.id">
+        @if (plan.highlighted) {
+          <span class="plan-badge">Recomendado</span>
+        }
+        <h2>{{ plan.name }}</h2>
+        <p class="price">
+          {{ plan.price }}<small>{{ plan.period }}</small>
+        </p>
+        <p class="desc">{{ plan.description }}</p>
+        <ul>
+          @for (feature of plan.features; track feature) {
+            <li>{{ feature }}</li>
+          }
+        </ul>
+        <button type="button" class="btn-primary" (click)="activatePlan(plan)">{{ plan.cta }}</button>
+        <button type="button" class="btn-ghost select-btn" (click)="selectPlan(plan.id)">Ver detalle</button>
+      </article>
+    }
+  </div>
+</app-patient-dashboard-shell>

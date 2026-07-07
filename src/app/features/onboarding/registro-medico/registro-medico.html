@@ -61,6 +61,17 @@
 
       <div class="grid one">
         <label>
+          Tarifa de consulta (S/)
+          <input type="number" min="1" step="1" formControlName="consultationFee" placeholder="150" />
+        </label>
+      </div>
+
+      @if (form.controls.consultationFee.invalid && form.controls.consultationFee.touched) {
+        <p class="error">Ingresa una tarifa valida mayor a cero.</p>
+      }
+
+      <div class="grid one">
+        <label>
           Correo profesional
           <input type="email" formControlName="email" placeholder="dr.jperez@saludlink.pe" />
         </label>
@@ -79,52 +90,6 @@
 
       @if (form.controls.phone.invalid && form.controls.phone.touched) {
         <p class="error">Ingresa un teléfono válido.</p>
-      }
-
-      <div class="grid two">
-        <label>
-          Clínica donde laboras
-          <select formControlName="clinicId">
-            <option [ngValue]="0">
-              {{ loadingClinics() ? 'Cargando clínicas...' : 'Seleccione una clínica' }}
-            </option>
-
-            @for (clinic of clinics(); track clinic.id) {
-              <option [ngValue]="clinic.id">
-                {{ clinic.businessName }}
-              </option>
-            }
-          </select>
-        </label>
-
-        <label>
-          Sede donde laboras
-          <select formControlName="branchId">
-            <option [ngValue]="0">
-              {{ loadingBranches() ? 'Cargando sedes...' : 'Seleccione una sede' }}
-            </option>
-
-            @for (branch of branches(); track branch.id) {
-              <option [ngValue]="branch.id">
-                {{ branch.name }}
-              </option>
-            }
-          </select>
-        </label>
-      </div>
-
-      @if (form.controls.clinicId.invalid && form.controls.clinicId.touched) {
-        <p class="error">Selecciona la clínica donde laboras.</p>
-      }
-
-      @if (form.controls.branchId.invalid && form.controls.branchId.touched) {
-        <p class="error">Selecciona la sede donde laboras.</p>
-      }
-
-      @if (!loadingClinics() && clinics().length === 0) {
-        <p class="error">
-          No hay clínicas registradas en SaludLink. Primero debe registrarse una institución.
-        </p>
       }
 
       <div class="grid two">
@@ -163,7 +128,7 @@
       <button
         type="submit"
         class="submit"
-        [disabled]="loading() || loadingClinics() || clinics().length === 0"
+        [disabled]="loading()"
       >
         {{ loading() ? 'Creando cuenta...' : 'Crear cuenta profesional' }}
       </button>

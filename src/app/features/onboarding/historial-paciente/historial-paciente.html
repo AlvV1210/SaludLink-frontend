@@ -1,0 +1,50 @@
+<app-patient-dashboard-shell
+  activeItem="historial"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  <header class="page-head">
+    <div>
+      <h1>Historial clinico</h1>
+      <p class="subtitle">Consultas, recetas y documentos medicos</p>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="btn-outline" (click)="uploadDocument()">Subir documento</button>
+      <button type="button" class="btn-primary" (click)="exportHistory()">Exportar PDF</button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <p class="status-note">Cargando historial...</p>
+  } @else if (errorMessage()) {
+    <p class="form-error">{{ errorMessage() }}</p>
+  } @else if (documents().length === 0) {
+    <article class="empty-card">
+      <strong>Sin documentos aun</strong>
+      <p>Tras tus consultas veras recetas, indicaciones y resultados aqui.</p>
+      <button type="button" class="btn-outline" (click)="uploadDocument()">Subir documento</button>
+      <button type="button" class="btn-outline" (click)="exportHistory()">Exportar historial completo</button>
+    </article>
+  } @else {
+    <div class="doc-list">
+      @for (doc of documents(); track doc.id) {
+        <article class="doc-card">
+          <div class="doc-icon" aria-hidden="true">PDF</div>
+          <div class="doc-copy">
+            <strong>{{ docLabel(doc) }}</strong>
+            <span>{{ doc.uploadedAt || '—' }}</span>
+          </div>
+          <span class="status-pill">{{ doc.documentType || 'Documento' }}</span>
+        </article>
+      }
+    </div>
+  }
+</app-patient-dashboard-shell>

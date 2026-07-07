@@ -1,0 +1,83 @@
+<nav class="config-nav">
+  <a routerLink="/admin/config" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">General</a>
+  <a routerLink="/admin/config/actividad" routerLinkActive="active">Actividad</a>
+  <a routerLink="/admin/config/mi-clinica" routerLinkActive="active">Mi clínica</a>
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>Configuración general</h1>
+    <p class="subtitle">Políticas operativas de la clínica</p>
+  </div>
+</div>
+
+<section class="policy-section">
+  <h2 class="section-title">Políticas de citas</h2>
+  @for (item of appointmentPolicies(); track item.id) {
+    <article class="policy-row">
+      <div class="policy-copy">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.description }}</p>
+      </div>
+      <button
+        type="button"
+        class="toggle"
+        [class.on]="item.enabled"
+        [attr.aria-pressed]="item.enabled"
+        [attr.aria-label]="item.title"
+        (click)="toggle('appointment', item.id)"
+      >
+        <span class="toggle-knob"></span>
+      </button>
+    </article>
+  }
+</section>
+
+<section class="policy-section">
+  <h2 class="section-title">Telemedicina</h2>
+  @for (item of telemedicinePolicies(); track item.id) {
+    <article class="policy-row">
+      <div class="policy-copy">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.description }}</p>
+      </div>
+      <button
+        type="button"
+        class="toggle"
+        [class.on]="item.enabled"
+        [attr.aria-pressed]="item.enabled"
+        [attr.aria-label]="item.title"
+        (click)="toggle('telemed', item.id)"
+      >
+        <span class="toggle-knob"></span>
+      </button>
+    </article>
+  }
+</section>
+
+<section class="policy-section">
+  <h2 class="section-title">Notificaciones admin</h2>
+  @for (item of notificationPolicies(); track item.id) {
+    <article class="policy-row">
+      <div class="policy-copy">
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.description }}</p>
+      </div>
+      <button
+        type="button"
+        class="toggle"
+        [class.on]="item.enabled"
+        [attr.aria-pressed]="item.enabled"
+        [attr.aria-label]="item.title"
+        (click)="toggle('notification', item.id)"
+      >
+        <span class="toggle-knob"></span>
+      </button>
+    </article>
+  }
+</section>
+
+<button type="button" class="btn-save" (click)="save()">Guardar cambios ✓</button>
+@if (saved()) {
+  <p class="saved-note">Preferencias guardadas correctamente.</p>
+}

@@ -52,7 +52,7 @@ h1 {
   line-height: 1.15;
 }
 
-p {
+.left-pane p {
   max-width: 32ch;
   line-height: 1.5;
 }
@@ -111,6 +111,27 @@ h2 {
   font-size: clamp(1.45rem, 1.2rem + 0.8vw, 2rem);
 }
 
+form {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.ruc-summary {
+  border: 1px solid #34d399;
+  background: #d1fae5;
+  color: #065f46;
+  border-radius: 10px;
+  padding: 0.8rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.step-note {
+  margin: -0.35rem 0 0;
+  color: #6b7280;
+  max-width: none;
+}
+
 .grid {
   display: grid;
   gap: 0.7rem;
@@ -145,6 +166,8 @@ input:focus {
 }
 
 .submit {
+  display: block;
+  width: 100%;
   margin-top: 0.35rem;
   border: 0;
   border-radius: 12px;
@@ -154,6 +177,21 @@ input:focus {
   font-weight: 700;
   padding: 0.78rem 1rem;
   cursor: pointer;
+}
+
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-weight: 500;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.check input {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  accent-color: #10b981;
 }
 
 @media (max-width: 900px) {
@@ -178,8 +216,14 @@ input:focus {
 .actions {
   display: flex;
   gap: 1rem;
-  align-items: center;
+  align-items: stretch;
   margin-top: 0.5rem;
+}
+
+.actions .submit {
+  margin-top: 0;
+  flex: 1;
+  width: auto;
 }
 
 .submit.secondary {
@@ -203,6 +247,10 @@ input:focus {
   border: 0;
   background: transparent;
   color: #0f766e;
+  font: inherit;
   font-weight: 700;
   cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }

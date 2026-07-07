@@ -1,0 +1,75 @@
+<div class="page-head">
+  <div>
+    <h1>Reporte de Asistencia y No-shows</h1>
+    <p class="subtitle">Configura los parámetros</p>
+  </div>
+</div>
+
+<section class="form-section">
+  <h2>Rango de fechas</h2>
+  <div class="form-row">
+    <div class="field">
+      <label for="report-from">Desde</label>
+      <input id="report-from" type="date" [(ngModel)]="reportFrom" />
+    </div>
+    <div class="field">
+      <label for="report-to">Hasta</label>
+      <input id="report-to" type="date" [(ngModel)]="reportTo" />
+    </div>
+  </div>
+</section>
+
+<section class="form-section">
+  <h2>Agrupar por</h2>
+  <div class="form-row">
+    <div class="field">
+      <label for="dimension">Dimensión</label>
+      <select id="dimension" [(ngModel)]="dimension">
+        <option value="doctor">Médico</option>
+        <option value="specialty">Especialidad</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="specialty">Especialidad</label>
+      <select id="specialty" [(ngModel)]="specialtyFilter">
+        @for (specialty of specialtyOptions(); track specialty) {
+          <option [value]="specialty">{{ specialty }}</option>
+        }
+      </select>
+    </div>
+  </div>
+</section>
+
+<section class="form-section">
+  <h2>Métricas a incluir</h2>
+  <div class="metrics-grid">
+    @for (metric of metricOptions; track metric.id) {
+      <button
+        type="button"
+        class="metric-chip"
+        [class.selected]="isMetricSelected(metric.id)"
+        (click)="toggleMetric(metric.id)"
+      >
+        <span class="check-box" [class.on]="isMetricSelected(metric.id)"></span>
+        <span>{{ metric.label }}</span>
+      </button>
+    }
+  </div>
+</section>
+
+<article class="preview-card">
+  <span class="preview-icon">📊</span>
+  <div>
+    <strong>Vista previa: {{ doctorCount() }} médico{{ doctorCount() === 1 ? '' : 's' }} · Mes de {{ previewPeriodLabel() | titlecase }}</strong>
+    <p>Gráficos comparativos + tabla detallada</p>
+  </div>
+</article>
+
+@if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+}
+
+<div class="actions">
+  <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+  <button type="button" class="btn-submit" (click)="submitReport()">📊 Generar reporte →</button>
+</div>

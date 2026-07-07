@@ -1,7 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+
 import { AuthService } from '../../../core/services/auth.service';
-import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shell/patient-dashboard-shell';
+import { PatientShellNav } from '../../../core/navigation/patient-shell-nav';
+import { PatientDashboardShellComponent } from '../../../shared/components/patient-dashboard-shell/patient-dashboard-shell';
 
 @Component({
   selector: 'app-consulta-previa',
@@ -11,24 +13,20 @@ import { PatientDashboardShellComponent } from '../shared/patient-dashboard-shel
 })
 export class ConsultaPreviaComponent {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
-
-  protected goDashboard(): void { void this.router.navigate(['/paciente/dashboard']); }
-  protected goCitas(): void { void this.router.navigate(['/paciente/citas']); }
-  protected goRecordatorios(): void { void this.router.navigate(['/paciente/recordatorios']); }
-  protected goHistorial(): void { void this.router.navigate(['/perfilsalud']); }
-  protected goMental(): void { void this.router.navigate(['/contact']); }
-  protected goPlanes(): void { void this.router.navigate(['/contact']); }
-  protected goPerfil(): void { void this.router.navigate(['/paciente/dashboard']); }
-  protected goConfig(): void { void this.router.navigate(['/contact']); }
+  protected readonly shellNav = inject(PatientShellNav);
 
   protected joinMeet(): void {
-    window.open('https://meet.google.com/abc-defg-hij', '_blank', 'noopener,noreferrer');
-    void this.router.navigate(['/paciente/consulta/videollamada']);
+    const appointmentId = Number(this.route.snapshot.queryParamMap.get('appointmentId') ?? '1');
+    void this.router.navigate(['/paciente/consulta/videollamada'], {
+      queryParams: { appointmentId: Number.isFinite(appointmentId) ? appointmentId : 1 },
+    });
   }
 
-  protected logout(): void {
-    this.auth.logout();
-    void this.router.navigate(['/bienvenidacuenta']);
+  protected goFinalizadaDemo(): void {
+    void this.router.navigate(['/paciente/consulta/finalizada'], {
+      queryParams: { appointmentId: this.route.snapshot.queryParamMap.get('appointmentId') ?? 1 },
+    });
   }
 }

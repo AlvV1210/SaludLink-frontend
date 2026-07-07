@@ -31,7 +31,7 @@ import { finalize, map } from 'rxjs';
 import {
   Appointment,
   AppointmentStatus,
-} from '../../../core/models/appointment.model';
+} from '../../../shared/models/appointment.model';
 import { AppointmentService } from '../../../core/services/appointment.service';
 
 @Component({
@@ -122,24 +122,28 @@ export class AppointmentsListComponent implements OnInit {
     return value ?? '—';
   }
 
-  protected statusLabel(status: AppointmentStatus): string {
-    const labels: Record<AppointmentStatus, string> = {
+  protected statusLabel(status: AppointmentStatus | string): string {
+    const labels: Record<string, string> = {
+      [AppointmentStatus.SCHEDULED]: 'Programada',
       [AppointmentStatus.PENDING]: 'Pendiente',
       [AppointmentStatus.CONFIRMED]: 'Confirmada',
       [AppointmentStatus.CANCELLED]: 'Cancelada',
       [AppointmentStatus.COMPLETED]: 'Completada',
+      [AppointmentStatus.NO_SHOW]: 'No asistió',
     };
-    return labels[status] ?? status;
+    return labels[String(status)] ?? String(status);
   }
 
-  protected statusChipClass(status: AppointmentStatus): string {
-    const mapStyle: Record<AppointmentStatus, string> = {
+  protected statusChipClass(status: AppointmentStatus | string): string {
+    const mapStyle: Record<string, string> = {
+      [AppointmentStatus.SCHEDULED]: 'status-pending',
       [AppointmentStatus.PENDING]: 'status-pending',
       [AppointmentStatus.CONFIRMED]: 'status-confirmed',
       [AppointmentStatus.CANCELLED]: 'status-cancelled',
       [AppointmentStatus.COMPLETED]: 'status-completed',
+      [AppointmentStatus.NO_SHOW]: 'status-cancelled',
     };
-    return mapStyle[status] ?? '';
+    return mapStyle[String(status)] ?? '';
   }
 
   protected cancel(appointment: Appointment, event: Event): void {

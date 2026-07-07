@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div>
+    <h1>Reportes y Analítica</h1>
+    <p class="subtitle">Métricas operativas e institucionales</p>
+  </div>
+</div>
+
+<div class="metric-grid">
+  <article class="metric-card accent-left">
+    <span class="metric-label">Asistencia</span>
+    <strong class="metric-value good">{{ attendanceRate() }}%</strong>
+    <span class="metric-hint accent">{{ periodLabel() | titlecase }}</span>
+  </article>
+  <article class="metric-card accent-left">
+    <span class="metric-label">No-shows</span>
+    <strong class="metric-value warn">{{ noShowRate() }}%</strong>
+    <span class="metric-hint accent">{{ noShowDeltaLabel() }}</span>
+  </article>
+  <article class="metric-card accent-left">
+    <span class="metric-label">Cancelaciones</span>
+    <strong class="metric-value">{{ cancellationRate() }}%</strong>
+    <span class="metric-hint accent">{{ cancellationHint() }}</span>
+  </article>
+</div>
+
+<h2 class="section-title">Reportes disponibles</h2>
+
+@if (loading()) {
+  <p class="loading-note">Cargando métricas...</p>
+}
+
+@for (item of catalog; track item.id) {
+  <article class="report-row">
+    <div class="report-icon">{{ item.icon }}</div>
+    <div class="report-info">
+      <strong>{{ item.title }}</strong>
+      <p>{{ item.description }}</p>
+    </div>
+    <button
+      type="button"
+      class="btn-generate"
+      [class.primary]="item.primary"
+      [disabled]="loading()"
+      (click)="generateReport(item)"
+    >
+      {{ item.primary ? 'Generar →' : 'Generar' }}
+    </button>
+  </article>
+}
+
+@if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+}
+
+@if (uiMessage()) {
+  <p class="ui-message">{{ uiMessage() }}</p>
+}
+
+<p class="footnote">📁 Reportes generados se guardan 90 días</p>

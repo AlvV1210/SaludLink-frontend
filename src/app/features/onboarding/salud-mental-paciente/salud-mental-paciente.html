@@ -1,0 +1,121 @@
+<app-patient-dashboard-shell
+  activeItem="mental"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  @if (view() === 'intro') {
+    <section class="mental-page">
+      <header class="page-head">
+        <div>
+          <h1>Salud mental</h1>
+          <p class="subtitle">Evaluacion PHQ-9 y recursos de bienestar emocional</p>
+        </div>
+      </header>
+
+      <article class="hero-card">
+        <strong>Test de bienestar emocional</strong>
+        <p>9 preguntas · 3 min · confidencial</p>
+        <ul>
+          <li>Detecta sintomas de animo y estres</li>
+          <li>Recibe recomendaciones personalizadas</li>
+          <li>Agenda psicologia si lo necesitas</li>
+        </ul>
+        <button type="button" class="btn-primary" (click)="beginTest()">Empezar evaluacion</button>
+      </article>
+
+      <article class="resource-card">
+        <strong>Pausa de respiracion guiada</strong>
+        <p>6 min · reduce ansiedad y mejora el enfoque</p>
+      </article>
+    </section>
+  } @else if (view() === 'test') {
+    <section class="mental-page">
+      <header class="test-head">
+        <small>Pregunta {{ questionIndex() + 1 }} de {{ mentalQuestions.length }}</small>
+        <strong>{{ mentalProgress() }}%</strong>
+      </header>
+      <div class="progress-bar"><i [style.width.%]="mentalProgress()"></i></div>
+
+      <p class="prompt">Durante las ultimas 2 semanas, con que frecuencia te ha molestado:</p>
+      <h2>{{ currentQuestion() }}</h2>
+
+      <div class="options">
+        @for (option of mentalAnswerOptions; track option.label) {
+          <label class="option" [class.active]="answers()[questionIndex()] === option.value">
+            <input
+              type="radio"
+              [name]="'q' + questionIndex()"
+              [checked]="answers()[questionIndex()] === option.value"
+              (change)="selectAnswer(option.value)"
+            />
+            <span>{{ option.label }}</span>
+          </label>
+        }
+      </div>
+
+      <div class="actions-row">
+        <button type="button" class="btn-ghost" (click)="previousQuestion()" [disabled]="questionIndex() === 0">
+          ← Anterior
+        </button>
+        <button type="button" class="btn-ghost" (click)="backToIntro()">Salir</button>
+        <button type="button" class="btn-primary" (click)="nextQuestion()" [disabled]="!canContinue()">
+          {{ questionIndex() === mentalQuestions.length - 1 ? 'Ver resultado →' : 'Siguiente →' }}
+        </button>
+      </div>
+    </section>
+  } @else if (result(); as current) {
+    <section class="mental-page">
+      <article class="result-card" [class]="current.level.replace(/\s+/g, '-').toLowerCase()">
+        <span class="badge">Resultado PHQ-9</span>
+        <h1>{{ current.level }}</h1>
+        <p>Puntaje {{ current.score }} · {{ current.dateLabel }}</p>
+        <ul>
+          @for (item of current.highlights; track item) {
+            <li>{{ item }}</li>
+          }
+        </ul>
+      </article>
+
+      <article class="recommend-card ai-wellness-card">
+        <strong>Insight IA de bienestar</strong>
+        @if (wellnessLoading()) {
+          <p>Generando insight...</p>
+        } @else if (wellnessError()) {
+          <p>{{ wellnessError() }}</p>
+        } @else if (wellnessInsight(); as insight) {
+          <p>{{ insight.resumen }}</p>
+          @if (insight.areasDestacadas.length) {
+            <ul>
+              @for (area of insight.areasDestacadas; track area) {
+                <li>{{ area }}</li>
+              }
+            </ul>
+          }
+          <p><strong>Autocuidado:</strong> {{ insight.sugerenciaAutocuidado }}</p>
+          <p class="disclaimer">{{ insight.disclaimer }}</p>
+        }
+      </article>
+
+      @if (!showRecommendations()) {
+        <div class="actions-row">
+          <button type="button" class="btn-ghost" (click)="backToIntro()">Volver al inicio</button>
+          <button type="button" class="btn-primary" (click)="openRecommendations()">Ver recomendaciones</button>
+        </div>
+      } @else {
+        <article class="recommend-card">
+          <strong>Recomendaciones</strong>
+          <p>Mantén rutinas de sueno, actividad fisica ligera y contacto con personas de confianza.</p>
+          <button type="button" class="btn-outline" (click)="schedulePsychology()">Agendar psicologia</button>
+        </article>
+      }
+    </section>
+  }
+</app-patient-dashboard-shell>

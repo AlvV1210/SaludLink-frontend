@@ -552,13 +552,49 @@ label {
 }
 
 input,
-textarea {
+textarea,
+select {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 0.65rem 0.7rem;
   font: inherit;
   background: #ffffff;
+}
+
+.form-error {
+  margin: 0 0 0.75rem;
+  color: #dc2626;
+  font-size: 0.84rem;
+}
+
+.form-success {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem;
+  border-radius: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+
+  strong {
+    color: #047857;
+  }
+
+  p {
+    margin: 0;
+    color: #065f46;
+    font-size: 0.88rem;
+  }
+}
+
+.contact-link {
+  color: #047857;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.contact-link:hover {
+  text-decoration: underline;
 }
 
 textarea {

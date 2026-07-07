@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.success-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: grid;
+  place-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.check-mark {
+  display: block;
+  width: 1.1rem;
+  height: 0.6rem;
+  border-left: 3px solid #059669;
+  border-bottom: 3px solid #059669;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.success-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.success-subtitle {
+  margin: 0 0 0.85rem;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.appointment-card {
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.55rem;
+  border: 1px solid #10b981;
+  border-radius: 8px;
+  background: #d1fae5;
+}
+
+.appointment-card strong {
+  display: block;
+  color: #1f2937;
+  font-size: 0.84rem;
+}
+
+.appointment-card span {
+  display: block;
+  margin-top: 0.15rem;
+  color: #4b5563;
+  font-size: 0.76rem;
+}
+
+.appointment-card .muted {
+  color: #6b7280;
+  font-size: 0.72rem;
+}
+
+.receipt-card {
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.receipt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+}
+
+.receipt-row span {
+  color: #6b7280;
+  font-size: 0.74rem;
+}
+
+.receipt-row strong {
+  color: #1f2937;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: #059669;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-btn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.form-error {
+  width: 100%;
+  margin: 0 0 0.55rem;
+  color: #dc2626;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 720px) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

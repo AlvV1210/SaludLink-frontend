@@ -1,0 +1,41 @@
+<div class="page-head">
+  <div>
+    <h1>{{ monthLabel() | titlecase }}</h1>
+    <p class="subtitle">Vista mensual · Citas institucionales</p>
+  </div>
+  <div class="month-nav">
+    <button type="button" class="btn ghost" (click)="prevMonth()">←</button>
+    <button type="button" class="btn ghost" (click)="nextMonth()">→</button>
+  </div>
+</div>
+
+<section class="calendar card">
+  <div class="weekdays">
+    @for (day of ['L', 'M', 'M', 'J', 'V', 'S', 'D']; track day) {
+      <span>{{ day }}</span>
+    }
+  </div>
+  <div class="grid">
+    @for (cell of calendarCells(); track $index) {
+      <article class="cell" [class.today]="cell.isToday" [class.empty]="cell.day === null">
+        @if (cell.day !== null) {
+          <div class="cell-top">
+            <span>{{ cell.day }}</span>
+            @if (cell.count > 0) {
+              <span class="count">{{ cell.count }}</span>
+            }
+          </div>
+          @if (cell.count === 0) {
+            <small class="empty-day">Sin citas</small>
+          } @else {
+            <small class="tag">Programadas</small>
+          }
+        }
+      </article>
+    }
+  </div>
+</section>
+
+@if (!store.appointments().length) {
+  <p class="empty">Aún no hay citas registradas para los médicos afiliados.</p>
+}

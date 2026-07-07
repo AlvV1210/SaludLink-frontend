@@ -1,0 +1,38 @@
+<section class="welcome-layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <h2>SL MEDICO</h2>
+    </div>
+    <p class="sidebar-note">Cuenta validada correctamente</p>
+    <button type="button" class="logout" (click)="logout()">Cerrar sesion</button>
+  </aside>
+
+  <main class="main">
+    <header class="hero">
+      <span class="badge">Cuenta validada</span>
+      <h1>Bienvenido, Dr. {{ doctorName }}</h1>
+      <p>Tu perfil medico ya esta activo. Desde aqui puedes empezar a atender pacientes en Salud Link.</p>
+    </header>
+
+    <section class="quick-grid">
+      <article class="quick-card">
+        <strong>Mi agenda</strong>
+        <p>Revisa citas programadas y tu calendario semanal.</p>
+        <button type="button" class="btn-primary" (click)="goDashboard('agenda')">Ver agenda</button>
+      </article>
+      <article class="quick-card">
+        <strong>Pacientes</strong>
+        <p>Consulta el listado de pacientes vinculados a tu consulta.</p>
+        <button type="button" class="btn-outline" (click)="goDashboard('pacientes')">Ver pacientes</button>
+      </article>
+      <article class="quick-card">
+        <strong>Disponibilidad</strong>
+        <p>Configura tus horarios y bloques de atencion.</p>
+        <button type="button" class="btn-outline" (click)="goDashboard('horarios')">Configurar horarios</button>
+      </article>
+    </section>
+
+    <button type="button" class="btn-wide" (click)="goDashboard()">Ir a mi panel completo</button>
+  </main>
+</section>

@@ -1,0 +1,64 @@
+<app-patient-dashboard-shell
+  activeItem="config"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <section class="alerts-page">
+    <header class="page-head">
+      <h1>Personalizar alertas</h1>
+      <p class="subtitle">Ajusta sonidos, horarios y avisos de tus recordatorios</p>
+    </header>
+
+    <article class="card">
+      <h2>Sonido de alerta</h2>
+      <div class="chip-row">
+        @for (sound of sounds; track sound) {
+          <button
+            type="button"
+            class="chip"
+            [class.active]="settings.sound === sound"
+            (click)="settings.sound = sound"
+          >
+            {{ sound }}
+          </button>
+        }
+      </div>
+      <label class="field">
+        <span>Volumen ({{ settings.volume }}%)</span>
+        <input type="range" min="0" max="100" [(ngModel)]="settings.volume" />
+      </label>
+    </article>
+
+    <article class="card">
+      <h2>Preferencias</h2>
+      <label class="toggle-row">
+        <span>No molestar (22:00 - 07:00)</span>
+        <input type="checkbox" [(ngModel)]="settings.doNotDisturb" />
+      </label>
+      <label class="toggle-row">
+        <span>Recordatorio matutino</span>
+        <input type="checkbox" [(ngModel)]="settings.morningReminder" />
+      </label>
+      <label class="toggle-row">
+        <span>Recordatorio nocturno</span>
+        <input type="checkbox" [(ngModel)]="settings.eveningReminder" />
+      </label>
+      <label class="toggle-row">
+        <span>Vibracion en movil</span>
+        <input type="checkbox" [(ngModel)]="settings.vibration" />
+      </label>
+    </article>
+
+    <div class="actions">
+      <button type="button" class="btn ghost" (click)="cancel()">Cancelar</button>
+      <button type="button" class="btn primary" (click)="save()">Guardar cambios</button>
+    </div>
+  </section>
+</app-patient-dashboard-shell>

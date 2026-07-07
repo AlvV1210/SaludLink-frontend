@@ -1,0 +1,154 @@
+<div class="page-head">
+  <div>
+    <h1>Vincular medico</h1>
+    <p class="subtitle">Busca por CMP o registra uno nuevo para afiliarlo de inmediato</p>
+  </div>
+</div>
+
+<div class="tabs-row">
+  <button type="button" class="tab-item" [class.active]="mode() === 'buscar'" (click)="setMode('buscar')">
+    Buscar existente
+  </button>
+  <button type="button" class="tab-item" [class.active]="mode() === 'invitar'" (click)="setMode('invitar')">
+    Invitar nuevo
+  </button>
+</div>
+
+@if (mode() === 'buscar') {
+  <div class="field">
+    <label for="doctor-search">Buscar por colegiatura (CMP) o nombre</label>
+    <div class="search-wrap">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input
+        id="doctor-search"
+        class="search-input"
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearchInput($event)"
+        placeholder="CMP 049012"
+        autocomplete="off"
+      />
+    </div>
+  </div>
+
+  @if (searching()) {
+    <p class="hint">Cargando directorio de médicos...</p>
+  } @else if (searchQuery().trim().length >= 2 && !searchResults().length) {
+    <article class="result-card empty">
+      <p>No se encontraron médicos verificados con ese criterio.</p>
+    </article>
+  } @else {
+    @for (doctor of searchResults(); track doctor.id) {
+      <article
+        class="result-card"
+        [class.selected]="selectedDoctor()?.id === doctor.id"
+        (click)="selectDoctor(doctor)"
+      >
+        <div class="avatar" [class]="avatarTone(doctor)">{{ initials(doctor) }}</div>
+        <div class="doctor-info">
+          <strong>{{ doctorLabel(doctor) }}</strong>
+          <p>{{ doctorSummary(doctor) }}</p>
+          @if (doctor.verified) {
+            <span class="verified">✓ Credenciales validadas en SaludLink</span>
+          }
+        </div>
+      </article>
+    }
+  }
+} @else {
+  <section class="form-section">
+    <h2>Datos del médico</h2>
+    <div class="form-row">
+      <div class="field">
+        <label for="firstName">Nombres</label>
+        <input id="firstName" type="text" [(ngModel)]="form.firstName" placeholder="Carlos" />
+      </div>
+      <div class="field">
+        <label for="lastName">Apellidos</label>
+        <input id="lastName" type="text" [(ngModel)]="form.lastName" placeholder="Ramírez Quispe" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="specialty">Especialidad</label>
+        <input id="specialty" type="text" [(ngModel)]="form.specialty" placeholder="Cardiología" />
+      </div>
+      <div class="field">
+        <label for="licenseNumber">CMP</label>
+        <input id="licenseNumber" type="text" [(ngModel)]="form.licenseNumber" placeholder="049012" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="email">Correo</label>
+        <input id="email" type="email" [(ngModel)]="form.email" placeholder="medico@clinica.pe" />
+      </div>
+      <div class="field">
+        <label for="phone">Teléfono</label>
+        <input id="phone" type="tel" [(ngModel)]="form.phone" placeholder="+51 999 888 777" />
+      </div>
+    </div>
+    <div class="field">
+      <label for="password">Contraseña temporal</label>
+      <input id="password" type="password" [(ngModel)]="form.password" placeholder="Mínimo 6 caracteres" />
+    </div>
+    <div class="field">
+      <label for="biography">Biografía</label>
+      <textarea id="biography" rows="3" [(ngModel)]="form.biography" placeholder="Experiencia profesional"></textarea>
+    </div>
+  </section>
+}
+
+@if (mode() === 'buscar' && selectedDoctor()) {
+  <p class="hint info">
+    La vinculacion es inmediata: el medico queda afiliado a tu institucion sin paso de aceptacion por correo.
+  </p>
+}
+
+@if (mode() === 'invitar' || selectedDoctor()) {
+  <section class="affiliation-section">
+    <h2>Datos de afiliación</h2>
+    <div class="form-row">
+      <div class="field">
+        <label for="contractType">Tipo de contrato</label>
+        <select id="contractType" [(ngModel)]="affiliation.contractType">
+          @for (type of contractTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="startDate">Fecha inicio</label>
+        <input id="startDate" type="date" [(ngModel)]="affiliation.startDate" />
+      </div>
+    </div>
+    <div class="form-row single">
+      <div class="field">
+        <label for="consultationFee">Tarifa consulta</label>
+        <div class="fee-wrap">
+          <span>S/</span>
+          <input
+            id="consultationFee"
+            type="text"
+            inputmode="decimal"
+            [(ngModel)]="affiliation.consultationFee"
+            placeholder="150.00"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
+@if (errorMessage()) {
+  <p class="error">{{ errorMessage() }}</p>
+}
+
+@if (mode() === 'invitar' || selectedDoctor()) {
+  <div class="actions">
+    <button type="button" class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button type="button" class="btn-submit" [disabled]="!canSubmit()" (click)="submit()">
+      {{ submitLabel() }}
+    </button>
+  </div>
+}

@@ -1,5 +1,5 @@
-// Desarrollo local apuntando al backend en Railway
 export const environment = {
   production: false,
-  apiUrl: 'https://saludlink-production.up.railway.app',
+  apiUrl: 'http://localhost:8080/api',
+  aiUrl: 'http://localhost:8080/api/ai',
 };

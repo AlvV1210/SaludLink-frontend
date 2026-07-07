@@ -1,0 +1,49 @@
+<div class="page-head">
+  <div>
+    <h1>Buenos días, {{ adminName() }} 👋</h1>
+    <p class="subtitle">Vista 360° de tu institución</p>
+  </div>
+</div>
+
+@if (loading()) {
+  <p class="empty-state">Cargando métricas...</p>
+} @else {
+  <div class="metric-grid">
+    <article class="metric-card">
+      <span class="metric-label">Citas hoy</span>
+      <strong class="metric-value">{{ todayAppointments() }}</strong>
+      <small class="metric-hint">registradas hoy</small>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Médicos</span>
+      <strong class="metric-value">{{ doctors().length }}</strong>
+      <small class="metric-hint accent">{{ store.activeDoctors() }} activos</small>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">No-shows</span>
+      <strong class="metric-value" [class.warning]="noShowAlerts() > 0">{{ noShowAlerts() }}</strong>
+      <small class="metric-hint">alertas hoy</small>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Pacientes</span>
+      <strong class="metric-value">{{ patients().length }}</strong>
+      <small class="metric-hint accent">con citas</small>
+    </article>
+  </div>
+
+  @if (showPendingBanner()) {
+    <section class="pending-banner">
+      <div class="pending-copy">
+        <span class="pending-icon" aria-hidden="true">⚠</span>
+        <div>
+          <strong>Acciones pendientes</strong>
+          <p>{{ pendingItems().join(' · ') }}</p>
+        </div>
+      </div>
+      <a routerLink="/admin/medicos" class="pending-link">Ver →</a>
+    </section>
+  }
+}

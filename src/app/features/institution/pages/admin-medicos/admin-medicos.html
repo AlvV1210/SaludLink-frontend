@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div>
+    <h1>Medicos afiliados</h1>
+    <p class="subtitle">
+      {{ store.doctors().length }} afiliados · {{ store.pendingDoctors() }} pendientes ·
+      {{ store.inactiveDoctors() }} inactivos
+    </p>
+  </div>
+  <button type="button" class="btn-add" (click)="goAdd()">+ Agregar medico</button>
+</div>
+
+@if (store.notice()) {
+  <div class="notice-banner" role="status">
+    <p>{{ store.notice() }}</p>
+    <button type="button" class="notice-dismiss" (click)="dismissNotice()" aria-label="Cerrar">×</button>
+  </div>
+}
+
+<div class="tabs-row">
+  <button type="button" class="tab-item" [class.active]="filter() === 'activos'" (click)="setFilter('activos')">
+    Afiliados ({{ store.doctors().length }})
+  </button>
+  <button type="button" class="tab-item" [class.active]="filter() === 'pendientes'" (click)="setFilter('pendientes')">
+    Pendientes ({{ store.pendingDoctors() }})
+  </button>
+  <button type="button" class="tab-item" [class.active]="filter() === 'inactivos'" (click)="setFilter('inactivos')">
+    Inactivos ({{ store.inactiveDoctors() }})
+  </button>
+</div>
+
+@if (loading()) {
+  <p class="loading-note">Cargando médicos...</p>
+} @else if (!filteredDoctors().length) {
+  <article class="doctor-card empty">
+    <p>No hay médicos en esta categoría todavía.</p>
+  </article>
+} @else {
+  @for (doctor of filteredDoctors(); track doctor.id) {
+    <article
+      class="doctor-card"
+      [class.pending]="!doctor.verified"
+      (click)="openDoctor(doctor)"
+    >
+      <div class="avatar" [class]="avatarTone(doctor)">{{ initials(doctor) }}</div>
+      <div class="doctor-info">
+        <strong>{{ doctorLabel(doctor) }}</strong>
+        <p>{{ doctorMeta(doctor) }}</p>
+      </div>
+      <span class="status-pill" [class.ok]="doctor.verified" [class.pending]="!doctor.verified">
+        @if (!doctor.verified) {
+          ⏳
+        }
+        {{ doctor.verified ? 'Activo' : 'Pendiente' }}
+      </span>
+    </article>
+  }
+}
+
+<p class="footnote">💡 Los médicos afiliados aparecen en búsquedas de pacientes con tu insignia institucional</p>

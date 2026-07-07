@@ -1,0 +1,79 @@
+<div class="page-head">
+  <div>
+    <h1>Facturación · {{ monthLabel() }}</h1>
+    <p class="subtitle">Resumen de ingresos institucionales</p>
+  </div>
+  <button type="button" class="btn-download" [disabled]="!hasData()" (click)="download()">
+    📥 Descargar
+  </button>
+</div>
+
+@if (loading()) {
+  <p class="loading-note">Cargando facturación...</p>
+} @else {
+  @if (errorMessage()) {
+    <p class="error-note">{{ errorMessage() }}</p>
+  }
+
+  <div class="metric-grid billing">
+    <article class="metric-card">
+      <span class="metric-label">Ingresos</span>
+      <strong class="metric-value income">{{ formatMoney(totalIncome()) }}</strong>
+      <small class="metric-hint accent">
+        {{ totalIncome() > 0 ? 'mes actual' : 'sin movimientos' }}
+      </small>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Comisión SL</span>
+      <strong class="metric-value">{{ formatMoney(commission()) }}</strong>
+      <small class="metric-hint accent">6% del total</small>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Pendiente</span>
+      <strong class="metric-value warning">{{ formatMoney(pendingAmount()) }}</strong>
+      <small class="metric-hint">{{ pendingCount() }} factura{{ pendingCount() === 1 ? '' : 's' }}</small>
+    </article>
+  </div>
+
+  <h2 class="section-title">Facturas recientes</h2>
+
+  <section class="invoice-table">
+    <div class="invoice-row head">
+      <span>Concepto</span>
+      <span class="col-amount">Monto</span>
+      <span class="col-date">Fecha</span>
+      <span class="col-status">Estado</span>
+    </div>
+
+    @if (!invoices().length) {
+      <div class="invoice-row empty-row">
+        <span>Sin facturas registradas</span>
+        <span class="col-amount">{{ formatMoney(0) }}</span>
+        <span class="col-date">—</span>
+        <span class="col-status muted">—</span>
+      </div>
+    } @else {
+      @for (invoice of invoices(); track invoice.reference + invoice.paidAt) {
+        <div class="invoice-row">
+          <div class="concept">
+            <strong>{{ invoice.concept }}</strong>
+            <small>{{ invoice.reference }}</small>
+          </div>
+          <span class="col-amount">{{ formatMoney(invoice.amount) }}</span>
+          <span class="col-date">{{ formatDate(invoice.paidAt) }}</span>
+          <span
+            class="col-status"
+            [class.ok]="invoice.status === 'Pagada'"
+            [class.pending]="invoice.status === 'Pendiente'"
+          >
+            {{ invoice.status }}
+          </span>
+        </div>
+      }
+    }
+  </section>
+}
+
+<p class="footnote">💡 Las facturas se generan automáticamente al cierre de mes</p>

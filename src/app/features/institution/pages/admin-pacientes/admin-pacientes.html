@@ -1,0 +1,76 @@
+<div class="page-head">
+  <div>
+    <h1>Base de pacientes</h1>
+    <p class="subtitle">{{ activeCount() }} paciente{{ activeCount() === 1 ? '' : 's' }} activo{{ activeCount() === 1 ? '' : 's' }}</p>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon" aria-hidden="true">🔍</span>
+    <input
+      class="search-input"
+      type="search"
+      placeholder="Buscar..."
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+    />
+  </div>
+</div>
+
+<div class="metric-grid">
+  <article class="metric-card">
+    <span class="metric-label">Total</span>
+    <strong class="metric-value">{{ totalCount() }}</strong>
+    @if (newThisMonthCount() > 0) {
+      <span class="metric-hint accent">+{{ newThisMonthCount() }} mes</span>
+    } @else {
+      <span class="metric-hint">—</span>
+    }
+  </article>
+  <article class="metric-card">
+    <span class="metric-label">Nuevos hoy</span>
+    <strong class="metric-value accent">{{ newTodayCount() }}</strong>
+    @if (newTodayDelta() !== null) {
+      <span class="metric-hint accent">{{ todayDeltaLabel() }}</span>
+    } @else {
+      <span class="metric-hint">—</span>
+    }
+  </article>
+  <article class="metric-card">
+    <span class="metric-label">Recurrentes</span>
+    <strong class="metric-value">{{ recurrentRate() }}%</strong>
+    <span class="metric-hint accent">fidelidad</span>
+  </article>
+</div>
+
+@if (store.loading()) {
+  <p class="loading-note">Cargando pacientes...</p>
+} @else if (!patients().length) {
+  <article class="patient-row empty">
+    <p>
+      @if (query().trim()) {
+        No hay pacientes que coincidan con tu búsqueda.
+      } @else {
+        No hay pacientes vinculados a citas de tu institución todavía.
+      }
+    </p>
+  </article>
+} @else {
+  @for (patient of patients(); track patient.key) {
+    <article class="patient-row">
+      <div class="avatar" [class]="avatarTone(patient)">{{ initials(patient) }}</div>
+      <div class="patient-info">
+        <strong>{{ patient.name }}</strong>
+        <p>{{ patientMeta(patient) }}</p>
+      </div>
+      <span
+        class="status-pill"
+        [class.ok]="patient.statusLabel === 'Activa'"
+        [class.warn]="patient.statusLabel === 'Atención'"
+      >
+        {{ patient.statusLabel }}
+      </span>
+      <button type="button" class="menu-btn" aria-label="Más opciones" disabled>⋯</button>
+    </article>
+  }
+}
+
+<p class="footnote">🔒 Solo se muestra info necesaria para gestión · No diagnósticos clínicos</p>

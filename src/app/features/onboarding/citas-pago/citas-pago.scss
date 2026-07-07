@@ -1,0 +1,167 @@
+:host {
+  display: block;
+}
+
+.payment-head {
+  align-items: flex-start;
+}
+
+.fee-badge {
+  color: #059669;
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.payment-methods {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.payment-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.payment-option.selected {
+  border: 1.6px solid #10b981;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.payment-icon {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 1.35rem;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.payment-icon.visa {
+  background: #1a1f71;
+}
+
+.payment-icon.yape {
+  background: #722282;
+}
+
+.payment-copy {
+  min-width: 0;
+}
+
+.payment-copy strong {
+  display: block;
+  color: #1f2937;
+  font-size: 0.84rem;
+}
+
+.payment-copy span {
+  display: block;
+  margin-top: 0.1rem;
+  color: #6b7280;
+  font-size: 0.72rem;
+}
+
+.payment-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #059669;
+  flex-shrink: 0;
+}
+
+.field {
+  display: block;
+  margin-bottom: 0.55rem;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #4b5563;
+  font-size: 0.74rem;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: #1f2937;
+  background: #fff;
+}
+
+.field:first-of-type input:focus,
+.field-row .field:first-child input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+}
+
+.field-row .field {
+  margin-bottom: 0;
+}
+
+.yape-note {
+  margin: 0 0 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.76rem;
+}
+
+.security-note {
+  margin: 0.15rem 0 0.65rem;
+  color: #6b7280;
+  font-size: 0.72rem;
+}
+
+.form-error {
+  margin: 0 0 0.55rem;
+  color: #dc2626;
+  font-size: 0.82rem;
+}
+
+.pay-now-btn {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.84rem;
+}
+
+.pay-now-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .payment-head {
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+}

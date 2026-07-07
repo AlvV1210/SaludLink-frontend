@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { PENDING_VERIFICATION_EMAIL_KEY } from '../../../core/constants/storage-keys';
 
 @Component({
   selector: 'app-registro-paciente',
@@ -67,7 +68,12 @@ export class RegistroPacienteComponent {
 
           this.loading.set(false);
 
-          void this.router.navigateByUrl('/verificacioncorreo');
+          const registeredEmail = email.trim();
+          sessionStorage.setItem(PENDING_VERIFICATION_EMAIL_KEY, registeredEmail);
+
+          void this.router.navigateByUrl('/verificacioncorreo', {
+            state: { email: registeredEmail },
+          });
         },
         error: (error) => {
           console.error('REGISTRO ERROR:', error);

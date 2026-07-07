@@ -2,34 +2,31 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { API_BASE_URL } from '../constants/api.constants';
+import { environment } from '../../../environments/environment';
 import {
   Appointment,
   AppointmentRequest,
-  AppointmentStatus,
-} from '../models/appointment.model';
+  RescheduleAppointmentRequest,
+} from '../../shared/models/appointment.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAppointmentService {
   private readonly http = inject(HttpClient);
-  private readonly adminAppointmentsApiUrl = `${API_BASE_URL}/admin/appointments`;
-  private readonly appointmentsApiUrl = `${API_BASE_URL}/appointments`;
+  private readonly base = `${environment.apiUrl}/appointments`;
 
-  listMyClinicAppointments(): Observable<Appointment[]> {
-    return this.http.get<Appointment[]>(this.adminAppointmentsApiUrl);
+  listByDoctor(doctorId: number): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.base}/doctor/${doctorId}`);
   }
 
-  updateAppointment(id: number, body: AppointmentRequest): Observable<Appointment> {
-    return this.http.put<Appointment>(`${this.appointmentsApiUrl}/${id}`, body);
+  cancel(id: number): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}/cancel`, {});
   }
 
-  confirmAppointment(id: number): Observable<void> {
-    return this.http.put<void>(`${this.appointmentsApiUrl}/${id}/status`, {
-      status: AppointmentStatus.CONFIRMED,
-    });
+  reschedule(id: number, body: RescheduleAppointmentRequest): Observable<Appointment> {
+    return this.http.patch<Appointment>(`${this.base}/${id}/reschedule`, body);
   }
 
-  cancelAppointment(id: number): Observable<void> {
-    return this.http.put<void>(`${this.appointmentsApiUrl}/${id}/cancel`, {});
+  create(body: AppointmentRequest): Observable<Appointment> {
+    return this.http.post<Appointment>(this.base, body);
   }
 }

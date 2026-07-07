@@ -1,0 +1,118 @@
+<app-patient-dashboard-shell
+  activeItem="historial"
+  [userFirstName]="userFirstName()"
+  (dashboard)="shellNav.goDashboard()"
+  (citas)="shellNav.goCitas()"
+  (recordatorios)="shellNav.goRecordatorios()"
+  (historial)="shellNav.goHistorial()"
+  (mental)="shellNav.goMental()"
+  (perfil)="shellNav.goPerfil()"
+  (planes)="shellNav.goPlanes()"
+  (config)="shellNav.goConfig()"
+  (logout)="shellNav.logout()"
+>
+  @if (step() === 'tipo') {
+    <header class="page-head">
+      <div>
+        <h1>Subir documento</h1>
+        <p class="subtitle">Selecciona el tipo de documento que deseas agregar a tu historial</p>
+      </div>
+      <span class="step-pill">Paso 1 de 2</span>
+    </header>
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <div class="type-grid">
+      @for (type of documentTypes; track type.id) {
+        <button
+          type="button"
+          class="type-card"
+          [class.selected]="selectedType() === type.id"
+          (click)="selectType(type.id)"
+        >
+          <strong>{{ type.label }}</strong>
+          <span>{{ type.hint }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-ghost" (click)="goHistorial()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="goToUpload()">Continuar</button>
+    </div>
+  }
+
+  @if (step() === 'archivo') {
+    <header class="page-head">
+      <div>
+        <h1>Subir {{ selectedTypeLabel() }}</h1>
+        <p class="subtitle">Completa los datos del archivo para guardarlo en tu historial</p>
+      </div>
+      <span class="step-pill">Paso 2 de 2</span>
+    </header>
+
+    @if (errorMessage()) {
+      <p class="form-error">{{ errorMessage() }}</p>
+    }
+
+    <article class="upload-card">
+      <label class="field">
+        <span>Titulo del documento</span>
+        <input
+          type="text"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          placeholder="Ej. Receta cardiologia — marzo 2026"
+        />
+      </label>
+
+      <label class="field">
+        <span>Nombre del archivo</span>
+        <input
+          type="text"
+          [ngModel]="fileName()"
+          (ngModelChange)="fileName.set($event)"
+          placeholder="Ej. receta-marzo.pdf"
+        />
+      </label>
+
+      <label class="field">
+        <span>Notas (opcional)</span>
+        <textarea
+          rows="3"
+          [ngModel]="description()"
+          (ngModelChange)="description.set($event)"
+          placeholder="Contexto o indicaciones del medico"
+        ></textarea>
+      </label>
+
+      <div class="drop-zone" aria-hidden="true">
+        <strong>Arrastra tu archivo aqui</strong>
+        <span>PDF, JPG o PNG — max. 10 MB (demo UI)</span>
+      </div>
+    </article>
+
+    <div class="form-actions">
+      <button type="button" class="btn-ghost" (click)="backToType()">Volver</button>
+      <button type="button" class="btn-primary" [disabled]="saving()" (click)="submitUpload()">
+        {{ saving() ? 'Subiendo...' : 'Guardar documento' }}
+      </button>
+    </div>
+  }
+
+  @if (step() === 'listo') {
+    <article class="success-card">
+      <span class="success-icon" aria-hidden="true">✓</span>
+      <h1>Documento agregado</h1>
+      <p>Tu {{ selectedTypeLabel() }} ya esta disponible en el historial clinico.</p>
+      <div class="form-actions centered">
+        <button type="button" class="btn-primary" (click)="goHistorial()">Ver historial</button>
+        <button type="button" class="btn-outline" (click)="step.set('tipo'); selectedType.set(''); title.set(''); fileName.set(''); description.set('')">
+          Subir otro
+        </button>
+      </div>
+    </article>
+  }
+</app-patient-dashboard-shell>

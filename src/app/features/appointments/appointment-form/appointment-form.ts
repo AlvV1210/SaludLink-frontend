@@ -34,7 +34,7 @@ import {
 import {
   AppointmentModality,
   Doctor,
-} from '../../../core/models/appointment.model';
+} from '../../../shared/models/appointment.model';
 import { AppointmentService } from '../../../core/services/appointment.service';
 
 @Component({

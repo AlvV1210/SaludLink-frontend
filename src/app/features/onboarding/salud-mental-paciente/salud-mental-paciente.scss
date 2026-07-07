@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+.mental-page {
+  max-width: 640px;
+}
+
+.hero-card,
+.resource-card,
+.recommend-card,
+.result-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.85rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+
+.hero-card strong,
+.resource-card strong {
+  display: block;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.hero-card p,
+.resource-card p {
+  margin: 0 0 0.65rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.hero-card ul {
+  margin: 0 0 0.85rem;
+  padding-left: 1.1rem;
+  color: #374151;
+  font-size: 0.8rem;
+}
+
+.test-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.progress-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  margin-bottom: 0.85rem;
+  overflow: hidden;
+}
+
+.progress-bar i {
+  display: block;
+  height: 100%;
+  background: #10b981;
+}
+
+.prompt {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+.mental-page h2 {
+  margin: 0.35rem 0 0.85rem;
+  font-size: 1rem;
+  color: #1f2937;
+}
+
+.options {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+}
+
+.option.active {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.result-card .badge {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #047857;
+}
+
+.result-card h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.result-card p {
+  margin: 0.25rem 0 0.65rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.result-card ul {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.8rem;
+  color: #374151;
+}
+
+.result-card.sin-sintomas-relevantes {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.result-card.leve {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.result-card.moderado {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.result-card.alto-riesgo-emocional {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.recommend-card p {
+  margin: 0.35rem 0 0.65rem;
+  color: #6b7280;
+  font-size: 0.82rem;
+}

@@ -1,7 +1,8 @@
 <app-patient-dashboard-shell
   activeItem="citas"
+  [userFirstName]="userFirstName()"
   (dashboard)="goDashboard()"
-  (citas)="goCitas()"
+  (citas)="goCitasNav()"
   (recordatorios)="goRecordatorios()"
   (historial)="goHistorial()"
   (mental)="goMental()"
@@ -10,10 +11,56 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <div class="row" style="justify-content:center;padding-top:1rem"><div style="width:96px;height:96px;border-radius:999px;background:#d1fae5;display:grid;place-items:center;font-size:3rem">&#10003;</div></div>
-  <h1 style="text-align:center">&iexcl;Tu cita est&aacute; confirmada!</h1>
-  <p class="subtitle" style="text-align:center">Te enviamos los detalles a tu correo</p>
-  <section class="card" style="border-color:#10b981;background:#ecfdf5"><strong>Mi&eacute; 7 may - 10:00 AM</strong><div class="subtitle">Dr. Juan P&eacute;rez - Cardiolog&iacute;a - Cl&iacute;nica San Pablo</div></section>
-  <section class="card"><div class="row" style="justify-content:space-between"><span>N&deg; de pago</span><strong>#SL-2026-04582</strong></div><div class="row" style="justify-content:space-between"><span>Comprobante</span><strong style="color:#0f766e">Descargar PDF</strong></div></section>
-  <div class="row"><button type="button" class="btn ghost" (click)="addCalendar()">+ Calendario</button><button type="button" class="btn outline" (click)="viewAppointments()">Ver mis citas</button></div>
+  <div class="success-screen">
+    <div class="success-icon" aria-hidden="true">
+      <span class="check-mark"></span>
+    </div>
+
+    <h1 class="success-title">Tu cita esta confirmada!</h1>
+    <p class="success-subtitle">{{ emailHint() }}</p>
+
+    <div class="appointment-card">
+      <strong>{{ appointmentShortLabel() }}</strong>
+      <span>{{ doctorLine() }}</span>
+      <span class="muted">{{ locationLine() }}</span>
+    </div>
+
+    <div class="receipt-card">
+      <div class="receipt-row">
+        <span>N de pago</span>
+        @if (loadingPayment()) {
+          <strong>Cargando...</strong>
+        } @else {
+          <strong>{{ paymentRefLabel() }}</strong>
+        }
+      </div>
+      <div class="receipt-row">
+        <span>Comprobante</span>
+        <button
+          type="button"
+          class="link-btn"
+          [disabled]="!receiptNumber()"
+          (click)="downloadReceipt()"
+        >
+          Descargar comprobante
+        </button>
+      </div>
+    </div>
+
+    @if (paymentError()) {
+      <p class="form-error">{{ paymentError() }}</p>
+    }
+
+    <div class="actions-grid">
+      <button type="button" class="btn-ghost action-btn" (click)="addToCalendar()">
+        + Calendario
+      </button>
+      <button type="button" class="btn-outline action-btn" (click)="viewAppointments()">
+        Ver mis citas
+      </button>
+      <button type="button" class="btn-primary action-btn" (click)="goDashboard()">
+        Ir al dashboard
+      </button>
+    </div>
+  </div>
 </app-patient-dashboard-shell>

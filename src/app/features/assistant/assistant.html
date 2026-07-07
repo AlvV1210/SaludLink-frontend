@@ -1,0 +1,114 @@
+<div class="page-head">
+  <h1 class="page-title">Asistente IA</h1>
+  <p class="page-subtitle">Habla en lenguaje natural: el asistente puede actuar y responder con tus documentos.</p>
+</div>
+
+<mat-card appearance="outlined" class="chat">
+  <div class="mode-bar">
+    @if (role !== 'INSTITUTION_ADMIN') {
+      <mat-button-toggle-group
+        [value]="mode()"
+        (change)="setMode($event.value)"
+        hideSingleSelectionIndicator
+        aria-label="Modo del asistente">
+        <mat-button-toggle value="assistant">
+          <mat-icon>bolt</mat-icon> Asistente
+        </mat-button-toggle>
+        <mat-button-toggle value="support">
+          <mat-icon>menu_book</mat-icon> Soporte
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    } @else {
+      <span class="mode-badge">
+        <mat-icon>menu_book</mat-icon> Modo Soporte (RAG)
+      </span>
+    }
+
+    @if (mode() === 'assistant' && role === 'PATIENT') {
+      <mat-button-toggle-group
+        [value]="patientTopic()"
+        (change)="setPatientTopic($event.value)"
+        hideSingleSelectionIndicator
+        aria-label="Tema del asistente paciente">
+        <mat-button-toggle value="appointment">Citas</mat-button-toggle>
+        <mat-button-toggle value="medication">Medicación</mat-button-toggle>
+      </mat-button-toggle-group>
+    }
+
+    <span class="mode-hint">
+      @if (mode() === 'assistant') {
+        @if (role === 'DOCTOR') {
+          Tool Calling — consulta tu agenda médica.
+        } @else if (role === 'PATIENT') {
+          Tool Calling — citas y medicación según el tema seleccionado.
+        } @else {
+          Tool Calling — asistente clínico SaludLink.
+        }
+      } @else {
+        RAG — responde con la base de conocimiento (guías PDF).
+      }
+    </span>
+
+    @if (mode() === 'support' && isInstitutionAdmin) {
+      <button
+        mat-stroked-button
+        type="button"
+        class="ingest-btn"
+        [disabled]="ingesting()"
+        (click)="ingest()">
+        @if (ingesting()) {
+          <mat-spinner diameter="16"></mat-spinner>
+        } @else {
+          <mat-icon>upload_file</mat-icon>
+        }
+        Cargar documentos
+      </button>
+    }
+  </div>
+
+  <div class="chat-body" #chatBody>
+    @for (m of messages(); track $index) {
+      <div class="msg" [class.msg-user]="m.from === 'user'">
+        @if (m.from === 'bot') {
+          <span class="msg-avatar"><mat-icon>smart_toy</mat-icon></span>
+        }
+        <div class="bubble-wrap">
+          <span class="bubble" [class.bubble-error]="m.error">{{ m.text }}</span>
+          @if (m.sources?.length) {
+            <div class="msg-sources">
+              <mat-icon class="src-ico">description</mat-icon>
+              @for (s of m.sources; track s) {
+                <span class="src-chip">{{ s }}</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (sending()) {
+      <div class="msg">
+        <span class="msg-avatar"><mat-icon>smart_toy</mat-icon></span>
+        <span class="bubble typing"><span></span><span></span><span></span></span>
+      </div>
+    }
+  </div>
+
+  <div class="suggestions">
+    @for (s of suggestions(); track s) {
+      <button mat-stroked-button type="button" [disabled]="sending()" (click)="send(s)">
+        {{ s }}
+      </button>
+    }
+  </div>
+
+  <form class="chat-input" (ngSubmit)="send()">
+    <mat-form-field appearance="outline" class="field-full" subscriptSizing="dynamic">
+      <mat-label>Escribe tu mensaje</mat-label>
+      <input matInput [(ngModel)]="draft" name="draft" autocomplete="off" [disabled]="sending()" />
+    </mat-form-field>
+    <button mat-fab color="primary" type="submit" aria-label="Enviar" [disabled]="sending() || !draft.trim()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </form>
+</mat-card>

@@ -1,0 +1,116 @@
+@if (loading()) {
+  <p class="loading-note">Generando reporte...</p>
+} @else if (errorMessage()) {
+  <section class="empty-card">
+    <p>{{ errorMessage() }}</p>
+    <button type="button" class="btn-outline" (click)="backToConfig()">Volver a configurar</button>
+  </section>
+} @else {
+  <div class="page-head">
+    <div>
+      <h1>{{ periodTitle() | titlecase }}</h1>
+      <p class="subtitle">{{ summaryLine() }}</p>
+    </div>
+    <div class="export-actions">
+      <button type="button" class="btn-export" (click)="exportPdf()">📥 PDF</button>
+      <button type="button" class="btn-export" (click)="exportExcel()">📊 Excel</button>
+    </div>
+  </div>
+
+  <div class="metric-grid">
+    @if (showMetric('total')) {
+      <article class="metric-card">
+        <span class="metric-label">Total citas</span>
+        <strong class="metric-value">{{ report()?.totalAppointments ?? 0 }}</strong>
+        <span class="metric-hint accent">{{ totalDeltaLabel() }}</span>
+      </article>
+    }
+    @if (showMetric('attended')) {
+      <article class="metric-card">
+        <span class="metric-label">Asistidas</span>
+        <strong class="metric-value good">{{ report()?.attended ?? 0 }}</strong>
+        <span class="metric-hint accent">{{ attendanceRate() }}%</span>
+      </article>
+    }
+    @if (showMetric('noShows')) {
+      <article class="metric-card">
+        <span class="metric-label">No-shows</span>
+        <strong class="metric-value danger">{{ report()?.noShows ?? 0 }}</strong>
+        <span class="metric-hint accent">{{ noShowRate() }}%</span>
+      </article>
+    }
+    @if (showMetric('cancelled')) {
+      <article class="metric-card">
+        <span class="metric-label">Cancel.</span>
+        <strong class="metric-value warn">{{ report()?.cancelled ?? 0 }}</strong>
+        <span class="metric-hint accent">{{ cancellationRate() }}%</span>
+      </article>
+    }
+  </div>
+
+  <h2 class="section-title">Evolución semanal</h2>
+  <section class="chart-card">
+    @if (!filteredAppointments().length) {
+      <p class="chart-empty">Sin citas en el periodo para graficar.</p>
+    } @else {
+      <div class="chart-bars">
+        @for (point of weeklyPoints(); track point.label) {
+          <div class="chart-bar">
+            <span class="bar-value">{{ point.attendanceRate }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.height.%]="point.attendanceRate || 4"></div>
+            </div>
+            <span class="bar-label">{{ point.label }}</span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <h2 class="section-title">{{ breakdownTitle() }}</h2>
+  <section class="breakdown-card">
+    @if (!breakdownRows().length) {
+      <p class="chart-empty">Sin datos desglosados para este periodo.</p>
+    } @else {
+      @for (row of breakdownRows(); track row.label) {
+        <div class="breakdown-row">
+          <span class="breakdown-label">{{ row.label }}</span>
+          <div class="breakdown-bar-wrap">
+            <div
+              class="breakdown-bar"
+              [class.mid]="row.attendanceRate < 90"
+              [style.width.%]="row.attendanceRate || 0"
+            ></div>
+          </div>
+          <span class="breakdown-attendance" [class.mid]="row.attendanceRate < 90">
+            {{ row.attendanceRate }}%
+          </span>
+          <span class="breakdown-noshow">{{ row.noShowRate }}%</span>
+        </div>
+      }
+    }
+  </section>
+
+  <h2 class="section-title">Resumen IA</h2>
+  <section class="chart-card ai-insight-block">
+    @if (aiLoading()) {
+      <p class="chart-empty">Generando resumen con IA...</p>
+    } @else if (aiError()) {
+      <p class="chart-empty">{{ aiError() }}</p>
+    } @else {
+      <p><strong>Resumen:</strong> {{ aiResumen() }}</p>
+      <p><strong>Recomendación:</strong> {{ aiRecomendacion() }}</p>
+    }
+  </section>
+
+  <p class="footnote">📍 Asist. % · No-show %</p>
+
+  @if (uiMessage()) {
+    <p class="ui-message">{{ uiMessage() }}</p>
+  }
+
+  <div class="actions">
+    <button type="button" class="btn-cancel" (click)="backToConfig()">← Configurar</button>
+    <button type="button" class="btn-submit" (click)="backToReports()">Volver a reportes</button>
+  </div>
+}

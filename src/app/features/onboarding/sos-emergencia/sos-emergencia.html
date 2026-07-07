@@ -1,5 +1,5 @@
 <app-patient-dashboard-shell
-  activeItem="recordatorios"
+  activeItem="dashboard"
   (dashboard)="goDashboard()"
   (citas)="goCitas()"
   (recordatorios)="goRecordatorios()"
@@ -10,44 +10,29 @@
   (config)="goConfig()"
   (logout)="logout()"
 >
-  <section class="page">
+  <section class="sos-page">
     <article class="alert-banner">
-      <strong>Emergencia activada</strong>
-      <p>Selecciona el numero que necesitas</p>
+      <strong>SOS Emergencia activado</strong>
+      <p>Selecciona el numero que necesitas. Llama solo en caso real de emergencia.</p>
     </article>
+
+    @if (errorMessage()) {
+      <p class="error">{{ errorMessage() }}</p>
+    }
 
     <h2>Lineas locales 24/7 (Lima)</h2>
 
-    <article class="contact-card">
-      <div>
-        <strong>SAMU</strong>
-        <p>Atencion medica de urgencia</p>
-      </div>
-      <a href="tel:106">106</a>
-    </article>
+    @for (contact of contacts(); track contact.phone) {
+      <article class="contact-row">
+        <div class="contact-avatar">{{ contact.name.slice(0, 1) }}</div>
+        <div class="contact-info">
+          <strong>{{ contact.name }}</strong>
+          <p>{{ contact.description }}</p>
+        </div>
+        <button type="button" class="call-btn" (click)="startCall(contact)">{{ contact.phone }}</button>
+      </article>
+    }
 
-    <article class="contact-card">
-      <div>
-        <strong>Bomberos</strong>
-        <p>Cuerpo General de Bomberos</p>
-      </div>
-      <a href="tel:116">116</a>
-    </article>
-
-    <article class="contact-card">
-      <div>
-        <strong>PNP</strong>
-        <p>Policia Nacional del Peru</p>
-      </div>
-      <a href="tel:105">105</a>
-    </article>
-
-    <article class="contact-card emergency-person">
-      <div>
-        <strong>Contacto emergencia</strong>
-        <p>Maria Schermacha (Madre)</p>
-      </div>
-      <a href="tel:+51999111222">999...222</a>
-    </article>
+    <p class="footnote">SaludLink no reemplaza servicios de emergencia oficiales.</p>
   </section>
 </app-patient-dashboard-shell>

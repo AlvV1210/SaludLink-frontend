@@ -1,0 +1,125 @@
+@if (store.loading() && !doctor()) {
+  <p class="loading-note">Cargando perfil del médico...</p>
+} @else if (!doctor()) {
+  <section class="empty-card">
+    <p>Médico no encontrado.</p>
+    <button type="button" class="btn-back" (click)="back()">← Volver a médicos</button>
+  </section>
+} @else {
+  <article class="hero-card">
+    <div class="avatar" [class]="avatarTone()">{{ initials() }}</div>
+    <div class="hero-info">
+      <strong>{{ doctorLabel() }}</strong>
+      <p>{{ doctor()!.specialty }} · CMP {{ doctor()!.licenseNumber }}</p>
+      <span class="rating">{{ starsLabel() }}</span>
+    </div>
+    <span class="status-pill" [class.ok]="doctor()!.verified" [class.pending]="!doctor()!.verified">
+      {{ doctor()!.verified ? 'Activo' : 'Pendiente' }}
+    </span>
+  </article>
+
+  <div class="metric-grid">
+    <article class="metric-card">
+      <span class="metric-label">Pacientes</span>
+      <strong class="metric-value">{{ patientCount() }}</strong>
+      @if (patientsThisWeek() > 0) {
+        <span class="metric-hint accent">+{{ patientsThisWeek() }} sem</span>
+      } @else {
+        <span class="metric-hint">—</span>
+      }
+    </article>
+    <article class="metric-card">
+      <span class="metric-label">Citas mes</span>
+      <strong class="metric-value">{{ monthAppointments() }}</strong>
+      @if (monthAppointmentsDelta() !== null) {
+        <span class="metric-hint accent">
+          {{ monthAppointmentsDelta()! >= 0 ? '+' : '' }}{{ monthAppointmentsDelta() }}%
+        </span>
+      } @else {
+        <span class="metric-hint">—</span>
+      }
+    </article>
+    <article class="metric-card">
+      <span class="metric-label">No-shows</span>
+      <strong class="metric-value" [class.good]="doctorAppointments().length && noShowRate() <= 5">
+        {{ noShowRate() }}%
+      </strong>
+      <span class="metric-hint accent">{{ noShowHint() }}</span>
+    </article>
+  </div>
+
+  <div class="tabs-row">
+    <button type="button" class="tab-item" [class.active]="tab() === 'resumen'" (click)="setTab('resumen')">
+      Resumen
+    </button>
+    <button type="button" class="tab-item" [class.active]="tab() === 'agenda'" (click)="setTab('agenda')">
+      Agenda
+    </button>
+    <button type="button" class="tab-item" [class.active]="tab() === 'documentos'" (click)="setTab('documentos')">
+      Documentos
+    </button>
+    <button type="button" class="tab-item" [class.active]="tab() === 'facturacion'" (click)="setTab('facturacion')">
+      Facturación
+    </button>
+  </div>
+
+  @if (tab() === 'resumen') {
+    <section class="detail-card">
+      <div class="detail-row">
+        <span>Tipo de contrato</span>
+        <strong>—</strong>
+      </div>
+      <div class="detail-row">
+        <span>Tarifa consulta</span>
+        <strong>{{ feeLabel() }}</strong>
+      </div>
+      <div class="detail-row">
+        <span>Inicio afiliación</span>
+        <strong>—</strong>
+      </div>
+      <div class="detail-row">
+        <span>CMP vence</span>
+        <strong>—</strong>
+      </div>
+      @if (doctor()!.biography) {
+        <div class="detail-row bio">
+          <span>Biografía</span>
+          <strong>{{ doctor()!.biography }}</strong>
+        </div>
+      }
+      <div class="detail-row">
+        <span>Correo</span>
+        <strong>{{ doctor()!.email }}</strong>
+      </div>
+    </section>
+  } @else if (tab() === 'agenda') {
+    <section class="detail-card">
+      @if (!sortedAgenda().length) {
+        <p class="tab-empty">No hay citas registradas para este médico.</p>
+      } @else {
+        @for (appointment of sortedAgenda(); track appointment.id) {
+          <div class="agenda-row">
+            <div>
+              <strong>{{ appointment.patientName ?? 'Paciente' }}</strong>
+              <p>{{ formatAppointmentDate(appointment) }}</p>
+            </div>
+            <span class="agenda-status">{{ statusLabel(appointment.status) }}</span>
+          </div>
+        }
+      }
+    </section>
+  } @else if (tab() === 'documentos') {
+    <section class="detail-card">
+      <p class="tab-empty">Sin documentos registrados.</p>
+    </section>
+  } @else {
+    <section class="detail-card">
+      <p class="tab-empty">Sin movimientos de facturación para este médico.</p>
+    </section>
+  }
+
+  <div class="actions">
+    <button type="button" class="btn-deactivate" disabled title="Próximamente">🚫 Desactivar</button>
+    <button type="button" class="btn-edit" disabled title="Próximamente">✎ Editar</button>
+  </div>
+}

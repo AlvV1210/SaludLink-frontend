@@ -1,0 +1,75 @@
+<div class="page-head">
+  <div>
+    <h1>¡Hola, {{ firstName() }}! 👋</h1>
+    <p class="subtitle">{{ todayLabel() }}</p>
+  </div>
+  <button type="button" class="btn-primary" (click)="scheduleAppointment.emit()">+ Agendar cita</button>
+</div>
+
+<section class="metric-grid">
+  <article class="metric-card">
+    <label>Próxima cita</label>
+    <strong>{{ nextAppointmentSummary().when }}</strong>
+    <span>{{ nextAppointmentSummary().detail }}</span>
+  </article>
+  <article class="metric-card">
+    <label>Recordatorios hoy</label>
+    <strong>{{ remindersTodayCount() }}</strong>
+    <span>{{ remindersTakenCount() }} tomados · {{ remindersPendingCount() }} pendiente</span>
+  </article>
+  <article class="metric-card">
+    <label>Adherencia mes</label>
+    <strong class="accent">{{ adherencePercent() }}</strong>
+    <span>{{ adherenceDelta() }}</span>
+  </article>
+</section>
+
+<section class="split-grid">
+  <div class="panel-block">
+    <div class="panel-head">
+      <strong>📅 Próximas citas</strong>
+      <button type="button" (click)="openAppointments.emit()">Ver todas →</button>
+    </div>
+    @if (upcomingAppointments().length === 0) {
+      <p class="empty-note">No tienes citas próximas registradas.</p>
+    } @else {
+      @for (item of upcomingAppointments(); track item.id) {
+        <article class="list-card">
+          <div class="avatar" [class]="item.tone">{{ item.initials }}</div>
+          <div class="info">
+            <strong>{{ item.doctor }}</strong>
+            <span>{{ item.specialty }} · {{ item.location }}</span>
+          </div>
+          <span class="time-pill" [class]="item.toneClass">{{ item.dateLabel }} {{ item.timeLabel }}</span>
+        </article>
+      }
+    }
+  </div>
+
+  <div class="panel-block">
+    <div class="panel-head">
+      <strong>💊 Recordatorios hoy</strong>
+      <button type="button" (click)="openReminders.emit()">Ver todos →</button>
+    </div>
+    <p class="empty-note">No hay recordatorios activos para hoy.</p>
+  </div>
+</section>
+
+<section class="bottom-actions">
+  <article class="mental-card">
+    <span class="emoji" aria-hidden="true">🧘</span>
+    <div>
+      <strong>¿Cómo te sientes hoy?</strong>
+      <p>Realiza un chequeo rápido de salud mental (HU09)</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="openMentalHealth.emit()">Iniciar →</button>
+  </article>
+
+  <button type="button" class="sos-card" (click)="openSos.emit()">
+    <span aria-hidden="true">🚨</span>
+    <div>
+      <strong>SOS Emergencia</strong>
+      <span>Acceso rápido (HU18)</span>
+    </div>
+  </button>
+</section>

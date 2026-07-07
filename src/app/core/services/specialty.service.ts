@@ -2,20 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { API_BASE_URL } from '../constants/api.constants';
+import { environment } from '../../../environments/environment';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class SpecialtyService {
   private readonly http = inject(HttpClient);
-  private readonly specialtyApiUrl = `${API_BASE_URL}/specialties`;
+  private readonly base = `${environment.apiUrl}/specialties`;
 
   list(): Observable<string[]> {
-    return this.http.get<string[]>(this.specialtyApiUrl);
-  }
-
-  getAll(): Observable<string[]> {
-    return this.list();
+    return this.http.get<string[]>(this.base);
   }
 }

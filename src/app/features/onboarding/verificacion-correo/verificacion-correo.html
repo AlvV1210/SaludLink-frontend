@@ -1,15 +1,44 @@
 <section class="verification-screen">
   <article class="verification-card">
-    <div class="mail-icon" aria-hidden="true">✉</div>
-    <h1>Verifica tu correo</h1>
-    <p>Te enviamos un enlace de verificación a <strong>luperuben@gmail.com</strong></p>
-    <small>Revisa tu bandeja de entrada y carpeta spam</small>
+    @if (changeMode()) {
+      <div class="mail-icon" aria-hidden="true">✉</div>
+      <h1>Cambiar correo</h1>
+      <p>Ingresa el nuevo correo donde recibirás el enlace de verificación.</p>
 
-    <div class="actions-row">
-      <button type="button" class="ghost" (click)="changeEmail()">Cambiar correo</button>
-      <button type="button" class="outline" (click)="resend()">Reenviar enlace</button>
-    </div>
+      <form class="change-form" [formGroup]="emailForm" (ngSubmit)="saveNewEmail()" novalidate>
+        <label>
+          Nuevo correo electrónico
+          <input type="email" formControlName="email" placeholder="correo@ejemplo.com" />
+        </label>
 
-    <button type="button" class="link" (click)="continueFlow()">¿Ya verificaste? Continuar →</button>
+        @if (emailForm.controls.email.invalid && emailForm.controls.email.touched) {
+          <p class="form-error">Ingresa un correo válido.</p>
+        }
+
+        @if (errorMessage()) {
+          <p class="form-error">{{ errorMessage() }}</p>
+        }
+
+        <div class="actions-row">
+          <button type="button" class="ghost" (click)="cancelChange()">Cancelar</button>
+          <button type="submit" class="outline">Guardar correo</button>
+        </div>
+      </form>
+    } @else {
+      <div class="mail-icon" aria-hidden="true">✉</div>
+      <h1>Verifica tu correo</h1>
+      <p>
+        Te enviamos un enlace de verificación a
+        <strong>{{ email() || 'tu correo registrado' }}</strong>
+      </p>
+      <small>Revisa tu bandeja de entrada y carpeta spam</small>
+
+      <div class="actions-row">
+        <button type="button" class="ghost" (click)="changeEmail()">Cambiar correo</button>
+        <button type="button" class="outline" (click)="resend()">Reenviar enlace</button>
+      </div>
+
+      <button type="button" class="link" (click)="continueFlow()">¿Ya verificaste? Continuar →</button>
+    }
   </article>
 </section>

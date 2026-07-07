@@ -1,23 +1,78 @@
-<section class="profile-screen">
-  <article class="profile-card">
-    <header class="card-header">
-      <h1>Completa tu perfil de salud</h1>
-      <span>Paso 1 de 2</span>
-    </header>
-
-    <div class="form-grid">
-      <label>Fecha de nacimiento<input placeholder="15 / 03 / 1995" /></label>
-      <label>Sexo<input placeholder="Femenino" /></label>
-      <label>DNI<input placeholder="12345678" /></label>
-      <label>Grupo sanguíneo<input placeholder="O+" /></label>
-      <label class="full">Antecedentes médicos<input placeholder="Hipertensión, alergia a penicilina..." /></label>
-      <label class="full">Contacto de emergencia<input placeholder="María Schermacha · +51 999 111 222" /></label>
-      <div class="alert full">Tu información está protegida. Solo médicos autorizados podrán acceder.</div>
+<app-patient-dashboard-shell
+  activeItem="dashboard"
+  [userFirstName]="firstName()"
+  (dashboard)="goDashboard()"
+  (citas)="goCitas()"
+  (recordatorios)="goRecordatorios()"
+  (historial)="goHistorial()"
+  (mental)="goMental()"
+  (perfil)="goPerfil()"
+  (planes)="goPlanes()"
+  (config)="goConfig()"
+  (logout)="logout()"
+>
+  <div class="page-head">
+    <div>
+      <h1>¡Hola, {{ firstName() }}! 👋</h1>
+      <p class="subtitle">Tu cuenta está lista. ¿Quieres añadir un dependiente?</p>
     </div>
+  </div>
 
-    <div class="actions">
-      <button type="button" class="ghost" (click)="skip()">Omitir</button>
-      <button type="button" class="primary" (click)="saveAndContinue()">Guardar y continuar →</button>
+  <article class="promo-card">
+    <span class="emoji" aria-hidden="true">👨‍👩‍👧</span>
+    <div>
+      <strong>Gestiona perfiles dependientes</strong>
+      <p>Añade a tus hijos o familiares a cargo (HU15)</p>
     </div>
+    <button type="button" class="btn-primary" (click)="toggleAddForm()">+ Añadir</button>
   </article>
-</section>
+
+  @if (showAddForm()) {
+    <form class="add-form" (ngSubmit)="saveDependent()" novalidate>
+      <input [(ngModel)]="draft.firstName" name="depFirstName" placeholder="Nombres" />
+      <input [(ngModel)]="draft.lastName" name="depLastName" placeholder="Apellidos" />
+      <input [(ngModel)]="draft.relationship" name="depRelationship" placeholder="Parentesco (ej. Hijo)" />
+      <input [(ngModel)]="draft.birthDate" name="depBirthDate" type="date" />
+      @if (errorMessage()) {
+        <p class="ui-message">{{ errorMessage() }}</p>
+      }
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" (click)="toggleAddForm()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="savingDependent()">
+          {{ savingDependent() ? 'Guardando...' : 'Guardar dependiente' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (uiMessage()) {
+    <p class="ui-message">{{ uiMessage() }}</p>
+  }
+
+  <h2 class="section-title">Mis perfiles</h2>
+
+  <div class="profile-list">
+    @if (profileCards().length === 0) {
+      <p class="empty-note">Completa tu perfil para ver tu tarjeta titular.</p>
+    } @else {
+      @for (card of profileCards(); track card.key) {
+        <article class="profile-card">
+          <div class="profile-avatar" [class]="card.tone">{{ card.initials }}</div>
+          <div class="profile-info">
+            <strong>{{ card.name }}</strong>
+            <span>{{ card.meta }}</span>
+          </div>
+          <span class="status-pill">{{ card.badge }}</span>
+        </article>
+      }
+    }
+  </div>
+
+  <button type="button" class="btn-outline cta-wide" (click)="goDatosClinicos()">
+    Completar datos clinicos →
+  </button>
+
+  <button type="button" class="btn-outline cta-wide" (click)="goHealthDashboard()">
+    Ir a mi dashboard de salud →
+  </button>
+</app-patient-dashboard-shell>

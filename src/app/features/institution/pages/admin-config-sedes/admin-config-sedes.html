@@ -1,0 +1,72 @@
+<nav class="config-nav">
+  <a routerLink="/admin/config" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">General</a>
+  <a routerLink="/admin/config/sedes" routerLinkActive="active">Sedes</a>
+  <a routerLink="/admin/config/actividad" routerLinkActive="active">Actividad</a>
+  <a routerLink="/admin/config/mi-clinica" routerLinkActive="active">Mi clínica</a>
+</nav>
+
+<div class="page-head">
+  <div>
+    <h1>Sedes</h1>
+    <p class="subtitle">{{ activeSedeCount() }} activas · Gestiona ubicaciones</p>
+  </div>
+  <button type="button" class="btn-add" (click)="toggleForm()">
+    {{ showForm() ? 'Cancelar' : '+ Nueva sede' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <section class="card new-sede-form">
+    <div class="form-row">
+      <label>
+        Nombre de la sede
+        <input type="text" [(ngModel)]="newSedeName" placeholder="Ej. Sede Miraflores" />
+      </label>
+      <label>
+        Dirección
+        <input type="text" [(ngModel)]="newSedeAddress" placeholder="Ej. Av. Larco 345" />
+      </label>
+    </div>
+    <button type="button" class="btn-save" (click)="addSede()">Guardar sede</button>
+  </section>
+}
+
+@if (!sedes().length) {
+  <section class="card">
+    <p class="empty">Aún no registras sedes. Agrega la primera para empezar a gestionarla.</p>
+  </section>
+} @else {
+  @for (sede of sedes(); track sede.id) {
+    <article class="sede-card" [class.principal]="sede.tag === 'Principal'">
+      <div class="sede-icon" [class]="'tone-' + sede.tone">🏥</div>
+      <div class="sede-info">
+        <strong>
+          {{ sede.name }}
+          @if (sede.tag) {
+            <span class="tag-pill">{{ sede.tag }}</span>
+          }
+        </strong>
+        <p>{{ sede.address }} · {{ sede.doctorsCount }} médicos · {{ sede.appointmentsPerDay }} citas/día</p>
+      </div>
+      <span class="status-pill" [class.ok]="sede.active">{{ sede.active ? 'Activa' : 'Inactiva' }}</span>
+      @if (sede.tag !== 'Principal') {
+        <button type="button" class="btn-remove" (click)="removeSede(sede.id)" aria-label="Eliminar sede">×</button>
+      }
+    </article>
+  }
+}
+
+<div class="metric-grid">
+  <article class="metric-card">
+    <span class="metric-label">Capacidad total</span>
+    <strong class="metric-value">{{ totalAppointments() }}/{{ totalCapacity() }}</strong>
+    <span class="metric-hint accent">{{ occupancyPercent() }}% ocupación</span>
+  </article>
+  <article class="metric-card">
+    <span class="metric-label">Servicios</span>
+    <strong class="metric-value">{{ specialtyCount() }}</strong>
+    <span class="metric-hint accent">especialidades</span>
+  </article>
+</div>
+
+<p class="footnote">💡 Cada sede tiene su propio horario, médicos y reportes específicos</p>
