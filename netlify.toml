@@ -9,7 +9,7 @@
 # Actualiza la URL de Render tras desplegar el backend.
 [[redirects]]
   from = "/api/*"
-  to = "https://saludlink-api.onrender.com/api/:splat"
+  to = "https://saludlink-api-r5bn.onrender.com/api/:splat"
   status = 200
   force = true
 
